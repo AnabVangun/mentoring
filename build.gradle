@@ -1,3 +1,5 @@
+version '1.0.0-alpha'
+
 apply plugin: 'java'
 apply plugin: 'jacoco'
 apply plugin: 'application'
@@ -14,7 +16,7 @@ test {
 }
 
 dependencies {
-    implementation files('libs/AssignmentProblem-1.0.0.jar')
+    implementation files('libs/AssignmentProblem-2.0.0.jar')
     implementation 'com.opencsv:opencsv:5.5.1'
     implementation 'org.apache.commons:commons-lang3:3.12.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'

@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
@@ -81,7 +79,9 @@ public class PersonTest implements TestFrameWork<Person, PersonArguments>{
                     try {
                         Person first = args.left.convertWithException();
                         Person second = args.right.convertWithException();
-                        Assertions.assertEquals(first.computeDistance(second), second.computeDistance(first));
+                        int firstDistance = first.computeDistance(second);
+                        int secondDistance = second.computeDistance(first);
+                        Assertions.assertEquals(firstDistance, secondDistance);
                     } catch (IllegalAccessException ex){
                         fail("Something went wrong in converter : " + ex.getLocalizedMessage());
                     }

@@ -1,6 +1,7 @@
 package mentoring.datastructure;
 
-import AssignmentProblem.Solver;
+import assignmentproblem.Result;
+import assignmentproblem.Solver;
 import com.opencsv.CSVReader;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -11,7 +12,6 @@ import java.util.Map;
  * This class represents a list of answers to the registration form.
  * 
  * It handles the resolution of the underlying assignment problem.
- * @author AnabVangun
  */
 public class PersonList extends ArrayList<Person> {
     //TODO check OpenCSV documentation: this class should contain an arrayList and be initialised with a CSV file, rather than extend ArrayList
@@ -20,7 +20,7 @@ public class PersonList extends ArrayList<Person> {
         NAME_CONFLICT;
     }
     
-    public Map<Person, Person> assign(Solver.SolverType solverType){
+    public Map<Person, Person> assign(Solver solver){
         PersonList mentors = new PersonList();
         PersonList mentees = new PersonList();
         for (Person p: this){
@@ -36,15 +36,12 @@ public class PersonList extends ArrayList<Person> {
                 costMatrix[i][j] = mentees.get(i).computeDistance(mentors.get(j));
             }
         }
-        Solver solver;
-        if (solverType == null){
-            solver = Solver.solve(costMatrix);
-        } else {
-            solver = Solver.solve(costMatrix, solverType);
-        }
+        Result assignments = solver.solve(costMatrix);
         Map<Person, Person> result = new HashMap<>();
-        for(int[] pair: solver.getAssignments()){
-            result.put(mentees.get(pair[0]), mentors.get(pair[1]));
+        for(int i = 0 ; i < assignments.getRowAssignments().size(); i++){
+            if (assignments.getRowAssignments().get(i) != assignments.unassigned){
+                result.put(mentees.get(i), mentors.get(assignments.getRowAssignments().get(i)));
+            }
         }
         return result;
     }

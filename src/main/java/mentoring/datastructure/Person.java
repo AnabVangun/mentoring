@@ -1,6 +1,7 @@
 package mentoring.datastructure;
 
-import AssignmentProblem.Solver;
+import assignmentproblem.Result;
+import assignmentproblem.Solver;
 import com.opencsv.bean.CsvBindAndJoinByName;
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvCustomBindByName;
@@ -25,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
  * of columns. Adding new identification columns or changing the scale on which
  * interests are rated will need modifications of this class.
  * 
- * @author AnabVangun
  */
 public class Person {
     static final int DEFAULT_ANSWER = 3;
@@ -118,6 +118,7 @@ public class Person {
             if (answers.get(key).size() != 1){
                 throw new IllegalStateException("Person " + toString() + " has multiple values for key " + key + ": " + answers.get(key).toString());
             }
+            Integer answer = answers.get(key).iterator().next();
             if (other.answers.containsKey(key)){
                 if (other.answers.get(key).size() != 1){//TODO factor this and previous similar check in a private method
                     throw new IllegalStateException("Person " + toString() + " has multiple values for key " + key + ": " + other.answers.get(key).toString());
@@ -128,15 +129,14 @@ public class Person {
                     otherAnswer = DEFAULT_ANSWER;
                 }
                 //TODO use method computing score between two answers to update result
-                Integer answer = answers.get(key).iterator().next();
                 if (answer == null){
                     answer = DEFAULT_ANSWER;
                 }
                 result += Math.pow(answer-otherAnswer, 2);
             }
-            else {
+            else if (answer != null){
                 //TODO use method computing score between an answer and a missing answer to update result
-                result += Math.pow(answers.get(key).iterator().next()-DEFAULT_ANSWER, 2);
+                result += Math.pow(answer-DEFAULT_ANSWER, 2);
             }
         }
         for (String key:other.answers.keySet()){
@@ -157,7 +157,7 @@ public class Person {
     }
     
     //TODO document and test
-    public static Map<Person, Person> assign(List<Person> list, Solver.SolverType solverType){
+    public static Map<Person, Person> assign(List<Person> list, Solver solver){
         PersonList mentors = new PersonList();
         PersonList mentees = new PersonList();
         for (Person p: list){
@@ -174,15 +174,12 @@ public class Person {
             }
         }
         //TODO handle edge cases: no mentors, no mentees
-        Solver solver;
-        if (solverType == null){
-            solver = Solver.solve(costMatrix);
-        } else {
-            solver = Solver.solve(costMatrix, solverType);
-        }
+        Result assignments = solver.solve(costMatrix);
         Map<Person, Person> result = new HashMap<>();
-        for(int[] pair: solver.getAssignments()){
-            result.put(mentees.get(pair[0]), mentors.get(pair[1]));
+        for(int i = 0; i < assignments.getRowAssignments().size(); i++){
+            if (assignments.getRowAssignments().get(i) != assignments.unassigned){
+                result.put(mentees.get(i), mentors.get(assignments.getRowAssignments().get(i)));
+            }
         }
         return result;
     }

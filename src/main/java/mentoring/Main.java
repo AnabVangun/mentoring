@@ -6,7 +6,7 @@
 package mentoring;
 
 import mentoring.datastructure.Person;
-import AssignmentProblem.Solver;
+import assignmentproblem.hungariansolver.HungarianSolver;
 import com.opencsv.bean.CsvToBeanBuilder;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -17,7 +17,6 @@ import java.util.Map;
 
 /**
  * TODO Jdoc
- * @author AnabVangun
  */
 public class Main {
     /**
@@ -32,7 +31,7 @@ public class Main {
             List<Person> beans = new CsvToBeanBuilder<Person>(reader)
                     .withType(Person.class).withOrderedResults(false)
                     .build().parse();
-            Map<Person, Person> assignments = Person.assign(beans, Solver.SolverType.HUNGARIAN);
+            Map<Person, Person> assignments = Person.assign(beans, new HungarianSolver(null));
             for (Map.Entry<Person, Person> mapping : assignments.entrySet()){
                 System.out.println("Mentee '" + mapping.getKey() +
                         "' with mentor '" + mapping.getValue() +"'");
