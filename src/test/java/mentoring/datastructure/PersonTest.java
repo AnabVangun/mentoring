@@ -12,20 +12,15 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import org.junit.jupiter.api.Assertions;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
-import test.tools.TestArguments;
-import test.tools.TestFrameWork;
+import test.tools.TestFramework;
 
-public class PersonTest implements TestFrameWork<Person, PersonArguments>{
+public class PersonTest implements TestFramework<PersonArgumentsPair>{
 
     @Override
-    public Stream<PersonArguments> argumentsSupplier() {
-        //Not implemented because there are only two specific tests.
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-    Stream<PersonArgumentsPair> argumentsPairSupplier(){
+    public Stream<PersonArgumentsPair> argumentsSupplier(){
         String[] simpleQuestions = new String[]{"foo", "bar"};
         Integer[] simpleAnswers = new Integer[]{1, 3};
         String[] firstExtendedQuestions = new String[]{"foo", "bar", "foobar"};
@@ -62,23 +57,23 @@ public class PersonTest implements TestFrameWork<Person, PersonArguments>{
         return list.stream();
     }
     @TestFactory
-    public Stream<DynamicTest> computeDistance_positive(){
-        return test(argumentsPairSupplier(), "computeDistance (positive result)", 
+    public Stream<DynamicNode> computeDistance_positive(){
+        return test(argumentsSupplier(), "computeDistance (positive result)", 
                 args -> {
             try {
-                assertTrue(args.left.convertWithException().computeDistance(args.right.convertWithException()) >= 0);
+                assertTrue(args.left.convert().computeDistance(args.right.convert()) >= 0);
             } catch (IllegalAccessException ex) {
                 fail("Something went wrong in converter : " + ex.getLocalizedMessage());
             }
         });
     }
     @TestFactory
-    public Stream<DynamicTest> computeDistance_symmetric(){
-        return test(argumentsPairSupplier(), "computeDistance (symmetrical result)", 
+    public Stream<DynamicNode> computeDistance_symmetric(){
+        return test(argumentsSupplier(), "computeDistance (symmetrical result)", 
                 args -> {
                     try {
-                        Person first = args.left.convertWithException();
-                        Person second = args.right.convertWithException();
+                        Person first = args.left.convert();
+                        Person second = args.right.convert();
                         int firstDistance = first.computeDistance(second);
                         int secondDistance = second.computeDistance(first);
                         Assertions.assertEquals(firstDistance, secondDistance);
@@ -89,7 +84,7 @@ public class PersonTest implements TestFrameWork<Person, PersonArguments>{
     }
 }
 
-class PersonArguments implements TestArguments<Person>{
+class PersonArguments{
     final String firstName;
     final String lastName;
     final String year;
@@ -97,7 +92,8 @@ class PersonArguments implements TestArguments<Person>{
     final Date date;
     final MultiValuedMap<String, Integer> answers = new ArrayListValuedHashMap<>();
     
-    PersonArguments(String firstName, String lastName, String year, Person.Mentorship mentorship, Date date, String[] questions, Integer[] answers){
+    PersonArguments(String firstName, String lastName, String year, Person.Mentorship mentorship, 
+            Date date, String[] questions, Integer[] answers){
         this.firstName = firstName;
         this.lastName = lastName;
         this.year = year;
@@ -105,30 +101,27 @@ class PersonArguments implements TestArguments<Person>{
         this.date = date;
         if (questions != null && answers != null){
             if (questions.length != answers.length){
-                throw new IllegalArgumentException("Questions and answers do not have the same length: " 
-                        + questions.length + "!=" + answers.length + " for " + this);
+                throw new IllegalArgumentException("Questions and answers do not have the same "
+                        + "length: " + questions.length + "!=" + answers.length + " for " + this);
             }
             for (int i = 0; i < questions.length; i++){
                 this.answers.put(questions[i], answers[i]);
             }
         } else if (questions != null || answers != null){
-            throw new IllegalArgumentException("Questions and answers must either both be null, or none of them. "
-                    + "Received " + (questions == null? "null" : Arrays.toString(questions)) 
-                    + " and " + (answers == null? "null" : Arrays.toString(answers)));
+            throw new IllegalArgumentException("Questions and answers must either both be null, or "
+                + "none of them. Received " 
+                + (questions == null? "null" : Arrays.toString(questions))
+                + " and " + (answers == null? "null" : Arrays.toString(answers)));
         }
     }
     @Override
     protected PersonArguments clone(){
-        PersonArguments result = new PersonArguments(firstName, lastName, year, isMentor, date, null, null);
+        PersonArguments result = new PersonArguments(firstName, lastName, year, isMentor, date, 
+            null, null);
         result.answers.putAll(answers);
         return result;
     }
-    
-    @Override
-    public Person convert(){
-        throw new UnsupportedOperationException("Not supported, use convertWithException instead");
-    }
-    public Person convertWithException() throws IllegalAccessException {
+    public Person convert() throws IllegalAccessException {
         Person result = new Person();
         FieldUtils.writeField(result, "firstName", firstName, true);
         FieldUtils.writeField(result, "lastName", lastName, true);

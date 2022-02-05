@@ -12,13 +12,12 @@ import org.junit.jupiter.api.Assertions;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
-import test.tools.TestArguments;
-import test.tools.TestFrameWork;
+import test.tools.TestFramework;
 
-public class TextToMentorshipTest implements TestFrameWork<Person.Mentorship, TextToMentorshipArgument> {
+public class TextToMentorshipTest implements TestFramework<TextToMentorshipArgument> {
 
     @Override
     public Stream<TextToMentorshipArgument> argumentsSupplier() {
@@ -31,10 +30,10 @@ public class TextToMentorshipTest implements TestFrameWork<Person.Mentorship, Te
     }
     
     @TestFactory
-    Stream<DynamicTest> checkValidInput(){
+    Stream<DynamicNode> checkValidInput(){
         return test("check valid input", v -> {
             try {
-                assertEquals(v.expected, v.convertWithException());
+                assertEquals(v.expected, v.convert());
             } catch (CsvDataTypeMismatchException | CsvConstraintViolationException ex) {
                 Assertions.fail("failed to parse " + v.toString() + " as valid input");
             }
@@ -42,24 +41,26 @@ public class TextToMentorshipTest implements TestFrameWork<Person.Mentorship, Te
     }
     
     @TestFactory
-    Stream<DynamicTest> checkInvalidNonNullInput(){
+    Stream<DynamicNode> checkInvalidNonNullInput(){
         Stream<TextToMentorshipArgument> args = Stream.of(
                 new TextToMentorshipArgument("foo", null),
                 new TextToMentorshipArgument("", null)
         );
-        return test(args, "check invalid non-null input", v -> assertThrows(CsvConstraintViolationException.class,
-                () -> v.convertWithException()));
+        return test(args, "check invalid non-null input", v -> assertThrows(
+                CsvConstraintViolationException.class,
+                () -> v.convert()));
     }
     
     @Test
     @DisplayName("mentoring.datastructure.TextToMentorshipTest.check null input")
     void checkNullInput(){
-        assertThrows(CsvDataTypeMismatchException.class, () -> new TextToMentorshipArgument(null, null).convertWithException());
+        assertThrows(CsvDataTypeMismatchException.class, 
+            () -> new TextToMentorshipArgument(null, null).convert());
     }
     
 }
 
-class TextToMentorshipArgument implements TestArguments<Person.Mentorship>{
+class TextToMentorshipArgument{
     final String string;
     final Person.Mentorship expected;
     final TextToMentorship converter;
@@ -68,12 +69,8 @@ class TextToMentorshipArgument implements TestArguments<Person.Mentorship>{
         this.expected = expected;
         this.converter = new TextToMentorship();
     }
-
-    @Override
-    public Person.Mentorship convert(){
-        throw new UnsupportedOperationException("Not supported");
-    }
-    public Person.Mentorship convertWithException() throws CsvDataTypeMismatchException, CsvConstraintViolationException{
+    public Person.Mentorship convert() throws CsvDataTypeMismatchException, 
+        CsvConstraintViolationException{
         return converter.convert(string);
     }
     
@@ -81,5 +78,4 @@ class TextToMentorshipArgument implements TestArguments<Person.Mentorship>{
     public String toString(){
         return this.string;
     }
-    
 }
