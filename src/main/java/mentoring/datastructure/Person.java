@@ -114,30 +114,22 @@ public class Person {
         }
         int result = 0;
         //TODO improve set management: action on union of sets
+        Integer answer;
+        Integer otherAnswer;
         for (String key:answers.keySet()){
             if (answers.get(key).size() != 1){
                 throw new IllegalStateException("Person " + toString() + " has multiple values for key " + key + ": " + answers.get(key).toString());
             }
-            Integer answer = answers.get(key).iterator().next();
+            answer = answers.get(key).iterator().next();
             if (other.answers.containsKey(key)){
                 if (other.answers.get(key).size() != 1){//TODO factor this and previous similar check in a private method
                     throw new IllegalStateException("Person " + toString() + " has multiple values for key " + key + ": " + other.answers.get(key).toString());
                 }
-                //TODO improve handling of null values
-                Integer otherAnswer = other.answers.get(key).iterator().next();
-                if (otherAnswer == null){
-                    otherAnswer = DEFAULT_ANSWER;
-                }
-                //TODO use method computing score between two answers to update result
-                if (answer == null){
-                    answer = DEFAULT_ANSWER;
-                }
-                result += Math.pow(answer-otherAnswer, 2);
+                otherAnswer = other.answers.get(key).iterator().next();
+            } else {
+                otherAnswer = null;
             }
-            else if (answer != null){
-                //TODO use method computing score between an answer and a missing answer to update result
-                result += Math.pow(answer-DEFAULT_ANSWER, 2);
-            }
+            result += computeAnswerDistance(answer, otherAnswer);
         }
         for (String key:other.answers.keySet()){
             if (!answers.containsKey(key)){
@@ -145,15 +137,21 @@ public class Person {
                     //TODO call method to perform this check or, better, perform it once and for all
                     throw new IllegalStateException("Person " + toString() + " has multiple values for key " + key + ": " + other.answers.get(key).toString());
                 }
-                Integer otherAnswer = other.answers.get(key).iterator().next();
-                //TODO improve handling of null
-                if (otherAnswer != null){
-                //TODO use method computing score between an answer and a missing answer to update result
-                    result += Math.pow(otherAnswer-DEFAULT_ANSWER, 2);
-                }
+                result += computeAnswerDistance(null, other.answers.get(key).iterator().next());
             }
         }
         return result;
+    }
+    /**
+     * Compute the distance between two persons for a single question.
+     * @param first Answer of the first person to the question, may be null.
+     * @param second Answer of the second person to the question, may be null.
+     * @return The distance between the two answers. The number will be positive, it may be zero.
+     */
+    static int computeAnswerDistance(Integer first, Integer second){
+        //TODO test
+        return (int) Math.pow((first == null ? DEFAULT_ANSWER : first) 
+            - (second == null ? DEFAULT_ANSWER : second), 2);
     }
     
     /**
