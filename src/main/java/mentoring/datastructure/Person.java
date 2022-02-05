@@ -6,7 +6,6 @@ import com.opencsv.bean.CsvBindAndJoinByName;
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvCustomBindByName;
 import com.opencsv.bean.CsvDate;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.collections4.MultiValuedMap;
-import org.apache.commons.lang3.StringUtils;
 
 /*
     TODO improve String handling
@@ -32,39 +30,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class Person {
     static final int DEFAULT_ANSWER = 3;
-    static enum Mentorship{
-        MENTOR("un parrain"),
-        MENTEE("un filleul");
-        
-        private final Set<String> csvStrings = new HashSet<>();
-        /**
-         * Associates a set of strings to a value.
-         * All strings are reduced to lower case and stripped of their white 
-         * space characters before comparing with the values of a CSV File.
-         * @param strings 
-         */
-        private Mentorship(String... strings){
-            csvStrings.addAll(Arrays.asList(Arrays.stream(strings)
-                .map(v -> StringUtils.deleteWhitespace(v.toLowerCase())).toArray(String[]::new)));
-        }
-        /**
-         * Parse the CSV field corresponding to the mentorship status.
-         * @param string CSV field to parse.
-         * @return the corresponding Mentorship if the string could be parsed.
-         * @throws IllegalArgumentException if the string does not correspond to
-         * a known Mentorship.
-         */
-        static Mentorship parseCsvField(String string) throws IllegalArgumentException{
-            String lower = StringUtils.deleteWhitespace(string.toLowerCase());
-            for (Mentorship candidate: Mentorship.values()){
-                if (candidate.csvStrings.contains(lower)){
-                    return candidate;
-                }
-            }
-            throw new IllegalArgumentException("Failed to parse " + string 
-                + " as a mentorship status");
-        }
-    }
+    
     @CsvBindByName(column="Prénom", required=true)
     private String firstName;
     @CsvBindByName(column="Nom", required=true)
@@ -72,7 +38,7 @@ public class Person {
     @CsvBindByName(column="Promotion", required=true)
     private String year;
     @CsvCustomBindByName(column="Je suis :", required=true, converter = TextToMentorship.class)
-    private Mentorship isMentor;
+    private boolean isMentor;
     @CsvBindByName(column="Horodateur")
     @CsvDate("yyyy/MM/dd h:m:s a z")
     private Date timestamp;
@@ -92,7 +58,7 @@ public class Person {
     }
     
     public boolean isMentor(){
-        return this.isMentor.equals(Mentorship.MENTOR);
+        return this.isMentor;
     }
     
     public Date getTimestamp(){
@@ -101,7 +67,7 @@ public class Person {
     
     @Override
     public String toString(){
-        return (isMentor()?"Parrain":"Filleul") + " " + firstName + " " + lastName + "(" + year 
+        return (isMentor ? "Parrain" : "Filleul") + " " + firstName + " " + lastName + "(" + year 
                 + ")";
     }
     /**

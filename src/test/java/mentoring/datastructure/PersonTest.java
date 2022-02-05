@@ -29,22 +29,22 @@ public class PersonTest implements TestFramework<PersonArgumentsPair>{
         Integer[] secondExtendedAnswers = new Integer[]{1,5,2,null};
         
         PersonArguments firstPerson = new PersonArguments("Alice", "Andrew", "1qç2", 
-                Person.Mentorship.MENTOR, new Date(),simpleQuestions, simpleAnswers);
+                true, new Date(),simpleQuestions, simpleAnswers);
         //Second test category: two identical persons except for mentorship
         PersonArguments identicalAnswers = firstPerson.clone();
         //Third test category: two diffeerent persons, one with missing answers
         PersonArguments thirdPerson = new PersonArguments("Bob", "Billy", "qsd&&31", 
-                Person.Mentorship.MENTEE, new Date(), firstExtendedQuestions, firstExtendedAnswers);
+                false, new Date(), firstExtendedQuestions, firstExtendedAnswers);
         //Fourth test category: two different persons both with missing answers
         PersonArguments fourthPerson = new PersonArguments("Charlie", "Cloe", "23",
-                Person.Mentorship.MENTEE, new Date(), secondExtendedQuestions, secondExtendedAnswers);
+                false, new Date(), secondExtendedQuestions, secondExtendedAnswers);
         
         List<PersonArgumentsPair> list = new ArrayList<>();
-        for (Person.Mentorship firstMentor : Person.Mentorship.values()){
+        for (Boolean firstMentor : new Boolean[]{true, false}){
             firstPerson.isMentor = firstMentor;
             //First test category: a single person
             list.add(new PersonArgumentsPair(firstPerson, firstPerson, "single " + firstMentor));
-            for (Person.Mentorship secondMentor : Person.Mentorship.values()){
+            for (Boolean secondMentor : new Boolean[]{true, false}){
                 identicalAnswers.isMentor = secondMentor;
                 list.add(new PersonArgumentsPair(firstPerson, identicalAnswers, 
                         "identical answers for " + firstMentor + " and " + secondMentor));
@@ -88,11 +88,11 @@ class PersonArguments{
     final String firstName;
     final String lastName;
     final String year;
-    Person.Mentorship isMentor;
+    Boolean isMentor;
     final Date date;
     final MultiValuedMap<String, Integer> answers = new ArrayListValuedHashMap<>();
     
-    PersonArguments(String firstName, String lastName, String year, Person.Mentorship mentorship, 
+    PersonArguments(String firstName, String lastName, String year, Boolean mentorship, 
             Date date, String[] questions, Integer[] answers){
         this.firstName = firstName;
         this.lastName = lastName;

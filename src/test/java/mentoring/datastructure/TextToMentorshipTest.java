@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package mentoring.datastructure;
 
 import com.opencsv.exceptions.CsvConstraintViolationException;
@@ -21,12 +16,12 @@ public class TextToMentorshipTest implements TestFramework<TextToMentorshipArgum
 
     @Override
     public Stream<TextToMentorshipArgument> argumentsSupplier() {
-        return Stream.of(new TextToMentorshipArgument("un parrain  ", Person.Mentorship.MENTOR),
-        new TextToMentorshipArgument("un filleul", Person.Mentorship.MENTEE),
-        new TextToMentorshipArgument("UN   FILLEUL", Person.Mentorship.MENTEE),
-        new TextToMentorshipArgument("uN fIlLeUl", Person.Mentorship.MENTEE),
-        new TextToMentorshipArgument(" UN PARRAIN", Person.Mentorship.MENTOR),
-        new TextToMentorshipArgument("Un Parrain ", Person.Mentorship.MENTOR));
+        return Stream.of(new TextToMentorshipArgument("un parrain  ", true),
+        new TextToMentorshipArgument("un filleul", false),
+        new TextToMentorshipArgument("UN   FILLEUL", false),
+        new TextToMentorshipArgument("uN fIlLeUl", false),
+        new TextToMentorshipArgument(" UN PARRAIN", true),
+        new TextToMentorshipArgument("Un Parrain ", true));
     }
     
     @TestFactory
@@ -62,14 +57,14 @@ public class TextToMentorshipTest implements TestFramework<TextToMentorshipArgum
 
 class TextToMentorshipArgument{
     final String string;
-    final Person.Mentorship expected;
+    final Boolean expected;
     final TextToMentorship converter;
-    TextToMentorshipArgument(String string, Person.Mentorship expected){
+    TextToMentorshipArgument(String string, Boolean expected){
         this.string = string;
         this.expected = expected;
         this.converter = new TextToMentorship();
     }
-    public Person.Mentorship convert() throws CsvDataTypeMismatchException, 
+    public Boolean convert() throws CsvDataTypeMismatchException, 
         CsvConstraintViolationException{
         return converter.convert(string);
     }
