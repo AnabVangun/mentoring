@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package mentoring;
 
 import mentoring.datastructure.Person;
@@ -16,14 +11,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * TODO Jdoc
+ * Proof of concept of the mentoring application.
  */
 public class Main {
     /**
-     * @param args the command line arguments
+     * Parse an example file representing a mentoring problem and print the resulting assignment.
+     * 
+     * @param args the command line arguments, ignored for now.
      */
     public static void main(String[] args) {
-        // TODO code application logic here
         System.out.println("Build and solve cost matrix");
         try{
             FileReader reader = new FileReader("resources\\main\\Parrainage_generated.csv",

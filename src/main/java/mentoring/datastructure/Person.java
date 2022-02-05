@@ -51,7 +51,7 @@ public class Person {
          * @throws IllegalArgumentException if the string does not correspond to
          * a known Mentorship.
          */
-        static Mentorship parseCsvField(String string){
+        static Mentorship parseCsvField(String string) throws IllegalArgumentException{
             String lower = StringUtils.deleteWhitespace(string.toLowerCase());
             for (Mentorship candidate: Mentorship.values()){
                 if (candidate.csvStrings.contains(lower)){
@@ -97,9 +97,9 @@ public class Person {
     
     @Override
     public String toString(){
-        return (isMentor()?"Parrain":"Filleul") + " " + firstName + " " + lastName + "(" + year + ")";
+        return (isMentor()?"Parrain":"Filleul") + " " + firstName + " " + lastName + "(" + year 
+                + ")";
     }
-    //TODO Jdoc
     /**
      * Computes the distance between two {@link Person} objects.
      * 
@@ -156,8 +156,24 @@ public class Person {
         return result;
     }
     
-    //TODO document and test
+    /**
+     * Assign mentors to mentees.
+     * 
+     * Solve the assignment problem represented by the list of mentors and mentees: compute the cost
+     * matrix between mentors and mentees and return the optimal assignment so that either 
+     * each mentor as a mentee, or each mentee has a mentor, depending on the minority group.
+     * @param list List of mentors and mentees, all mixed up.
+     * @param solver Solver to use to compute an optimal solution from a positive rectangular cost
+     * matrix.
+     * @return A mapping between mentees, used as keys, and mentors, used as values. 
+     */
     public static Map<Person, Person> assign(List<Person> list, Solver solver){
+        //TODO test this function
+        /**
+         * To test this function, refactoring may be necessary because there are four distinct 
+         * steps mixed up: separate mentors and mentees, compute cost matrix, solve cost matrix,
+         * transform cost matrix solution into person mapping.
+         */
         PersonList mentors = new PersonList();
         PersonList mentees = new PersonList();
         for (Person p: list){
@@ -167,15 +183,17 @@ public class Person {
                 mentees.add(p);
             }
         }
+        Map<Person, Person> result = new HashMap<>();
+        if (mentees.isEmpty() || mentors.isEmpty()){
+            return result;
+        }
         int[][] costMatrix = new int[mentees.size()][mentors.size()];
         for (int i = 0; i < costMatrix.length; i++) {
             for (int j = 0; j < costMatrix[0].length; j++){
                 costMatrix[i][j] = mentees.get(i).computeDistance(mentors.get(j));
             }
         }
-        //TODO handle edge cases: no mentors, no mentees
         Result assignments = solver.solve(costMatrix);
-        Map<Person, Person> result = new HashMap<>();
         for(int i = 0; i < assignments.getRowAssignments().size(); i++){
             if (assignments.getRowAssignments().get(i) != assignments.unassigned){
                 result.put(mentees.get(i), mentors.get(assignments.getRowAssignments().get(i)));
