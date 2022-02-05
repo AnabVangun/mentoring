@@ -16,8 +16,11 @@ import java.util.Set;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.lang3.StringUtils;
 
-    //TODO define expected column names in this class as final constants
-    //TODO use this variables in Person
+/*
+    TODO improve String handling
+        1. For column headers in CSV files, put special header names in separate file.
+        2. For Mentorship, include a nice String representation.
+*/
 /**
  * This bean represents the answers of a person to the registration form.
  * 
@@ -41,8 +44,8 @@ public class Person {
          * @param strings 
          */
         private Mentorship(String... strings){
-            csvStrings.addAll(Arrays.asList(Arrays.stream(strings).
-                    map(v -> StringUtils.deleteWhitespace(v.toLowerCase())).toArray(String[]::new)));
+            csvStrings.addAll(Arrays.asList(Arrays.stream(strings)
+                .map(v -> StringUtils.deleteWhitespace(v.toLowerCase())).toArray(String[]::new)));
         }
         /**
          * Parse the CSV field corresponding to the mentorship status.
@@ -58,7 +61,8 @@ public class Person {
                     return candidate;
                 }
             }
-            throw new IllegalArgumentException("Failed to parse " + string + " as a mentorship status");
+            throw new IllegalArgumentException("Failed to parse " + string 
+                + " as a mentorship status");
         }
     }
     @CsvBindByName(column="Prénom", required=true)
@@ -113,32 +117,22 @@ public class Person {
             return 0;
         }
         int result = 0;
-        //TODO improve set management: action on union of sets
+        Set<String> keySet = new HashSet<>(answers.keySet());
+        keySet.addAll(other.answers.keySet());
         Integer answer;
         Integer otherAnswer;
-        for (String key:answers.keySet()){
-            if (answers.get(key).size() != 1){
+        for (String key:keySet){
+            //TODO make this check once and for all, ideally when parsing CSV file
+            //This can probably be done via OpenCsv check capability
+            if (answers.containsKey(key) && answers.get(key).size() != 1){
                 throw new IllegalStateException("Person " + toString() + " has multiple values for key " + key + ": " + answers.get(key).toString());
             }
-            answer = answers.get(key).iterator().next();
-            if (other.answers.containsKey(key)){
-                if (other.answers.get(key).size() != 1){//TODO factor this and previous similar check in a private method
-                    throw new IllegalStateException("Person " + toString() + " has multiple values for key " + key + ": " + other.answers.get(key).toString());
-                }
-                otherAnswer = other.answers.get(key).iterator().next();
-            } else {
-                otherAnswer = null;
+            if (other.answers.containsKey(key) && other.answers.get(key).size() != 1){
+                throw new IllegalStateException("Person " + toString() + " has multiple values for key " + key + ": " + other.answers.get(key).toString());
             }
+            answer = answers.containsKey(key) ? answers.get(key).iterator().next() : null;
+            otherAnswer = other.answers.containsKey(key) ? other.answers.get(key).iterator().next() : null;
             result += computeAnswerDistance(answer, otherAnswer);
-        }
-        for (String key:other.answers.keySet()){
-            if (!answers.containsKey(key)){
-                if (other.answers.get(key).size() != 1){
-                    //TODO call method to perform this check or, better, perform it once and for all
-                    throw new IllegalStateException("Person " + toString() + " has multiple values for key " + key + ": " + other.answers.get(key).toString());
-                }
-                result += computeAnswerDistance(null, other.answers.get(key).iterator().next());
-            }
         }
         return result;
     }
