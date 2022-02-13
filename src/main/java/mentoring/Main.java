@@ -25,7 +25,7 @@ public class Main {
             FileReader reader = new FileReader("resources\\main\\Parrainage_generated.csv",
                     Charset.forName("utf-8"));
             List<Person> beans = new CsvToBeanBuilder<Person>(reader)
-                    .withType(Person.class).withOrderedResults(false)
+                    .withType(Person.class).withOrderedResults(false).withVerifier(Person.VERIFIER)
                     .build().parse();
             Map<Person, Person> assignments = Person.assign(beans, new HungarianSolver(null));
             for (Map.Entry<Person, Person> mapping : assignments.entrySet()){

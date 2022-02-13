@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Assertions;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.DynamicNode;
-import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 import test.tools.TestFramework;
 
@@ -58,8 +57,7 @@ public class PersonTest implements TestFramework<PersonArgumentsPair>{
     }
     @TestFactory
     public Stream<DynamicNode> computeDistance_positive(){
-        return test(argumentsSupplier(), "computeDistance (positive result)", 
-                args -> {
+        return test("computeDistance (positive result)", args -> {
             try {
                 assertTrue(args.left.convert().computeDistance(args.right.convert()) >= 0);
             } catch (IllegalAccessException ex) {
@@ -143,11 +141,10 @@ class PersonArguments{
 
 class PersonArgumentsPair extends MutablePair<PersonArguments, PersonArguments>{
     final String name;
-    PersonArgumentsPair(PersonArguments left, PersonArguments right, String name){
+    public PersonArgumentsPair(PersonArguments left, PersonArguments right, String name) {
         super(left, right);
         this.name = name;
     }
-    
     @Override
     public String toString(){
         return this.name;

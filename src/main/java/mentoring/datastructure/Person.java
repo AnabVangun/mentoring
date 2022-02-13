@@ -2,10 +2,13 @@ package mentoring.datastructure;
 
 import assignmentproblem.Result;
 import assignmentproblem.Solver;
+import com.opencsv.bean.BeanVerifier;
 import com.opencsv.bean.CsvBindAndJoinByName;
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvCustomBindByName;
 import com.opencsv.bean.CsvDate;
+import com.opencsv.exceptions.CsvConstraintViolationException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,7 +46,7 @@ public class Person {
     @CsvDate("yyyy/MM/dd h:m:s a z")
     private Date timestamp;
     @CsvBindAndJoinByName(column=".*", elementType=Integer.class)
-    public MultiValuedMap<String,Integer> answers;
+    private MultiValuedMap<String,Integer> answers;
     
     public String getFirstName(){
         return this.firstName;
@@ -88,16 +91,9 @@ public class Person {
         Integer answer;
         Integer otherAnswer;
         for (String key:keySet){
-            //TODO make this check once and for all, ideally when parsing CSV file
-            //This can probably be done via OpenCsv check capability
-            if (answers.containsKey(key) && answers.get(key).size() != 1){
-                throw new IllegalStateException("Person " + toString() + " has multiple values for key " + key + ": " + answers.get(key).toString());
-            }
-            if (other.answers.containsKey(key) && other.answers.get(key).size() != 1){
-                throw new IllegalStateException("Person " + toString() + " has multiple values for key " + key + ": " + other.answers.get(key).toString());
-            }
             answer = answers.containsKey(key) ? answers.get(key).iterator().next() : null;
-            otherAnswer = other.answers.containsKey(key) ? other.answers.get(key).iterator().next() : null;
+            otherAnswer = other.answers.containsKey(key) ? other.answers.get(key).iterator().next() 
+                : null;
             result += computeAnswerDistance(answer, otherAnswer);
         }
         return result;
@@ -108,8 +104,7 @@ public class Person {
      * @param second Answer of the second person to the question, may be null.
      * @return The distance between the two answers. The number will be positive, it may be zero.
      */
-    static int computeAnswerDistance(Integer first, Integer second){
-        //TODO test
+    private int computeAnswerDistance(Integer first, Integer second){
         return (int) Math.pow((first == null ? DEFAULT_ANSWER : first) 
             - (second == null ? DEFAULT_ANSWER : second), 2);
     }
@@ -159,4 +154,46 @@ public class Person {
         }
         return result;
     }
+    /**
+     * Checks that the bean is well-formed, that is that all included questions have exactly one
+     * answer.
+     * Throws {@link CsvConstraintViolationException} when a bean is not well-formed and remove null
+     * and empty answers.
+     */
+    public static final BeanVerifier<Person> VERIFIER = (Person t) -> {
+        synchronized(t){
+            List<String> toRemove = new ArrayList<>();
+            List<String> withNullAnswers = new ArrayList<>();
+            for (String question:t.answers.keySet()){
+                /*
+                Check if 
+                1. has 0 answer or only null answers -> remove question
+                2. has more than 1 non-null answers -> throw exception
+                3. has null answers -> remove nulls
+                */
+                int nonNull = 0;
+                boolean foundNull = false;
+                for (Integer answer:t.answers.get(question)){
+                    if (answer != null){
+                        nonNull += 1;
+                    } else {
+                        foundNull = true;
+                    }
+                }
+                if (nonNull > 1){
+                    throw new CsvConstraintViolationException("Found several answers to "
+                            + "question " + question + ": " + t.answers.get(question));
+                } else if (nonNull == 0){
+                    toRemove.add(question);
+                } else if (foundNull){
+                    withNullAnswers.add(question);
+                }
+            }
+            toRemove.forEach(question -> t.answers.remove(question));
+            withNullAnswers.forEach(question -> {
+                while (t.answers.get(question).remove(null)){}//remove all nulls.
+            });
+            return true;
+        }
+    };
 }
