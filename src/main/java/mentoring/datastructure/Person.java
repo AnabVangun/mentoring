@@ -2,111 +2,96 @@ package mentoring.datastructure;
 
 import assignmentproblem.Result;
 import assignmentproblem.Solver;
-import com.opencsv.bean.BeanVerifier;
-import com.opencsv.bean.CsvBindAndJoinByName;
+import com.opencsv.bean.CsvBindAndSplitByName;
 import com.opencsv.bean.CsvBindByName;
-import com.opencsv.bean.CsvCustomBindByName;
 import com.opencsv.bean.CsvDate;
-import com.opencsv.exceptions.CsvConstraintViolationException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.collections4.MultiValuedMap;
 
 /*
     TODO improve String handling
         1. For column headers in CSV files, put special header names in separate file.
-        2. For Mentorship, include a nice String representation.
 */
 /**
  * This bean represents the answers of a person to the registration form.
- * 
- * It is somewhat coupled to the format of the CSV output of the registration 
- * answers. It handles the addition of new interest columns and the reordering 
- * of columns. Adding new identification columns or changing the scale on which
- * interests are rated will need modifications of this class.
- * 
  */
 public class Person {
-    static final int DEFAULT_ANSWER = 3;
+    static final int YEAR_WEIGHT = 10;
+    static final int REFERENCE_YEAR = 2020;
+    static final int MOTIVATION_WEIGHT = 30;
+    static final int DOMAIN_WEIGHT = 10;
+    static final int MAX_DISTANCE = (Domain.values().length * DOMAIN_WEIGHT 
+        + Motivation.values().length*MOTIVATION_WEIGHT) < 0 ? Integer.MAX_VALUE : 
+        (Domain.values().length * DOMAIN_WEIGHT + Motivation.values().length*MOTIVATION_WEIGHT);
     
     @CsvBindByName(column="Prénom", required=true)
     private String firstName;
     @CsvBindByName(column="Nom", required=true)
     private String lastName;
-    @CsvBindByName(column="Promotion", required=true)
-    private String year;
-    @CsvCustomBindByName(column="Je suis :", required=true, converter = TextToMentorship.class)
-    private boolean isMentor;
     @CsvBindByName(column="Horodateur")
     @CsvDate("yyyy/MM/dd h:m:s a z")
     private Date timestamp;
-    @CsvBindAndJoinByName(column=".*", elementType=Integer.class)
-    private MultiValuedMap<String,Integer> answers;
+    @CsvBindAndSplitByName(column="Activités et métiers", splitOn=";", elementType=Domain.class)
+    private Set<Domain> domains;
+    @CsvBindAndSplitByName(column="Motivation", splitOn=";", elementType=Motivation.class)
+    private Set<Motivation> motivations;
+    @CsvBindByName(column="Anglais", required=true)
+    private boolean english;
     
     public String getFirstName(){
         return this.firstName;
+    }
+    @Override
+    public String toString(){
+        return getFirstName() + " " + getLastName();
     }
     
     public String getLastName(){
         return this.lastName;
     }
-    
-    public String getYear(){
-        return this.year;
-    }
-    
-    public boolean isMentor(){
-        return this.isMentor;
-    }
-    
     public Date getTimestamp(){
         return this.timestamp;
     }
     
-    @Override
-    public String toString(){
-        return (isMentor ? "Parrain" : "Filleul") + " " + firstName + " " + lastName + "(" + year 
-                + ")";
+    public boolean speaksEnglish(){
+        return this.english;
     }
+    
+    public Set<Domain> getDomains(){
+        return Collections.unmodifiableSet(domains);
+    }
+    
+    public Set<Motivation> getMotivations(){
+        return Collections.unmodifiableSet(motivations);
+    }
+    
     /**
      * Computes the distance between two {@link Person} objects.
      * 
-     * This distance is positive, symmetric, and equal to zero between an object
-     * and itself.
+     * This distance is positive.
      * @param other to which the distance must be computed.
      * @return the computed distance.
      */
-    public int computeDistance(Person other){
-        if (equals(other)){
-            return 0;
+    public int computeDistance(Mentor other){
+        if (this.speaksEnglish() && ! other.speaksEnglish()){
+            return Integer.MAX_VALUE;
         }
-        int result = 0;
-        Set<String> keySet = new HashSet<>(answers.keySet());
-        keySet.addAll(other.answers.keySet());
-        Integer answer;
-        Integer otherAnswer;
-        for (String key:keySet){
-            answer = answers.containsKey(key) ? answers.get(key).iterator().next() : null;
-            otherAnswer = other.answers.containsKey(key) ? other.answers.get(key).iterator().next() 
-                : null;
-            result += computeAnswerDistance(answer, otherAnswer);
+        int result = (REFERENCE_YEAR - other.getYear())*YEAR_WEIGHT + MAX_DISTANCE;
+        for (Domain d: this.domains){
+            if (other.getDomains().contains(d)){
+                result -= DOMAIN_WEIGHT;
+            }
         }
-        return result;
-    }
-    /**
-     * Compute the distance between two persons for a single question.
-     * @param first Answer of the first person to the question, may be null.
-     * @param second Answer of the second person to the question, may be null.
-     * @return The distance between the two answers. The number will be positive, it may be zero.
-     */
-    private int computeAnswerDistance(Integer first, Integer second){
-        return (int) Math.pow((first == null ? DEFAULT_ANSWER : first) 
-            - (second == null ? DEFAULT_ANSWER : second), 2);
+        for (Motivation m:this.motivations){
+            if (other.getMotivations().contains(m)){
+                result -= MOTIVATION_WEIGHT;
+            }
+        }
+        return (result < 0 ? Integer.MAX_VALUE : result);
     }
     
     /**
@@ -115,27 +100,20 @@ public class Person {
      * Solve the assignment problem represented by the list of mentors and mentees: compute the cost
      * matrix between mentors and mentees and return the optimal assignment so that either 
      * each mentor as a mentee, or each mentee has a mentor, depending on the minority group.
-     * @param list List of mentors and mentees, all mixed up.
+     * @param mentors List of mentors ready do be assigned.
+     * @param mentees List of mentees waiting for a mentor.
      * @param solver Solver to use to compute an optimal solution from a positive rectangular cost
      * matrix.
      * @return A mapping between mentees, used as keys, and mentors, used as values. 
      */
-    public static Map<Person, Person> assign(List<Person> list, Solver solver){
+    public static Map<Person, Person> assign(List<Mentor> mentors, List<Person> mentees, 
+            Solver solver){
         //TODO test this function
         /**
          * To test this function, refactoring may be necessary because there are four distinct 
          * steps mixed up: separate mentors and mentees, compute cost matrix, solve cost matrix,
          * transform cost matrix solution into person mapping.
          */
-        PersonList mentors = new PersonList();
-        PersonList mentees = new PersonList();
-        for (Person p: list){
-            if (p.isMentor()){
-                mentors.add(p);
-            } else {
-                mentees.add(p);
-            }
-        }
         Map<Person, Person> result = new HashMap<>();
         if (mentees.isEmpty() || mentors.isEmpty()){
             return result;
@@ -154,46 +132,4 @@ public class Person {
         }
         return result;
     }
-    /**
-     * Checks that the bean is well-formed, that is that all included questions have exactly one
-     * answer.
-     * Throws {@link CsvConstraintViolationException} when a bean is not well-formed and remove null
-     * and empty answers.
-     */
-    public static final BeanVerifier<Person> VERIFIER = (Person t) -> {
-        synchronized(t){
-            List<String> toRemove = new ArrayList<>();
-            List<String> withNullAnswers = new ArrayList<>();
-            for (String question:t.answers.keySet()){
-                /*
-                Check if 
-                1. has 0 answer or only null answers -> remove question
-                2. has more than 1 non-null answers -> throw exception
-                3. has null answers -> remove nulls
-                */
-                int nonNull = 0;
-                boolean foundNull = false;
-                for (Integer answer:t.answers.get(question)){
-                    if (answer != null){
-                        nonNull += 1;
-                    } else {
-                        foundNull = true;
-                    }
-                }
-                if (nonNull > 1){
-                    throw new CsvConstraintViolationException("Found several answers to "
-                            + "question " + question + ": " + t.answers.get(question));
-                } else if (nonNull == 0){
-                    toRemove.add(question);
-                } else if (foundNull){
-                    withNullAnswers.add(question);
-                }
-            }
-            toRemove.forEach(question -> t.answers.remove(question));
-            withNullAnswers.forEach(question -> {
-                while (t.answers.get(question).remove(null)){}//remove all nulls.
-            });
-            return true;
-        }
-    };
 }
