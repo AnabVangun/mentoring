@@ -14,6 +14,9 @@ repositories {
 test {
 	useJUnitPlatform()
 }
+compileJava {
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+}
 
 dependencies {
     implementation files('libs/AssignmentProblem-2.0.1.jar')
