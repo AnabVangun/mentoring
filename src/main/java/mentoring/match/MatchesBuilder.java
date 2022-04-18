@@ -14,10 +14,10 @@ public class MatchesBuilder<Mentee, Mentor> {
     final private List<Mentee> mentees;
     final private List<Mentor> mentors;
     final private Collection<ProgressiveCriterion<Mentee, Mentor>> progressiveCriteria;
-    private List<ProhibitiveCriterion<Mentee, Mentor>> prohibitiveCriteria;
+    private List<NecessaryCriterion<Mentee, Mentor>> necessaryCriteria;
    /** Cell [i][j] is the cost of associating mentee i with mentor j. */
     private int[][] costMatrix;
-    private static final int PROHIBITIVE_VALUE = Integer.MAX_VALUE;
+    public static final int PROHIBITIVE_VALUE = Integer.MAX_VALUE;
     private Integer unassignedValue = null;
     private Solver solver = new HungarianSolver(unassignedValue);
     
@@ -28,9 +28,9 @@ public class MatchesBuilder<Mentee, Mentor> {
         this.progressiveCriteria = progressiveCriteria;
     }
     
-    public MatchesBuilder<Mentee, Mentor> withProhibitiveCriteria(
-            List<ProhibitiveCriterion<Mentee, Mentor>> prohibitiveCriteria){
-        this.prohibitiveCriteria = prohibitiveCriteria;
+    public MatchesBuilder<Mentee, Mentor> withNecessaryCriteria(
+            List<NecessaryCriterion<Mentee, Mentor>> necessaryCriteria){
+        this.necessaryCriteria = necessaryCriteria;
         return this;
     }
     
@@ -65,14 +65,14 @@ public class MatchesBuilder<Mentee, Mentor> {
     }
     
     private int computeCost(Mentee mentee, Mentor mentor){
-        if (checkProhibitiveCriteria(mentee, mentor)){
+        if (checkNecessaryCriteria(mentee, mentor)){
             return computeProgressiveCriteriaCost(mentee, mentor);
         } else {
             return PROHIBITIVE_VALUE;
         }
     }
     
-    private boolean isValidMatch(int menteeIndex, int mentorIndex){
+    private boolean isValidMatch(Integer menteeIndex, Integer mentorIndex){
         return (menteeIndex != unassignedValue 
                 && mentorIndex != unassignedValue 
                 && costMatrix[menteeIndex][mentorIndex] < PROHIBITIVE_VALUE);
@@ -84,8 +84,8 @@ public class MatchesBuilder<Mentee, Mentor> {
                 costMatrix[menteeIndex][mentorIndex]);
     }
     
-    private boolean checkProhibitiveCriteria(Mentee mentee, Mentor mentor){
-        for (ProhibitiveCriterion<Mentee, Mentor> criterion : prohibitiveCriteria){
+    private boolean checkNecessaryCriteria(Mentee mentee, Mentor mentor){
+        for (NecessaryCriterion<Mentee, Mentor> criterion : necessaryCriteria){
             if (!criterion.test(mentee, mentor)){
                 return false;
             }
