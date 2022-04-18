@@ -19,6 +19,7 @@ import java.util.Set;
 /**
  * This bean represents the answers of a person to the registration form.
  */
+@Deprecated
 public class Person {
     static final int YEAR_WEIGHT = 10;
     static final int REFERENCE_YEAR = 2020;
