@@ -11,6 +11,7 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.List;
 import mentoring.configuration.CriteriaConfiguration;
+import mentoring.io.DefaultPerson;
 import mentoring.io.ResultWriter;
 import mentoring.match.Matches;
 import mentoring.match.MatchesBuilder;
@@ -32,12 +33,12 @@ public class Main {
                 FileReader mentorsFile = new FileReader("resources\\main\\Mentor_Trivial.csv",
                         Charset.forName("utf-8"));
                 //Option 1: output to std.out
-                //Writer resultDestination = new PrintWriter(System.out, true, 
-                //    Charset.forName("utf-8"));
+                Writer resultDestination = new PrintWriter(System.out, true, 
+                    Charset.forName("utf-8"));
                 //Option 2: output to file
-                Writer resultDestination = new PrintWriter(
-                        new FileOutputStream("resources\\main\\Results_Trivial.csv"), true, 
-                        Charset.forName("utf-8"));
+                //Writer resultDestination = new PrintWriter(
+                //        new FileOutputStream("resources\\main\\Results_Trivial.csv"), true, 
+                //        Charset.forName("utf-8"));
                 ){
             List<Person> mentees = new CsvToBeanBuilder<Person>(menteesFile)
                     .withType(Person.class).withOrderedResults(false)
@@ -48,7 +49,9 @@ public class Main {
             CriteriaConfiguration criteria = new CriteriaConfiguration();
             MatchesBuilder<Person, Person> solver = new MatchesBuilder<>(mentees, mentors,
                     criteria.getProgressiveCriteria());
-            solver.withNecessaryCriteria(criteria.getNecessaryCriteria());
+            solver.withNecessaryCriteria(criteria.getNecessaryCriteria())
+                .withPlaceholderPersons(new DefaultPerson("PAS DE MENTORÉ"), 
+                        new DefaultPerson("PAS DE MENTOR"));
             Matches<Person, Person> results = solver.build();
             //Option 1: write to console
             

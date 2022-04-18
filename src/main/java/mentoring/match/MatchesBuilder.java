@@ -7,9 +7,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class MatchesBuilder<Mentee, Mentor> {
-    //TODO extract CostMatrixBuilder from class: isolate cost matrix and criteria, and solve it
     //TODO add tests
     final private List<Mentee> mentees;
     final private List<Mentor> mentors;
@@ -20,6 +20,9 @@ public class MatchesBuilder<Mentee, Mentor> {
     public static final int PROHIBITIVE_VALUE = Integer.MAX_VALUE;
     private Integer unassignedValue = null;
     private Solver solver = new HungarianSolver(unassignedValue);
+    private Mentee defaultMentee;
+    private Mentor defaultMentor;
+    private boolean hasPlaceholderPersons = false;
     
     public MatchesBuilder(List<Mentee> mentees, List<Mentor> mentors,
             Collection<ProgressiveCriterion<Mentee, Mentor>> progressiveCriteria){
@@ -40,10 +43,18 @@ public class MatchesBuilder<Mentee, Mentor> {
         return this;
     }
     
+    public MatchesBuilder<Mentee, Mentor> withPlaceholderPersons(Mentee defaultMentee, 
+            Mentor defaultMentor){
+        this.hasPlaceholderPersons = true;
+        this.defaultMentee = defaultMentee;
+        this.defaultMentor = defaultMentor;
+        return this;
+    }
+    
     public Matches<Mentee, Mentor> build(){
         buildCostMatrix();
         Result rawResult = solver.solve(costMatrix);
-        return filterAndFormatResult(rawResult);
+        return formatResult(rawResult);
     }
     
     private void buildCostMatrix(){
@@ -55,7 +66,31 @@ public class MatchesBuilder<Mentee, Mentor> {
         }
     }
     
-    private Matches<Mentee, Mentor> filterAndFormatResult(Result rawResult){
+    private Matches<Mentee, Mentor> formatResult(Result rawResult){
+        if (this.hasPlaceholderPersons){
+            return formatMatchesWithPlaceholders(rawResult);
+        } else {
+            return filterAndFormatValidMatches(rawResult);
+        }
+    }
+    
+    private Matches<Mentee, Mentor> formatMatchesWithPlaceholders(Result rawResult){
+        //TODO simplify this method
+        //TODO put the build of both types of matches on the same abstraction level
+        List<Integer> rowAssignments = rawResult.getRowAssignments();
+        Stream<Match<Mentee, Mentor>> menteesMatches = IntStream.range(0, rowAssignments.size())
+            .mapToObj(i -> buildMatchWithValidOrDefaultMentor(i, rowAssignments.get(i)));
+        List<Integer> colAssignments = rawResult.getColumnAssignments();
+        Stream<Match<Mentee, Mentor>> defaultMatchesForUnassignedMentors = 
+            IntStream.range(0, colAssignments.size())
+            .filter(j -> ! isValidMatch(colAssignments.get(j), j))
+            .mapToObj(j -> buildDefaultMentorMatch(j));
+        Stream<Match<Mentee, Mentor>> concatenation = 
+                Stream.concat(menteesMatches, defaultMatchesForUnassignedMentors);
+        return new Matches<>(concatenation.collect(Collectors.toList()));
+    }
+    
+    private Matches<Mentee, Mentor> filterAndFormatValidMatches(Result rawResult){
         List<Integer> rowAssignments = rawResult.getRowAssignments();
         return new Matches<>(IntStream.range(0, rowAssignments.size())
             .filter(i -> isValidMatch(i, rowAssignments.get(i)))
@@ -77,11 +112,29 @@ public class MatchesBuilder<Mentee, Mentor> {
                 && mentorIndex != unassignedValue 
                 && costMatrix[menteeIndex][mentorIndex] < PROHIBITIVE_VALUE);
     }
-    
+    private Match<Mentee, Mentor> buildMatchWithValidOrDefaultMentor(int menteeIndex, int mentorIndex){
+        if (isValidMatch(menteeIndex, mentorIndex)){
+            return buildMatch(menteeIndex, mentorIndex);
+        } else {
+            return buildDefaultMenteeMatch(menteeIndex);
+        }
+    }
     private Match<Mentee, Mentor> buildMatch(int menteeIndex, int mentorIndex){
-        return new Match<>(mentees.get(menteeIndex),
+        return buildMatch(mentees.get(menteeIndex),
                 mentors.get(mentorIndex),
                 costMatrix[menteeIndex][mentorIndex]);
+    }
+    
+    private Match<Mentee, Mentor> buildDefaultMenteeMatch(int menteeIndex){
+        return buildMatch(mentees.get(menteeIndex), defaultMentor, PROHIBITIVE_VALUE);
+    }
+    
+    private Match<Mentee, Mentor> buildDefaultMentorMatch(int mentorIndex){
+        return buildMatch(defaultMentee, mentors.get(mentorIndex), PROHIBITIVE_VALUE);
+    }
+    
+    private Match<Mentee, Mentor> buildMatch(Mentee mentee, Mentor mentor, int cost){
+        return new Match<>(mentee, mentor, cost);
     }
     
     private boolean checkNecessaryCriteria(Mentee mentee, Mentor mentor){
