@@ -10,14 +10,6 @@ import mentoring.match.ProgressiveCriterion;
 import mentoring.match.NecessaryCriterion;
 
 public class CriteriaConfiguration {
-    /*
-    TODO improve
-    Conditions required:
-    1. Improve structure of CSV file
-    2. Add PersonParser to have property nicely parsed inside Person
-    Example:
-    1. Check if mentee requires an English-speaking mentor as a boolean
-    */
     private Collection<ProgressiveCriterion<Person, Person>> progressiveCriteria;
     private List<NecessaryCriterion<Person, Person>> necessaryCriteria;
     private static final String MENTEE_ENGLISH_HEADER = "Anglais";
@@ -43,25 +35,20 @@ public class CriteriaConfiguration {
         this.necessaryCriteria = new ArrayList<>();
         this.necessaryCriteria.add((mentee, mentor) -> {
             return BaseCriteria.logicalNotAOrB(
-                mentee.getProperty(MENTEE_ENGLISH_HEADER).size() > 0
-                    && Boolean.parseBoolean(
-                        mentee.getProperty(MENTEE_ENGLISH_HEADER).iterator().next()), 
-                mentor.getProperty(MENTOR_ENGLISH_HEADER).size() > 0
-                    && Boolean.parseBoolean(
-                        mentor.getProperty(MENTOR_ENGLISH_HEADER).iterator().next()));
+                mentee.getBooleanProperty(MENTEE_ENGLISH_HEADER), 
+                mentor.getBooleanProperty(MENTOR_ENGLISH_HEADER));
         });
         this.progressiveCriteria.add((mentee, mentor) -> {
-            return YEAR_WEIGHT * (MENTEE_YEAR - 
-                    Integer.parseInt(mentor.getProperty(MENTOR_YEAR_HEADER).iterator().next()));
+            return YEAR_WEIGHT * (MENTEE_YEAR - mentor.getIntegerProperty(MENTOR_YEAR_HEADER));
         });
         this.progressiveCriteria.add((mentee, mentor) -> {
-           Set<String> menteeActivities = mentee.getPropertyAsSet(MENTEE_ACTIVITIES_HEADER, ";");
-           Set<String> mentorActivities = mentor.getPropertyAsSet(MENTOR_ACTIVITIES_HEADER, ";");
+           Set<String> menteeActivities = mentee.getMultipleStringProperty(MENTEE_ACTIVITIES_HEADER);
+           Set<String> mentorActivities = mentor.getMultipleStringProperty(MENTOR_ACTIVITIES_HEADER);
            return BaseCriteria.computeSetProximity(menteeActivities, mentorActivities);
         });
         this.progressiveCriteria.add((mentee, mentor) -> {
-           Set<String> menteeMotivation = mentee.getPropertyAsSet(MENTEE_MOTIVATION_HEADER, ";");
-           Set<String> mentorMotivation = mentor.getPropertyAsSet(MENTOR_MOTIVATION_HEADER, ";");
+           Set<String> menteeMotivation = mentee.getMultipleStringProperty(MENTEE_MOTIVATION_HEADER);
+           Set<String> mentorMotivation = mentor.getMultipleStringProperty(MENTOR_MOTIVATION_HEADER);
            return BaseCriteria.computeSetProximity(menteeMotivation, mentorMotivation);
         });
     }

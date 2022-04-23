@@ -12,10 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/*
-    TODO improve String handling
-        1. For column headers in CSV files, put special header names in separate file.
-*/
 /**
  * This bean represents the answers of a person to the registration form.
  */
@@ -109,7 +105,6 @@ public class Person {
      */
     public static Map<Person, Person> assign(List<Mentor> mentors, List<Person> mentees, 
             Solver solver){
-        //TODO test this function
         /**
          * To test this function, refactoring may be necessary because there are four distinct 
          * steps mixed up: separate mentors and mentees, compute cost matrix, solve cost matrix,

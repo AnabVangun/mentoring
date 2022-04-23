@@ -5,8 +5,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class Matches<Mentee, Mentor> implements Iterable<Match<Mentee, Mentor>>{
-    //FIXME: take into account the arrival of default mentors/mentees, the interface must change
-    //Use multi-valued maps?
     private final Map<Mentee, Match<Mentee, Mentor>> menteeMatches = new HashMap<>();
     private final Map<Mentor, Match<Mentee, Mentor>> mentorMatches = new HashMap<>();
     private final Iterable<Match<Mentee, Mentor>> iterable;

@@ -1,7 +1,6 @@
 package mentoring;
 
 import mentoring.io.Person;
-import com.opencsv.bean.CsvToBeanBuilder;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -11,7 +10,9 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.List;
 import mentoring.configuration.CriteriaConfiguration;
+import mentoring.configuration.PersonConfiguration;
 import mentoring.io.DefaultPerson;
+import mentoring.io.PersonFileParser;
 import mentoring.io.ResultWriter;
 import mentoring.match.Matches;
 import mentoring.match.MatchesBuilder;
@@ -40,12 +41,12 @@ public class Main {
                 //        new FileOutputStream("resources\\main\\Results_Trivial.csv"), true, 
                 //        Charset.forName("utf-8"));
                 ){
-            List<Person> mentees = new CsvToBeanBuilder<Person>(menteesFile)
-                    .withType(Person.class).withOrderedResults(false)
-                    .build().parse();
-            List<Person> mentors = new CsvToBeanBuilder<Person>(mentorsFile)
-                    .withType(Person.class).withOrderedResults(false)
-                    .build().parse();
+            List<Person> mentees = new PersonFileParser(menteesFile, 
+                    PersonConfiguration.MENTEE_CONFIGURATION)
+                    .parse();
+            List<Person> mentors = new PersonFileParser(mentorsFile,
+                    PersonConfiguration.MENTOR_CONFIGURATION)
+                    .parse();
             CriteriaConfiguration criteria = new CriteriaConfiguration();
             MatchesBuilder<Person, Person> solver = new MatchesBuilder<>(mentees, mentors,
                     criteria.getProgressiveCriteria());
@@ -53,7 +54,6 @@ public class Main {
                 .withPlaceholderPersons(new DefaultPerson("PAS DE MENTORÉ"), 
                         new DefaultPerson("PAS DE MENTOR"));
             Matches<Person, Person> results = solver.build();
-            //Option 1: write to console
             
             ResultWriter writer = new ResultWriter(resultDestination);
             writer.writeMatches(mentees, mentors, results);

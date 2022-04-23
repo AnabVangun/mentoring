@@ -75,18 +75,9 @@ public class MatchesBuilder<Mentee, Mentor> {
     }
     
     private Matches<Mentee, Mentor> formatMatchesWithPlaceholders(Result rawResult){
-        //TODO simplify this method
-        //TODO put the build of both types of matches on the same abstraction level
-        List<Integer> rowAssignments = rawResult.getRowAssignments();
-        Stream<Match<Mentee, Mentor>> menteesMatches = IntStream.range(0, rowAssignments.size())
-            .mapToObj(i -> buildMatchWithValidOrDefaultMentor(i, rowAssignments.get(i)));
-        List<Integer> colAssignments = rawResult.getColumnAssignments();
-        Stream<Match<Mentee, Mentor>> defaultMatchesForUnassignedMentors = 
-            IntStream.range(0, colAssignments.size())
-            .filter(j -> ! isValidMatch(colAssignments.get(j), j))
-            .mapToObj(j -> buildDefaultMentorMatch(j));
-        Stream<Match<Mentee, Mentor>> concatenation = 
-                Stream.concat(menteesMatches, defaultMatchesForUnassignedMentors);
+        Stream<Match<Mentee, Mentor>> concatenation = Stream.concat(
+            buildMenteeMatchesWithValidOrDefaultMentor(rawResult), 
+            buildDefaultMatchesForUnassignedMentors(rawResult));
         return new Matches<>(concatenation.collect(Collectors.toList()));
     }
     
@@ -112,6 +103,21 @@ public class MatchesBuilder<Mentee, Mentor> {
                 && mentorIndex != unassignedValue 
                 && costMatrix[menteeIndex][mentorIndex] < PROHIBITIVE_VALUE);
     }
+    
+    private Stream<Match<Mentee, Mentor>> 
+        buildMenteeMatchesWithValidOrDefaultMentor(Result rawResult){
+        List<Integer> rowAssignments = rawResult.getRowAssignments();
+        return IntStream.range(0, rowAssignments.size())
+            .mapToObj(i -> buildMatchWithValidOrDefaultMentor(i, rowAssignments.get(i)));
+    }
+    
+    private Stream<Match<Mentee,Mentor>> buildDefaultMatchesForUnassignedMentors(Result rawResult){
+        List<Integer> colAssignments = rawResult.getColumnAssignments();
+        return IntStream.range(0, colAssignments.size())
+            .filter(j -> ! isValidMatch(colAssignments.get(j), j))
+            .mapToObj(j -> buildDefaultMentorMatch(j));
+    }
+    
     private Match<Mentee, Mentor> buildMatchWithValidOrDefaultMentor(int menteeIndex, int mentorIndex){
         if (isValidMatch(menteeIndex, mentorIndex)){
             return buildMatch(menteeIndex, mentorIndex);
@@ -119,6 +125,7 @@ public class MatchesBuilder<Mentee, Mentor> {
             return buildDefaultMenteeMatch(menteeIndex);
         }
     }
+    
     private Match<Mentee, Mentor> buildMatch(int menteeIndex, int mentorIndex){
         return buildMatch(mentees.get(menteeIndex),
                 mentors.get(mentorIndex),
@@ -161,6 +168,5 @@ public class MatchesBuilder<Mentee, Mentor> {
             }
         }
         return result;
-    }
-    
+    }   
 }
