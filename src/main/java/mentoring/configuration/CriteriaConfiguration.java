@@ -55,7 +55,7 @@ public class CriteriaConfiguration {
                 mentor.getBooleanProperty(MENTOR_ENGLISH_HEADER)))
     );
     
-    public static final CriteriaConfiguration CRITERIA_CONFIGURATION_REAL_DATA = //FIXME finish this
+    public static final CriteriaConfiguration CRITERIA_CONFIGURATION_REAL_DATA =
         new CriteriaConfiguration(
             List.of((mentee, mentor) -> {
                 //age criteria

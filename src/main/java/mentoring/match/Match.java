@@ -1,5 +1,5 @@
 package mentoring.match;
-
+//TODO test for untold hypotheses: null values, negative and zero cost
 public class Match<Mentee, Mentor> {
     private final int cost;
     private final Mentee mentee;
@@ -21,5 +21,11 @@ public class Match<Mentee, Mentor> {
     
     public Mentee getMentee(){
         return this.mentee;
+    }
+    
+    @Override
+    public String toString(){
+        return String.format("Mentee %s with mentor %s at cost %s", 
+                this.mentee, this.mentor, this.cost);
     }
 }

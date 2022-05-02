@@ -1,49 +1,68 @@
 package mentoring.match;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.api.function.Executable;
 import test.tools.TestFramework;
 
 public class MatchesTest implements TestFramework<MatchesArgs>{
 
     @Override
     public Stream<MatchesArgs> argumentsSupplier() {
-        return Stream.of(new MatchesArgs(
-            new Match("Mentor1","Mentee1",1),
-            new Match("Mentor2","Mentee2",2),
-            new Match("Mentor3",2,3)
-        ));
+        String identicalMentor = "Identical mentor";
+        String identicalMentee = "Identical mentee";
+        Match identicalMatch = new Match(identicalMentee, identicalMentor, 6432);
+        return Stream.of(
+            new MatchesArgs("3 standard matches", List.of(
+                new Match("Mentee1","Mentor1",1),
+                new Match("Mentee2","Mentor2",2),
+                new Match(2,"Mentor3",3))),
+            new MatchesArgs("3 matches with 2 identical mentors", List.of(
+                new Match("Mentee1",identicalMentor,10),
+                new Match("Mentee2",identicalMentor,Integer.MAX_VALUE),
+                new Match("Mentee3","Mentor3",0))),
+            new MatchesArgs("4 matches with 2 identical mentees", List.of(
+                new Match(identicalMentee,"Mentor1",6234),
+                new Match("Mentee2","Mentor2",72),
+                new Match("Mentee3","Mentor3",87654),
+                new Match(identicalMentee,"Mentor4",12))),
+            new MatchesArgs("0 match", List.of()),
+            new MatchesArgs("2 identical matches", List.of(identicalMatch, identicalMatch))
+        );
     }
     
     @TestFactory
-    public Stream<DynamicNode> getMentorMatchTest(){
-        return test("getMentorMatch()", args -> {
+    public Stream<DynamicNode> iteratorTest(){
+        return test("iterator()", args -> {
             Matches matches = new Matches(args.matches);
-           for(Match match:args.matches){
-               Assertions.assertEquals(match, matches.getMentorMatch(match.getMentor()));
-           } 
-        });
-    }
-    
-    @TestFactory
-    public Stream<DynamicNode> getMenteeMatchTest(){
-        return test("getMenteeMatch()", args -> {
-            Matches matches = new Matches(args.matches);
-           for(Match match:args.matches){
-               Assertions.assertEquals(match, matches.getMenteeMatch(match.getMentee()));
-           } 
+            Iterator<Match<String,String>> expectedIterator = args.matchesCopy.iterator();
+            Iterator<Match<String,String>> actualIterator = matches.iterator();
+            Assertions.assertAll(args.matchesCopy.stream().map(ignored -> {
+                return (Executable) () -> 
+                    Assertions.assertEquals(expectedIterator.next(), actualIterator.next());
+            }));
         });
     }
 }
 
 class MatchesArgs{
     final List<Match<String, String>> matches;
+    final List<Match<String, String>> matchesCopy = new ArrayList<>();
+    final String name;
     
-    MatchesArgs(Match<String, String>... matches){
-        this.matches = Arrays.asList(matches);
+    MatchesArgs(String name, List<Match<String, String>> matches){
+        this.name = name;
+        this.matches = matches;
+        matches.forEach(m -> this.matchesCopy.add(m));
+    }
+    
+    @Override
+    public String toString(){
+        return name;
     }
 }
