@@ -9,6 +9,7 @@ public class Person {
     
     private final Map<String, Integer> integerProperties = new HashMap<>();
     private final Map<String, Boolean> booleanProperties = new HashMap<>();
+    private final Map<String, String> stringProperties = new HashMap<>();
     private final Map<String, Set<String>> multipleStringProperties = new HashMap<>();
     private final Map<String, Set<String>> cachedUnmodifiableSetProperties = new HashMap<>();
     String fullName;
@@ -50,5 +51,13 @@ public class Person {
     
     public boolean getBooleanProperty(String property){
         return booleanProperties.get(property);
+    }
+    
+    public String getStringProperty(String property){
+        return stringProperties.get(property);
+    }
+    
+    void setStringProperty(String property, String value){
+        stringProperties.put(property, value);
     }
 }

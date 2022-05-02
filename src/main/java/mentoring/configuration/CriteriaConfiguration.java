@@ -1,6 +1,5 @@
 package mentoring.configuration;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -10,8 +9,8 @@ import mentoring.match.ProgressiveCriterion;
 import mentoring.match.NecessaryCriterion;
 
 public class CriteriaConfiguration {
-    private Collection<ProgressiveCriterion<Person, Person>> progressiveCriteria;
-    private List<NecessaryCriterion<Person, Person>> necessaryCriteria;
+    private final Collection<ProgressiveCriterion<Person, Person>> progressiveCriteria;
+    private final List<NecessaryCriterion<Person, Person>> necessaryCriteria;
     private static final String MENTEE_ENGLISH_HEADER = "Anglais";
     private static final String MENTOR_ENGLISH_HEADER = "Anglais";
     private static final int YEAR_WEIGHT = 10;
@@ -30,28 +29,49 @@ public class CriteriaConfiguration {
         return Collections.unmodifiableList(necessaryCriteria);
     }
     
-    public CriteriaConfiguration(){
-        this.progressiveCriteria = new ArrayList<>();
-        this.necessaryCriteria = new ArrayList<>();
-        this.necessaryCriteria.add((mentee, mentor) -> {
-            return BaseCriteria.logicalNotAOrB(
-                mentee.getBooleanProperty(MENTEE_ENGLISH_HEADER), 
-                mentor.getBooleanProperty(MENTOR_ENGLISH_HEADER));
-        });
-        this.progressiveCriteria.add((mentee, mentor) -> {
-            return YEAR_WEIGHT * (MENTEE_YEAR - mentor.getIntegerProperty(MENTOR_YEAR_HEADER));
-        });
-        this.progressiveCriteria.add((mentee, mentor) -> {
-           Set<String> menteeActivities = mentee.getMultipleStringProperty(MENTEE_ACTIVITIES_HEADER);
-           Set<String> mentorActivities = mentor.getMultipleStringProperty(MENTOR_ACTIVITIES_HEADER);
-           return BaseCriteria.computeSetProximity(menteeActivities, mentorActivities);
-        });
-        this.progressiveCriteria.add((mentee, mentor) -> {
-           Set<String> menteeMotivation = mentee.getMultipleStringProperty(MENTEE_MOTIVATION_HEADER);
-           Set<String> mentorMotivation = mentor.getMultipleStringProperty(MENTOR_MOTIVATION_HEADER);
-           return BaseCriteria.computeSetProximity(menteeMotivation, mentorMotivation);
-        });
+    private CriteriaConfiguration(
+        Collection<ProgressiveCriterion<Person, Person>> progressiveCriteria,
+        List<NecessaryCriterion<Person, Person>> necessaryCriteria){
+        this.progressiveCriteria = progressiveCriteria;
+        this.necessaryCriteria = necessaryCriteria;
     }
     
+    public static final CriteriaConfiguration CRITERIA_CONFIGURATION = new CriteriaConfiguration(
+        List.of(
+            (mentee, mentor) ->
+                YEAR_WEIGHT * (MENTEE_YEAR - mentor.getIntegerProperty(MENTOR_YEAR_HEADER)),
+            (mentee, mentor) -> {
+                Set<String> menteeActivities = mentee.getMultipleStringProperty(MENTEE_ACTIVITIES_HEADER);
+                Set<String> mentorActivities = mentor.getMultipleStringProperty(MENTOR_ACTIVITIES_HEADER);
+                return BaseCriteria.computeSetProximity(menteeActivities, mentorActivities);
+            },
+            (mentee, mentor) -> {
+                Set<String> menteeMotivation = mentee.getMultipleStringProperty(MENTEE_MOTIVATION_HEADER);
+                Set<String> mentorMotivation = mentor.getMultipleStringProperty(MENTOR_MOTIVATION_HEADER);
+                return BaseCriteria.computeSetProximity(menteeMotivation, mentorMotivation);
+            }), 
+        List.of((mentee, mentor) -> BaseCriteria.logicalNotAOrB(
+                mentee.getBooleanProperty(MENTEE_ENGLISH_HEADER), 
+                mentor.getBooleanProperty(MENTOR_ENGLISH_HEADER)))
+    );
     
+    public static final CriteriaConfiguration CRITERIA_CONFIGURATION_REAL_DATA = //FIXME finish this
+        new CriteriaConfiguration(
+            List.of((mentee, mentor) -> {
+                //age criteria
+                return YEAR_WEIGHT 
+                    * (mentee.getIntegerProperty("Promotion, cycle") 
+                        - BaseCriteria.getYear(mentor.getStringProperty("Promotion (X09, ...)")));
+                },
+                (mentee, mentor) -> {
+                    Set<String> menteeActivities = mentee.getMultipleStringProperty("résumé métier secteur");
+                    Set<String> mentorActivities = mentor.getMultipleStringProperty("Résumé métier secteur");
+                    return BaseCriteria.computeSetProximity(menteeActivities, mentorActivities);
+            }),
+            List.of((mentee, mentor) -> {
+                return (mentee.getMultipleStringProperty("Option : langue préférentielle")
+                        .contains("Français")
+                        || mentor.getBooleanProperty("anglophone"));
+            })
+        );
 }

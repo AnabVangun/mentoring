@@ -1,9 +1,11 @@
 package mentoring.configuration;
 
+import java.time.LocalDate;
 import java.util.Set;
 
 public class BaseCriteria {
     public final static int SET_PROXIMITY_MULTIPLIER = 100;
+    public final static int EXECUTIVE_OFFSET = 15;
     private BaseCriteria(){
     }
     
@@ -25,5 +27,29 @@ public class BaseCriteria {
             }
         }
         return commonValues;
+    }
+    
+    public static int getYear(String formattedYear){
+        int currentYear = LocalDate.now().getYear();
+        String cursus = formattedYear.substring(0,1);
+        int extractedYear = Integer.parseInt(formattedYear.substring(1));
+        if (extractedYear < 100){
+            if (extractedYear <= currentYear % 100){
+                extractedYear += (currentYear / 100) * 100;
+            } else {
+                extractedYear += (currentYear / 100 - 1) * 100;
+            }
+        }
+        switch(cursus.toUpperCase()){
+            case "X":
+                break;
+            case "E":
+                extractedYear -= EXECUTIVE_OFFSET;
+                break;
+            default:
+                throw new UnsupportedOperationException(
+                        "Cannot parse year starting with letter " + cursus);
+        }
+        return extractedYear;
     }
 }

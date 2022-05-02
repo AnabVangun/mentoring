@@ -34,12 +34,16 @@ public class PersonParser {
     public Person parseLine(String[] line) throws IOException{
         Person result = new Person();
         configuration.booleanProperties.forEach(property -> {
-            Boolean value = Boolean.parseBoolean(line[propertyIndices.get(property)]);
+            Boolean value = Set.of("oui","vrai","true","yes")
+                .contains(line[propertyIndices.get(property)].toLowerCase());
             result.setBooleanProperty(property, value);
         });
         configuration.integerProperties.forEach(property -> {
             Integer value = Integer.parseInt(line[propertyIndices.get(property)]);
             result.setIntegerProperty(property, value);
+        });
+        configuration.stringProperties.forEach(property -> {
+            result.setStringProperty(property, line[propertyIndices.get(property)]);
         });
         configuration.multipleStringProperties.forEach(property -> {
             String[] splitValue = line[propertyIndices.get(property)]
