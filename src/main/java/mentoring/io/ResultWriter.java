@@ -2,31 +2,23 @@ package mentoring.io;
 
 import com.opencsv.CSVWriter;
 import java.io.Writer;
-import java.util.Collection;
-import java.util.HashSet;
+import mentoring.configuration.ResultConfiguration;
 import mentoring.match.Match;
 import mentoring.match.Matches;
 
-public class ResultWriter {
-    private final Collection<Person> associatedMentor = new HashSet<>();
+public class ResultWriter<Mentee, Mentor> {
     private final CSVWriter writer;
-    private final static String[] HEADER = new String[]{"Mentoré", "Mentor", "Coût"};
+    private final ResultConfiguration<Mentee, Mentor> resultConfiguration;
     
-    public ResultWriter(Writer writer){
+    public ResultWriter(Writer writer, ResultConfiguration<Mentee, Mentor> resultConfiguration){
         this.writer = new CSVWriter(writer);
+        this.resultConfiguration = resultConfiguration;
     }
     
-    public void writeMatches(Collection<Person> mentees, Collection<Person> mentors,
-            Matches<Person, Person> results){
-        associatedMentor.clear();
-        writer.writeNext(HEADER);
-        for (Match<Person, Person> match : results){
-            writeMatch(match.getMentee().getFullName(), 
-                match.getMentor().getFullName(), 
-                match.getCost());
+    public void writeMatches(Matches<Mentee, Mentor> results){
+        writer.writeNext(resultConfiguration.getResultHeader());
+        for (Match<Mentee, Mentor> match : results){
+            writer.writeNext(resultConfiguration.getResultLine(match));
         }
-    }
-    private void writeMatch(String menteeName, String mentorName, int cost){
-        writer.writeNext(new String[]{menteeName, mentorName, Integer.toString(cost)});
     }
 }

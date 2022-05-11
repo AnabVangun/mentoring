@@ -48,12 +48,12 @@ public class PersonConfiguration {
     
     public final static PersonConfiguration MENTEE_CONFIGURATION_REAL_DATA =
             new PersonConfiguration(Set.of(),
-            Set.of("Promotion, cycle", "maturité"), Set.of(),
+            Set.of("Promotion, cycle", "maturité"), Set.of("E-mail"),
             Set.of("résumé métier secteur", "Option : langue préférentielle"), ",", 
             "%s %s (X%s)", List.of("Prénom", "NOM", "Promotion, cycle"));
     
     public final static PersonConfiguration MENTOR_CONFIGURATION_REAL_DATA =
             new PersonConfiguration(Set.of("anglophone"), Set.of(), 
-            Set.of("Promotion (X09, ...)"), Set.of("Résumé métier secteur"), ",",
+            Set.of("Promotion (X09, ...)", "Adresse email"), Set.of("Résumé métier secteur"), ",",
             "%s %s (%s)", List.of("Prénom", "Nom", "Promotion (X09, ...)"));
 }

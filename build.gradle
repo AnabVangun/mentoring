@@ -1,4 +1,4 @@
-version '1.0.0-delta'
+version '1.0.0-epsilon'
 
 apply plugin: 'java'
 apply plugin: 'jacoco'
