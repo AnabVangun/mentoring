@@ -28,4 +28,22 @@ public class Match<Mentee, Mentor> {
         return String.format("Mentee %s with mentor %s at cost %s", 
                 this.mentee, this.mentor, this.cost);
     }
+    
+    @Override
+    public boolean equals(Object o){
+        if (! (o instanceof Match)){
+            return false;
+        }
+        Match cast = (Match) o;
+        return mentee.equals(cast.mentee) && mentor.equals(cast.mentor) && cost == cast.cost;
+    }
+    
+    @Override
+    public int hashCode(){
+        int result = 0;
+        for (int partial : new int[]{mentee.hashCode(), mentor.hashCode(), Integer.hashCode(cost)}){
+            result = 31*result + partial;
+        }
+        return result;
+    }
 }

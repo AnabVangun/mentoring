@@ -9,23 +9,33 @@ import java.util.List;
 import mentoring.configuration.PersonConfiguration;
 
 public class PersonFileParser {
-    private final CSVReader reader;
-    private final PersonParser parser;
+    private final PersonConfiguration configuration;
+    private CSVReader reader;
+    private PersonParser parser;
     
-    public PersonFileParser(Reader fileReader, PersonConfiguration configuration) throws IOException{
-        reader = new CSVReader(fileReader);
-        try {
-            parser = new PersonParser(configuration, reader.readNext());
-        } catch (CsvValidationException ex) {
-            throw new IOException("Something went wrong in the CSV Parser", ex);
-        }
+    public PersonFileParser(PersonConfiguration configuration) throws IOException{
+        this.configuration = configuration;
     }
     
-    public List<Person> parse() throws IOException{
+    public List<Person> parse(Reader fileReader) throws IOException{
+        initialiseReaderAndParser(fileReader);
         List<Person> result = new ArrayList<>();
         for (String[] line: reader){
             result.add(parser.parseLine(line));
         }
         return result;
+    }
+    
+    private void initialiseReaderAndParser(Reader fileReader) throws IOException{
+        reader = new CSVReader(fileReader);
+        parser = new PersonParser(configuration, readOneLine());
+    }
+    
+    private String[] readOneLine() throws IOException{
+        try {
+            return reader.readNext();
+        } catch (CsvValidationException ex) {
+            throw new IOException("Something went wrong in the CSV Parser", ex);
+        }
     }
 }

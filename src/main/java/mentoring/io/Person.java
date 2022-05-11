@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Set;
 
 public class Person {
-    
     private final Map<String, Integer> integerProperties = new HashMap<>();
     private final Map<String, Boolean> booleanProperties = new HashMap<>();
     private final Map<String, String> stringProperties = new HashMap<>();

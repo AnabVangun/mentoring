@@ -65,8 +65,8 @@ public class Main {
                 //Writer resultDestination = new PrintWriter(
                 //        new FileOutputStream(destinationFilePath), true, Charset.forName("utf-8"));
                 ){
-            List<Person> mentees = new PersonFileParser(menteesFile, menteeConfiguration).parse();
-            List<Person> mentors = new PersonFileParser(mentorsFile, mentorConfiguration).parse();
+            List<Person> mentees = new PersonFileParser(menteeConfiguration).parse(menteesFile);
+            List<Person> mentors = new PersonFileParser(mentorConfiguration).parse(mentorsFile);
             CriteriaConfiguration criteria = criteriaConfiguration;
             MatchesBuilder<Person, Person> solver = new MatchesBuilder<>(mentees, mentors,
                     criteria.getProgressiveCriteria());
