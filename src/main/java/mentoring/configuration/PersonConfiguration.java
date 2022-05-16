@@ -3,17 +3,17 @@ package mentoring.configuration;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import mentoring.datastructure.Property;
+import mentoring.datastructure.PropertyName;
 
 public interface PersonConfiguration {
     
-    Set<Property> getBooleanProperties();
+    Set<PropertyName> getBooleanPropertiesNames();
     
-    Set<Property> getIntegerProperties();
+    Set<PropertyName> getIntegerPropertiesNames();
     
-    Set<Property> getStringProperties();
+    Set<PropertyName> getStringPropertiesNames();
     
-    Set<Property> getMultipleStringProperties();
+    Set<PropertyName> getMultipleStringPropertiesNames();
     
     String getSeparator();
     

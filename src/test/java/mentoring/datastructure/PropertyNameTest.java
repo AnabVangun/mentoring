@@ -3,13 +3,13 @@ package mentoring.datastructure;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.stream.Stream;
-import mentoring.datastructure.PropertyTest.PropertyArgs;
+import mentoring.datastructure.PropertyNameTest.PropertyArgs;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import test.tools.TestArgs;
 import test.tools.TestFramework;
 
-final class PropertyTest implements TestFramework<PropertyArgs>{
+final class PropertyNameTest implements TestFramework<PropertyArgs>{
 
     @Override
     public Stream<PropertyArgs> argumentsSupplier() {
@@ -36,7 +36,7 @@ final class PropertyTest implements TestFramework<PropertyArgs>{
     }
     
     static abstract class PropertyArgs extends TestArgs{
-        abstract Property convert();
+        abstract PropertyName convert();
         abstract String getExpectedName();
         abstract String getExpectedHeaderName();
 
@@ -54,8 +54,8 @@ final class PropertyTest implements TestFramework<PropertyArgs>{
         }
 
         @Override
-        Property convert() {
-            return new Property(name);
+        PropertyName convert() {
+            return new PropertyName(name);
         }
 
         @Override
@@ -80,8 +80,8 @@ final class PropertyTest implements TestFramework<PropertyArgs>{
         }
 
         @Override
-        Property convert() {
-            return new Property(name, headerName);
+        PropertyName convert() {
+            return new PropertyName(name, headerName);
         }
 
         @Override

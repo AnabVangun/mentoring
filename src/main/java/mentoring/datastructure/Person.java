@@ -3,7 +3,10 @@ package mentoring.datastructure;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-
+/**
+ * Immutable class used to represent a single person. Person instances should be initialised through
+ * a {@link PersonBuilder} object.
+ */
 public final class Person {
     private final Map<String, Integer> integerProperties;
     private final Map<String, Boolean> booleanProperties;
@@ -19,6 +22,10 @@ public final class Person {
         this.integerProperties = Collections.unmodifiableMap(integerProperties);
         this.booleanProperties = Collections.unmodifiableMap(booleanProperties);
         this.stringProperties = Collections.unmodifiableMap(stringProperties);
+        /*
+        Caveat: the fact that the values of multipleStringProperties are immutable is guaranteed 
+        by PersonBuilder.
+        */
         this.multipleStringProperties = Collections.unmodifiableMap(multipleStringProperties);
         this.fullName = name;
     }
@@ -59,4 +66,8 @@ public final class Person {
         return multipleStringProperties.get(property);
     }
     
+    @Override
+    public String toString(){
+        return String.format("Person %s", fullName);
+    }
 }

@@ -6,7 +6,9 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * TODO: jdoc
+ * Class used to build {@link Person} objects. A single builder can build several unrelated objects:
+ * the internal state is reinitialised after each creation to make sure that {@link Person} objects
+ * remain immutable.
  * This class is not thread-safe.
  */
 public final class PersonBuilder {
@@ -29,11 +31,6 @@ public final class PersonBuilder {
         name = DEFAULT_NAME;
     }
     
-    public PersonBuilder withMultipleStringProperty(String property, Set<String> values){
-        multipleStringProperties.put(Objects.requireNonNull(property), Set.copyOf(values));
-        return this;
-    }
-    
     public PersonBuilder withIntegerProperty(String property, int value){
         integerProperties.put(Objects.requireNonNull(property), value);
         return this;
@@ -46,6 +43,11 @@ public final class PersonBuilder {
     
     public PersonBuilder withStringProperty(String property, String value){
         stringProperties.put(Objects.requireNonNull(property), Objects.requireNonNull(value));
+        return this;
+    }
+    
+    public PersonBuilder withMultipleStringProperty(String property, Set<String> values){
+        multipleStringProperties.put(Objects.requireNonNull(property), Set.copyOf(values));
         return this;
     }
     

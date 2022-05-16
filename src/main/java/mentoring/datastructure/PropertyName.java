@@ -1,15 +1,15 @@
 package mentoring.datastructure;
-//TODO fix class name: it does not encapsulate a property but only its names.
-public final class Property {
+
+public final class PropertyName {
     private final String headerName;
     private final String name;
     
-    public Property(String name, String headerName){
+    public PropertyName(String name, String headerName){
         this.headerName = headerName;
         this.name = name;
     }
     
-    public Property(String name){
+    public PropertyName(String name){
         this(name, name);
     }
     

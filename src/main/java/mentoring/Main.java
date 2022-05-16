@@ -34,8 +34,10 @@ public class Main {
         PojoPersonConfiguration menteeConfiguration;
         PojoPersonConfiguration mentorConfiguration;
         PojoCriteriaConfiguration criteriaConfiguration;
-        Person defaultMentor = new PersonBuilder().withFullName("PAS DE MENTOR").build();
-        Person defaultMentee = new PersonBuilder().withFullName("PAS DE MENTORÉ").build();
+        Person defaultMentor = new PersonBuilder().withStringProperty("Email", "")
+                .withFullName("PAS DE MENTOR").build();
+        Person defaultMentee = new PersonBuilder().withStringProperty("Email", "")
+                .withFullName("PAS DE MENTORÉ").build();
         switch("REAL"){
             case "TEST":
                 menteeFilePath = "resources\\main\\Filleul_Trivial.csv";
