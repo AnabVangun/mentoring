@@ -1,59 +1,73 @@
 package mentoring.io;
 
+import mentoring.datastructure.Person;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import mentoring.configuration.PersonConfiguration;
+import mentoring.configuration.PojoPersonConfiguration;
+import mentoring.datastructure.PersonBuilder;
 
 public class PersonParser {
     private final Map<String, Integer> propertyIndices = new HashMap<>();
-    private final PersonConfiguration configuration;
+    private final PojoPersonConfiguration configuration;
     
-    public PersonParser(PersonConfiguration configuration, String[] personFileHeader) throws IOException{
+    public PersonParser(PojoPersonConfiguration configuration, String[] personFileHeader) throws IOException{
         this.configuration = configuration;
         parseHeader(personFileHeader);
     }
     
     private void parseHeader(String[] header) throws IOException{
+        Map<String, Integer> headerToIndex = mapHeaderToIndex(header);
+        Collection<String> missingProperties = new ArrayList<>();
+        for (String property: configuration.getAllPropertiesHeaderNames()){
+            if (!headerToIndex.containsKey(property)){
+                missingProperties.add(property);
+            } else {
+                propertyIndices.put(property, headerToIndex.get(property));
+            }
+        }
+        if (! missingProperties.isEmpty()){
+            throw new IOException(String.format("Missing property %s in header %s",
+                    missingProperties, Arrays.toString(header)));
+        }
+    }
+    
+    private Map<String, Integer> mapHeaderToIndex(String[] header){
         Map<String, Integer> allIndices = new HashMap<>();
         for (int i = 0; i < header.length; i++){
             allIndices.put(header[i], i);
         }
-        for (String property: configuration.allProperties){
-            if (!allIndices.containsKey(property)){
-                throw new IOException(String.format("Missing property %s in header %s",
-                        property, Arrays.toString(header)));
-            } else {
-                propertyIndices.put(property, allIndices.get(property));
-            }
-        }
+        return allIndices;
     }
     
     public Person parseLine(String[] line) throws IOException{
-        Person result = new Person();
-        configuration.booleanProperties.forEach(property -> {
+        PersonBuilder builder = new PersonBuilder();
+        configuration.getBooleanProperties().forEach(property -> {
             Boolean value = Set.of("oui","vrai","true","yes")
-                .contains(line[propertyIndices.get(property)].toLowerCase());
-            result.setBooleanProperty(property, value);
+                .contains(line[propertyIndices.get(property.getHeaderName())].toLowerCase());
+            builder.withBooleanProperty(property.getName(), value);
         });
-        configuration.integerProperties.forEach(property -> {
-            Integer value = Integer.parseInt(line[propertyIndices.get(property)]);
-            result.setIntegerProperty(property, value);
+        configuration.getIntegerProperties().forEach(property -> {
+            Integer value = Integer.parseInt(line[propertyIndices.get(property.getHeaderName())]);
+            builder.withIntegerProperty(property.getName(), value);
         });
-        configuration.stringProperties.forEach(property -> {
-            result.setStringProperty(property, line[propertyIndices.get(property)]);
+        configuration.getStringProperties().forEach(property -> {
+            builder.withStringProperty(property.getName(), 
+                line[propertyIndices.get(property.getHeaderName())]);
         });
-        configuration.multipleStringProperties.forEach(property -> {
-            String[] splitValue = line[propertyIndices.get(property)]
-                .split(configuration.separator);
+        configuration.getMultipleStringProperties().forEach(property -> {
+            String[] splitValue = line[propertyIndices.get(property.getHeaderName())]
+                .split(configuration.getSeparator());
             Set<String> value = Set.of(splitValue);
-            result.setMultipleProperty(property, value);
+            builder.withMultipleStringProperty(property.getName(), value);
         });
-        Object[] nameValues = configuration.nameProperties.stream()
+        Object[] nameValues = configuration.getNamePropertiesHeaderNames().stream()
             .map(property -> line[propertyIndices.get(property)]).toArray();
-        result.fullName = String.format(configuration.nameFormat, nameValues);
-        return result;
+        builder.withFullName(String.format(configuration.getNameFormat(), nameValues));
+        return builder.build();
     }
 }

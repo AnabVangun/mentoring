@@ -1,19 +1,20 @@
 package mentoring.io;
 
+import mentoring.datastructure.Person;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
-import mentoring.configuration.PersonConfiguration;
+import mentoring.configuration.PojoPersonConfiguration;
 
 public class PersonFileParser {
-    private final PersonConfiguration configuration;
+    private final PojoPersonConfiguration configuration;
     private CSVReader reader;
     private PersonParser parser;
     
-    public PersonFileParser(PersonConfiguration configuration) throws IOException{
+    public PersonFileParser(PojoPersonConfiguration configuration) throws IOException{
         this.configuration = configuration;
     }
     

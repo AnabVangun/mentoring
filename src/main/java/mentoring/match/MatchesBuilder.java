@@ -115,7 +115,7 @@ public class MatchesBuilder<Mentee, Mentor> {
         List<Integer> colAssignments = rawResult.getColumnAssignments();
         return IntStream.range(0, colAssignments.size())
             .filter(j -> ! isValidMatch(colAssignments.get(j), j))
-            .mapToObj(j -> buildDefaultMentorMatch(j));
+            .mapToObj(this::buildDefaultMentorMatch);
     }
     
     private Match<Mentee, Mentor> buildMatchWithValidOrDefaultMentor(int menteeIndex, int mentorIndex){

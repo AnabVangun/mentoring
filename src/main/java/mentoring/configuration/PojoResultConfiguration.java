@@ -1,7 +1,7 @@
 package mentoring.configuration;
 
 import java.util.function.Function;
-import mentoring.io.Person;
+import mentoring.datastructure.Person;
 import mentoring.match.Match;
 
 public enum PojoResultConfiguration implements ResultConfiguration<Person, Person> {
@@ -11,9 +11,9 @@ public enum PojoResultConfiguration implements ResultConfiguration<Person, Perso
     NAMES_EMAILS_AND_SCORE(new String[]{
         "Mentoré", "email mentoré", "Mentor", "email mentor", "Coût"},
         match -> new String[]{match.getMentee().getFullName(),
-            match.getMentee().getStringProperty("E-mail"),
+            match.getMentee().getStringProperty("Email"),
             match.getMentor().getFullName(),
-            match.getMentor().getStringProperty("Adresse email"),
+            match.getMentor().getStringProperty("Email"),
             Integer.toString(match.getCost())});
 
     private final String[] header;

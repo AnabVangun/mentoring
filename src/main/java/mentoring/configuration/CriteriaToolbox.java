@@ -3,10 +3,13 @@ package mentoring.configuration;
 import java.time.LocalDate;
 import java.util.Set;
 
-public class BaseCriteria {
+public final class CriteriaToolbox {
     public final static int SET_PROXIMITY_MULTIPLIER = 100;
     public final static int EXECUTIVE_OFFSET = 15;
-    private BaseCriteria(){
+    
+    private CriteriaToolbox(){
+        throw new IllegalStateException(getClass().getCanonicalName() + 
+            " should not be instantiated");
     }
     
     public static boolean logicalNotAOrB(boolean a, boolean b){

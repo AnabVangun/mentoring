@@ -1,7 +1,6 @@
 package mentoring;
 
-import mentoring.io.Person;
-import java.io.FileNotFoundException;
+import mentoring.datastructure.Person;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -9,10 +8,10 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.List;
-import mentoring.configuration.CriteriaConfiguration;
-import mentoring.configuration.PersonConfiguration;
+import mentoring.configuration.PojoCriteriaConfiguration;
+import mentoring.configuration.PojoPersonConfiguration;
 import mentoring.configuration.PojoResultConfiguration;
-import mentoring.io.DefaultPerson;
+import mentoring.datastructure.PersonBuilder;
 import mentoring.io.PersonFileParser;
 import mentoring.io.ResultWriter;
 import mentoring.match.Matches;
@@ -32,24 +31,26 @@ public class Main {
         String menteeFilePath;
         String mentorFilePath;
         String destinationFilePath;
-        PersonConfiguration menteeConfiguration;
-        PersonConfiguration mentorConfiguration;
-        CriteriaConfiguration criteriaConfiguration;
+        PojoPersonConfiguration menteeConfiguration;
+        PojoPersonConfiguration mentorConfiguration;
+        PojoCriteriaConfiguration criteriaConfiguration;
+        Person defaultMentor = new PersonBuilder().withFullName("PAS DE MENTOR").build();
+        Person defaultMentee = new PersonBuilder().withFullName("PAS DE MENTORÉ").build();
         switch("REAL"){
             case "TEST":
                 menteeFilePath = "resources\\main\\Filleul_Trivial.csv";
-                menteeConfiguration = PersonConfiguration.MENTEE_CONFIGURATION;
+                menteeConfiguration = PojoPersonConfiguration.MENTEE_CONFIGURATION;
                 mentorFilePath = "resources\\main\\Mentor_Trivial.csv";
-                mentorConfiguration = PersonConfiguration.MENTOR_CONFIGURATION;
-                criteriaConfiguration = CriteriaConfiguration.CRITERIA_CONFIGURATION;
+                mentorConfiguration = PojoPersonConfiguration.MENTOR_CONFIGURATION;
+                criteriaConfiguration = PojoCriteriaConfiguration.CRITERIA_CONFIGURATION;
                 destinationFilePath = "resources\\\\main\\\\Results_Trivial.csv";
                 break;
             case "REAL":
                 menteeFilePath = "..\\..\\..\\AX\\2022_Mentoring\\palmares metiers X_V2_simplifie.csv";
-                menteeConfiguration = PersonConfiguration.MENTEE_CONFIGURATION_REAL_DATA;
+                menteeConfiguration = PojoPersonConfiguration.MENTEE_CONFIGURATION_REAL_DATA;
                 mentorFilePath = "..\\..\\..\\AX\\2022_Mentoring\\mentors eleves travail_tlm.csv";
-                mentorConfiguration = PersonConfiguration.MENTOR_CONFIGURATION_REAL_DATA;
-                criteriaConfiguration = CriteriaConfiguration.CRITERIA_CONFIGURATION_REAL_DATA;
+                mentorConfiguration = PojoPersonConfiguration.MENTOR_CONFIGURATION_REAL_DATA;
+                criteriaConfiguration = PojoCriteriaConfiguration.CRITERIA_CONFIGURATION_REAL_DATA;
                 destinationFilePath = "..\\..\\..\\AX\\2022_Mentoring\\result.csv";
                 break;
             default:
@@ -67,22 +68,19 @@ public class Main {
                 ){
             List<Person> mentees = new PersonFileParser(menteeConfiguration).parse(menteesFile);
             List<Person> mentors = new PersonFileParser(mentorConfiguration).parse(mentorsFile);
-            CriteriaConfiguration criteria = criteriaConfiguration;
+            PojoCriteriaConfiguration criteria = criteriaConfiguration;
             MatchesBuilder<Person, Person> solver = new MatchesBuilder<>(mentees, mentors,
                     criteria.getProgressiveCriteria());
             solver.withNecessaryCriteria(criteria.getNecessaryCriteria())
-                .withPlaceholderPersons(new DefaultPerson("PAS DE MENTORÉ"), 
-                        new DefaultPerson("PAS DE MENTOR"));
+                    .withPlaceholderPersons(defaultMentee, defaultMentor);
             Matches<Person, Person> results = solver.build();
             
             ResultWriter<Person,Person> writer = new ResultWriter<>(resultDestination, 
                 PojoResultConfiguration.NAMES_EMAILS_AND_SCORE);
             writer.writeMatches(results);
             resultDestination.flush();
-        } catch (FileNotFoundException e){
+        } catch (IOException e){
             e.printStackTrace();
-        } catch (IOException ex) {
-            ex.printStackTrace();
         }
     }
     
