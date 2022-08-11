@@ -1,8 +1,5 @@
 package mentoring.match;
 
-import assignmentproblem.CostMatrix;
-import assignmentproblem.Result;
-import assignmentproblem.Solver;
 import assignmentproblem.hungariansolver.HungarianSolver;
 import java.util.Collection;
 import java.util.List;
@@ -204,40 +201,5 @@ final class CostMatrixHandlerTest implements TestFramework<CostMatrixHandlerTest
             result.withNecessaryCriteria(necessaryCriteria);
             return result;
         }
-    }
-    
-    static class DummyResult extends Result{
-        DummyResult(){
-            super(null);
-        }
-        @Override
-        public List<Integer> getRowAssignments() {
-            return List.of();
-        }
-
-        @Override
-        public List<Integer> getColumnAssignments() {
-            return List.of();
-        }
-        
-    }
-    
-    static class DummySolver implements Solver{
-        final Result expectedResult;
-        
-        DummySolver(){
-            this.expectedResult = new DummyResult();
-        }
-
-        @Override
-        public Result solve(CostMatrix t) {
-            return this.expectedResult;
-        }
-
-        @Override
-        public Result solve(int[][] ints) throws IllegalArgumentException {
-            return this.expectedResult;
-        }
-        
     }
 }
