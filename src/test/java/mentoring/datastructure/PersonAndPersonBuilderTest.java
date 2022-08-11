@@ -5,14 +5,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
-import mentoring.datastructure.PersonAndPersonBuilderTest.PersonArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import test.tools.TestArgs;
 import test.tools.TestFramework;
 
-final class PersonAndPersonBuilderTest implements TestFramework<PersonArgs> {
+final class PersonAndPersonBuilderTest implements 
+        TestFramework<PersonAndPersonBuilderTest.PersonArgs> {
 
     @Override
     public Stream<PersonArgs> argumentsSupplier() {

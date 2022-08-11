@@ -2,7 +2,7 @@ package mentoring.match;
 
 import java.util.Iterator;
 
-public class Matches<Mentee, Mentor> implements Iterable<Match<Mentee, Mentor>>{
+public final class Matches<Mentee, Mentor> implements Iterable<Match<Mentee, Mentor>>{
     private final Iterable<Match<Mentee, Mentor>> iterable;
     
     Matches(Iterable<Match<Mentee, Mentor>> matches){

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
-import mentoring.match.MatchesTest.MatchesArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
@@ -12,7 +11,7 @@ import org.junit.jupiter.api.function.Executable;
 import test.tools.TestArgs;
 import test.tools.TestFramework;
 
-final class MatchesTest implements TestFramework<MatchesArgs>{
+final class MatchesTest implements TestFramework<MatchesTest.MatchesArgs>{
 
     @Override
     public Stream<MatchesArgs> argumentsSupplier() {

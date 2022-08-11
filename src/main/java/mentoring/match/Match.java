@@ -1,6 +1,6 @@
 package mentoring.match;
-//TODO test for untold hypotheses: null values, negative and zero cost
-public class Match<Mentee, Mentor> {
+
+public final class Match<Mentee, Mentor> {
     private final int cost;
     private final Mentee mentee;
     private final Mentor mentor;
@@ -11,16 +11,16 @@ public class Match<Mentee, Mentor> {
         this.cost = cost;
     }
     
-    public int getCost(){
-        return this.cost;
+    public Mentee getMentee(){
+        return this.mentee;
     }
     
     public Mentor getMentor(){
         return this.mentor;
     }
     
-    public Mentee getMentee(){
-        return this.mentee;
+    public int getCost(){
+        return this.cost;
     }
     
     @Override
@@ -40,10 +40,6 @@ public class Match<Mentee, Mentor> {
     
     @Override
     public int hashCode(){
-        int result = 0;
-        for (int partial : new int[]{mentee.hashCode(), mentor.hashCode(), Integer.hashCode(cost)}){
-            result = 31*result + partial;
-        }
-        return result;
+        return Integer.hashCode(cost)+31*(mentor.hashCode() + 31*mentee.hashCode());
     }
 }

@@ -3,13 +3,12 @@ package mentoring.datastructure;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.stream.Stream;
-import mentoring.datastructure.PropertyNameTest.PropertyArgs;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import test.tools.TestArgs;
 import test.tools.TestFramework;
 
-final class PropertyNameTest implements TestFramework<PropertyArgs>{
+final class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyArgs>{
 
     @Override
     public Stream<PropertyArgs> argumentsSupplier() {

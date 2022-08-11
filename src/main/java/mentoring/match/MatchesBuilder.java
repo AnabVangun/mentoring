@@ -9,14 +9,19 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class MatchesBuilder<Mentee, Mentor> {
+public final class MatchesBuilder<Mentee, Mentor> {
     //TODO add tests
+    /**
+     * Parts to test :
+	2. Given a mocked solver, verify that the solver is correctly called
+	3. Given mentees, mentors, Result and placeholder persons, verify that Matches is correct.
+    * To do that, mock the CostMatrixHandler
+	4. Given everything, verify that the result is correct
+    * 
+     */
     final private List<Mentee> mentees;
     final private List<Mentor> mentors;
-    final private Collection<ProgressiveCriterion<Mentee, Mentor>> progressiveCriteria;
-    private List<NecessaryCriterion<Mentee, Mentor>> necessaryCriteria;
-   /** Cell [i][j] is the cost of associating mentee i with mentor j. */
-    private int[][] costMatrix;
+    final CostMatrixHandler<Mentee, Mentor> costMatrixHandler;
     public static final int PROHIBITIVE_VALUE = Integer.MAX_VALUE;
     private Integer unassignedValue = null;
     private Solver solver = new HungarianSolver(unassignedValue);
@@ -26,14 +31,19 @@ public class MatchesBuilder<Mentee, Mentor> {
     
     public MatchesBuilder(List<Mentee> mentees, List<Mentor> mentors,
             Collection<ProgressiveCriterion<Mentee, Mentor>> progressiveCriteria){
-        this.mentors = mentors;
+        this(mentees, mentors, new CostMatrixHandler<>(mentees, mentors, progressiveCriteria));
+    }
+    
+    MatchesBuilder(List<Mentee> mentees, List<Mentor> mentors, 
+            CostMatrixHandler<Mentee, Mentor> handler){
         this.mentees = mentees;
-        this.progressiveCriteria = progressiveCriteria;
+        this.mentors = mentors;
+        this.costMatrixHandler = handler;
     }
     
     public MatchesBuilder<Mentee, Mentor> withNecessaryCriteria(
             List<NecessaryCriterion<Mentee, Mentor>> necessaryCriteria){
-        this.necessaryCriteria = necessaryCriteria;
+        costMatrixHandler.withNecessaryCriteria(necessaryCriteria);
         return this;
     }
     
@@ -52,18 +62,9 @@ public class MatchesBuilder<Mentee, Mentor> {
     }
     
     public Matches<Mentee, Mentor> build(){
-        buildCostMatrix();
-        Result rawResult = solver.solve(costMatrix);
+        costMatrixHandler.buildCostMatrix();
+        Result rawResult = costMatrixHandler.solveCostMatrix(solver);
         return formatResult(rawResult);
-    }
-    
-    private void buildCostMatrix(){
-        costMatrix = new int[mentees.size()][mentors.size()];
-        for(int i = 0; i < mentees.size(); i++){
-            for (int j = 0; j < mentors.size(); j++){
-                costMatrix[i][j] = computeCost(mentees.get(i), mentors.get(j));
-            }
-        }
     }
     
     private Matches<Mentee, Mentor> formatResult(Result rawResult){
@@ -90,18 +91,10 @@ public class MatchesBuilder<Mentee, Mentor> {
         );
     }
     
-    private int computeCost(Mentee mentee, Mentor mentor){
-        if (checkNecessaryCriteria(mentee, mentor)){
-            return computeProgressiveCriteriaCost(mentee, mentor);
-        } else {
-            return PROHIBITIVE_VALUE;
-        }
-    }
-    
     private boolean isValidMatch(Integer menteeIndex, Integer mentorIndex){
         return (menteeIndex != unassignedValue 
                 && mentorIndex != unassignedValue 
-                && costMatrix[menteeIndex][mentorIndex] < PROHIBITIVE_VALUE);
+                && costMatrixHandler.isMatchScoreNotProhibitive(menteeIndex, mentorIndex));
     }
     
     private Stream<Match<Mentee, Mentor>> 
@@ -129,7 +122,7 @@ public class MatchesBuilder<Mentee, Mentor> {
     private Match<Mentee, Mentor> buildMatch(int menteeIndex, int mentorIndex){
         return buildMatch(mentees.get(menteeIndex),
                 mentors.get(mentorIndex),
-                costMatrix[menteeIndex][mentorIndex]);
+                costMatrixHandler.getMatchScore(menteeIndex, mentorIndex));
     }
     
     private Match<Mentee, Mentor> buildDefaultMenteeMatch(int menteeIndex){
@@ -143,30 +136,4 @@ public class MatchesBuilder<Mentee, Mentor> {
     private Match<Mentee, Mentor> buildMatch(Mentee mentee, Mentor mentor, int cost){
         return new Match<>(mentee, mentor, cost);
     }
-    
-    private boolean checkNecessaryCriteria(Mentee mentee, Mentor mentor){
-        for (NecessaryCriterion<Mentee, Mentor> criterion : necessaryCriteria){
-            if (!criterion.test(mentee, mentor)){
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    private int computeProgressiveCriteriaCost(Mentee mentee, Mentor mentor){
-        int result = 0;
-        for (ProgressiveCriterion<Mentee, Mentor> criterion : progressiveCriteria){
-            int tmp = criterion.applyAsInt(mentee, mentor);
-            if (tmp < 0){
-                throw new IllegalStateException("Score of criterion " + criterion + " for " +
-                    mentee + " and " + mentor + " is " + tmp + ", below 0.");
-            }
-            result += tmp;
-            if (result < 0){
-                throw new IllegalStateException("Score for " + mentee + " and " + mentor + 
-                    " overflows, reached " + result + " after criterion " + criterion);
-            }
-        }
-        return result;
-    }   
 }

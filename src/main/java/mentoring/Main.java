@@ -11,6 +11,7 @@ import java.util.List;
 import mentoring.configuration.PojoCriteriaConfiguration;
 import mentoring.configuration.PojoPersonConfiguration;
 import mentoring.configuration.PojoResultConfiguration;
+import mentoring.configuration.ResultConfiguration;
 import mentoring.datastructure.PersonBuilder;
 import mentoring.io.PersonFileParser;
 import mentoring.io.ResultWriter;
@@ -34,11 +35,12 @@ public class Main {
         PojoPersonConfiguration menteeConfiguration;
         PojoPersonConfiguration mentorConfiguration;
         PojoCriteriaConfiguration criteriaConfiguration;
+        ResultConfiguration<Person, Person> resultConfiguration;
         Person defaultMentor = new PersonBuilder().withStringProperty("Email", "")
                 .withFullName("PAS DE MENTOR").build();
         Person defaultMentee = new PersonBuilder().withStringProperty("Email", "")
                 .withFullName("PAS DE MENTORÉ").build();
-        switch("REAL"){
+        switch("TEST"){
             case "TEST":
                 menteeFilePath = "resources\\main\\Filleul_Trivial.csv";
                 menteeConfiguration = PojoPersonConfiguration.MENTEE_CONFIGURATION;
@@ -46,6 +48,7 @@ public class Main {
                 mentorConfiguration = PojoPersonConfiguration.MENTOR_CONFIGURATION;
                 criteriaConfiguration = PojoCriteriaConfiguration.CRITERIA_CONFIGURATION;
                 destinationFilePath = "resources\\\\main\\\\Results_Trivial.csv";
+                resultConfiguration = PojoResultConfiguration.NAMES_AND_SCORE;
                 break;
             case "REAL":
                 menteeFilePath = "..\\..\\..\\AX\\2022_Mentoring\\palmares metiers X_V2_simplifie.csv";
@@ -54,6 +57,7 @@ public class Main {
                 mentorConfiguration = PojoPersonConfiguration.MENTOR_CONFIGURATION_REAL_DATA;
                 criteriaConfiguration = PojoCriteriaConfiguration.CRITERIA_CONFIGURATION_REAL_DATA;
                 destinationFilePath = "..\\..\\..\\AX\\2022_Mentoring\\result.csv";
+                resultConfiguration = PojoResultConfiguration.NAMES_EMAILS_AND_SCORE;
                 break;
             default:
                 throw new RuntimeException("Invalid value for parameter");
@@ -78,7 +82,7 @@ public class Main {
             Matches<Person, Person> results = solver.build();
             
             ResultWriter<Person,Person> writer = new ResultWriter<>(resultDestination, 
-                PojoResultConfiguration.NAMES_EMAILS_AND_SCORE);
+                resultConfiguration);
             writer.writeMatches(results);
             resultDestination.flush();
         } catch (IOException e){

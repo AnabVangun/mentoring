@@ -32,7 +32,7 @@ public interface TestFramework<T> {
          * @return a standard name for the test case based on the test class, the method name and 
          *      the arguments.
          */
-        default String testName(String methodName, T args){
+        default String testName(String methodName, Object args){
             return String.format("%s.%s on %s", this.getClass().getCanonicalName(), methodName, 
                 args);
         }
@@ -65,12 +65,13 @@ public interface TestFramework<T> {
 	/**
 	 * Forges a {@link DynamicTest} to run the input test for each element 
 	 * of a {@link Stream} of arguments.
+     * @param <E> Type of the Stream elements.
 	 * @param stream Stream of arguments. A single test case is generated for each one of them.
 	 * @param methodName String to set as the test name.
 	 * @param tester Consumer to run on each element of the argument stream.
 	 * @return a stream of nodes, each running a test.
 	 */
-	default Stream<DynamicNode> test(Stream<T> stream, String methodName, Consumer<T> tester){
+	default <E> Stream<DynamicNode> test(Stream<E> stream, String methodName, Consumer<E> tester){
             return stream.map(args -> 
                 dynamicTest(testName(methodName, args), () -> tester.accept(args)));
 	}
@@ -78,6 +79,7 @@ public interface TestFramework<T> {
 	 * Forges a {@link Stream} of {@link DynamicNode} objects that run in independent
 	 * {@link DynamicTest} instances each {@link Executable} returned by the 
 	 * input {@link Function} on each element of the input {@link Stream}.
+     * @param <E> Type of the Stream elements.
 	 * @param stream Stream of arguments. A test case container is generated for each one of 
          *      them.
 	 * @param methodName String to set as the test name.
@@ -86,8 +88,8 @@ public interface TestFramework<T> {
          * name) and an {@code Executable}.
 	 * @return a stream of nodes, each running a series of tests.
 	 */
-	default Stream<DynamicNode> testContainer(Stream<T> stream, String methodName, 
-            Function<T, Stream<Map.Entry<String, Executable>>> testerStream){
+	default <E> Stream<DynamicNode> testContainer(Stream<E> stream, String methodName, 
+            Function<E, Stream<Map.Entry<String, Executable>>> testerStream){
 		return stream.map(args -> {
                     String message = testName(methodName, args);
                     return dynamicContainer(message, 
