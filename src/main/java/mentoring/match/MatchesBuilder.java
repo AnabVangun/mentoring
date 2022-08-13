@@ -10,15 +10,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public final class MatchesBuilder<Mentee, Mentor> {
-    //TODO add tests
-    /**
-     * Parts to test :
-	2. Given a mocked solver, verify that the solver is correctly called
-	3. Given mentees, mentors, Result and placeholder persons, verify that Matches is correct.
-    * To do that, mock the CostMatrixHandler
-	4. Given everything, verify that the result is correct
-    * 
-     */
     final private List<Mentee> mentees;
     final private List<Mentor> mentors;
     final CostMatrixHandler<Mentee, Mentor> costMatrixHandler;
