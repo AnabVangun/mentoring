@@ -6,14 +6,11 @@ import java.util.Set;
 import mentoring.datastructure.PropertyName;
 
 public interface PersonConfiguration {
+    //TODO document the difference between SimpleProperties and SetProperties
     
-    Set<PropertyName> getBooleanPropertiesNames();
+    Set<PropertyName<? extends Object>> getPropertiesNames();
     
-    Set<PropertyName> getIntegerPropertiesNames();
-    
-    Set<PropertyName> getStringPropertiesNames();
-    
-    Set<PropertyName> getMultipleStringPropertiesNames();
+    Set<PropertyName<? extends Object>> getMultiplePropertiesNames();
     
     String getSeparator();
     

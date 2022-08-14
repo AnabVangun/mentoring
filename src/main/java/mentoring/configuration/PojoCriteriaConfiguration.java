@@ -12,36 +12,40 @@ public enum PojoCriteriaConfiguration implements CriteriaConfiguration<Person,Pe
     CRITERIA_CONFIGURATION(List.of(
         (mentee, mentor) ->
             Constants.YEAR_WEIGHT * 
-                (Constants.MENTEE_YEAR - mentor.getIntegerProperty(Constants.MENTOR_YEAR_HEADER)),
+                (Constants.MENTEE_YEAR 
+                        - mentor.getPropertyAs(Constants.MENTOR_YEAR_HEADER, Integer.class)),
         (mentee, mentor) -> {
-            Set<String> menteeActivities = mentee.getMultipleStringProperty(Constants.MENTEE_ACTIVITIES_HEADER);
-            Set<String> mentorActivities = mentor.getMultipleStringProperty(Constants.MENTOR_ACTIVITIES_HEADER);
+            Set<String> menteeActivities = mentee
+                    .getPropertyAsSetOf(Constants.MENTEE_ACTIVITIES_HEADER, String.class);
+            Set<String> mentorActivities = mentor
+                    .getPropertyAsSetOf(Constants.MENTOR_ACTIVITIES_HEADER, String.class);
             return CriteriaToolbox.computeSetProximity(menteeActivities, mentorActivities);
         },
         (mentee, mentor) -> {
-            Set<String> menteeMotivation = mentee.getMultipleStringProperty(Constants.MENTEE_MOTIVATION_HEADER);
-            Set<String> mentorMotivation = mentor.getMultipleStringProperty(Constants.MENTOR_MOTIVATION_HEADER);
+            Set<String> menteeMotivation = 
+                    mentee.getPropertyAsSetOf(Constants.MENTEE_MOTIVATION_HEADER, String.class);
+            Set<String> mentorMotivation = 
+                    mentor.getPropertyAsSetOf(Constants.MENTOR_MOTIVATION_HEADER, String.class);
             return CriteriaToolbox.computeSetProximity(menteeMotivation, mentorMotivation);
         }), 
     List.of((mentee, mentor) -> CriteriaToolbox.logicalNotAOrB(
-            mentee.getBooleanProperty(Constants.MENTEE_ENGLISH_HEADER), 
-            mentor.getBooleanProperty(Constants.MENTOR_ENGLISH_HEADER)))),
+            mentee.getPropertyAs(Constants.MENTEE_ENGLISH_HEADER, Boolean.class), 
+            mentor.getPropertyAs(Constants.MENTOR_ENGLISH_HEADER, Boolean.class)))),
     CRITERIA_CONFIGURATION_REAL_DATA(            
         List.of((mentee, mentor) -> {
             //age criteria
             return Constants.YEAR_WEIGHT 
-                * (mentee.getIntegerProperty("Promotion") 
-                    - CriteriaToolbox.getYear(mentor.getStringProperty("Promotion")));
+                * (mentee.getPropertyAs("Promotion", Integer.class) 
+                    - CriteriaToolbox.getYear(mentor.getPropertyAs("Promotion", String.class)));
             },
             (mentee, mentor) -> {
-                Set<String> menteeActivities = mentee.getMultipleStringProperty("Métiers");
-                Set<String> mentorActivities = mentor.getMultipleStringProperty("Métiers");
+                Set<String> menteeActivities = mentee.getPropertyAsSetOf("Métiers", String.class);
+                Set<String> mentorActivities = mentor.getPropertyAsSetOf("Métiers", String.class);
                 return CriteriaToolbox.computeSetProximity(menteeActivities, mentorActivities);
         }),
         List.of((mentee, mentor) -> {
-            return (mentee.getMultipleStringProperty("Langue")
-                    .contains("Français")
-                    || mentor.getBooleanProperty("Anglophone"));
+            return (mentee.getPropertyAsSetOf("Langue", String.class).contains("Français")
+                    || mentor.getPropertyAs("Anglophone", Boolean.class));
         })
     );
     

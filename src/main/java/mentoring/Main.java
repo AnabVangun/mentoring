@@ -36,16 +36,16 @@ public class Main {
         PojoPersonConfiguration mentorConfiguration;
         PojoCriteriaConfiguration criteriaConfiguration;
         ResultConfiguration<Person, Person> resultConfiguration;
-        Person defaultMentor = new PersonBuilder().withStringProperty("Email", "")
+        Person defaultMentor = new PersonBuilder().withProperty("Email", "")
                 .withFullName("PAS DE MENTOR").build();
-        Person defaultMentee = new PersonBuilder().withStringProperty("Email", "")
+        Person defaultMentee = new PersonBuilder().withProperty("Email", "")
                 .withFullName("PAS DE MENTORÉ").build();
         switch("TEST"){
             case "TEST":
                 menteeFilePath = "resources\\main\\Filleul_Trivial.csv";
-                menteeConfiguration = PojoPersonConfiguration.MENTEE_CONFIGURATION;
+                menteeConfiguration = PojoPersonConfiguration.TEST_CONFIGURATION;
                 mentorFilePath = "resources\\main\\Mentor_Trivial.csv";
-                mentorConfiguration = PojoPersonConfiguration.MENTOR_CONFIGURATION;
+                mentorConfiguration = PojoPersonConfiguration.TEST_CONFIGURATION;
                 criteriaConfiguration = PojoCriteriaConfiguration.CRITERIA_CONFIGURATION;
                 destinationFilePath = "resources\\\\main\\\\Results_Trivial.csv";
                 resultConfiguration = PojoResultConfiguration.NAMES_AND_SCORE;

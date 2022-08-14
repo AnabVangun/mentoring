@@ -20,16 +20,6 @@ Constructor:
     3. check that no exception are thrown if all properties are present
 ParseLine:
     1. check that parseline returns a person consistent with the line.
-
-Finally, rewrite Person and PersonBuilder to use a map for the properties.
-    Issues: where to define what type of treatment is expected by each class?
-        Possibility: 
-            Person has a Map<String, Object> for its properties and get(Class<T> class, String property)
-            PersonBuilder has a method withProperty(String property, T value)
-            PersonConfiguration has a Set<Property<Class<T>>> for its expected properties
-            PersonParser has a Map<Class<T>, Function<String, T>> for the parsing of each type
-        To add a new type, impact only on PersonConfiguration instance and PersonParser code.
-Then, rewrite PersonConfiguration and refactor PersonParser
 */
 
 public class PersonParser {
@@ -70,29 +60,34 @@ public class PersonParser {
     
     public Person parseLine(String[] line) throws IOException{
         PersonBuilder builder = new PersonBuilder();
-        configuration.getBooleanPropertiesNames().forEach(property -> {
-            Boolean value = TRUE_VALUES.contains(
-                    line[propertyNameIndices.get(property.getHeaderName())].toLowerCase());
-            builder.withBooleanProperty(property.getName(), value);
-        });
-        configuration.getIntegerPropertiesNames().forEach(property -> {
-            Integer value = Integer.parseInt(
-                    line[propertyNameIndices.get(property.getHeaderName())]);
-            builder.withIntegerProperty(property.getName(), value);
-        });
-        configuration.getStringPropertiesNames().forEach(property -> {
-            builder.withStringProperty(property.getName(),
-                    line[propertyNameIndices.get(property.getHeaderName())]);
-        });
-        configuration.getMultipleStringPropertiesNames().forEach(property -> {
+        configuration.getPropertiesNames().forEach(property ->
+            builder.withProperty(property.getName(), parseProperty(
+                    line[propertyNameIndices.get(property.getHeaderName())], property.getType())));
+        configuration.getMultiplePropertiesNames().forEach(property -> {
             String[] splitValue = line[propertyNameIndices.get(property.getHeaderName())]
                     .split(configuration.getSeparator());
-            Set<String> value = Set.of(splitValue);
-            builder.withMultipleStringProperty(property.getName(), value);
+            Object[] parsedValue = new Object[splitValue.length];
+            for (int i = 0; i < splitValue.length; i++){
+                parsedValue[i] = parseProperty(splitValue[i], property.getType());
+            }
+            builder.withPropertySet(property.getName(), Set.of(parsedValue));
         });
         Object[] nameValues = configuration.getNamePropertiesHeaderNames().stream()
                 .map(property -> line[propertyNameIndices.get(property)]).toArray();
         builder.withFullName(String.format(configuration.getNameFormat(), nameValues));
         return builder.build();
+    }
+    
+    private <T> Object parseProperty (String value, Class<T> expectedType){
+            if (expectedType.isAssignableFrom(Boolean.class)){
+                return TRUE_VALUES.contains(value.toLowerCase());
+            } else if (expectedType.isAssignableFrom(Integer.class)){
+                return Integer.parseInt(value);
+            } else if (expectedType.isAssignableFrom(String.class)){
+                return value;
+            } else {
+                throw new UnsupportedOperationException("No parser available for properties of class " 
+                        + expectedType.getCanonicalName());
+            }
     }
 }

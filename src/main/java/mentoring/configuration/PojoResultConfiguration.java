@@ -11,9 +11,9 @@ public enum PojoResultConfiguration implements ResultConfiguration<Person, Perso
     NAMES_EMAILS_AND_SCORE(new String[]{
         "Mentoré", "email mentoré", "Mentor", "email mentor", "Coût"},
         match -> new String[]{match.getMentee().getFullName(),
-            match.getMentee().getStringProperty("Email"),
+            match.getMentee().getPropertyAs("Email", String.class),
             match.getMentor().getFullName(),
-            match.getMentor().getStringProperty("Email"),
+            match.getMentor().getPropertyAs("Email", String.class),
             Integer.toString(match.getCost())});
 
     private final String[] header;

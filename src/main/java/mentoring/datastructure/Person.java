@@ -26,22 +26,6 @@ public final class Person {
         return fullName;
     }
     
-    public int getIntegerProperty(String property){
-        return getPropertyAs(property, Integer.class);
-    }
-    
-    public boolean getBooleanProperty(String property){
-        return getPropertyAs(property, Boolean.class);
-    }
-    
-    public String getStringProperty(String property){
-        return getPropertyAs(property, String.class);
-    }
-    
-    public Set<String> getMultipleStringProperty(String property){
-        return getPropertyAsSetOf(property, String.class);
-    }
-    
     public <T> T getPropertyAs(String property, Class<T> type){
         if (!properties.containsKey(property)){
             throw new IllegalArgumentException(String.format(

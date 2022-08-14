@@ -27,26 +27,6 @@ public final class PersonBuilder {
         name = DEFAULT_NAME;
     }
     
-    public PersonBuilder withIntegerProperty(String property, int value){
-        withProperty(property, value);
-        return this;
-    }
-    
-    public PersonBuilder withBooleanProperty(String property, boolean value){
-        withProperty(property, value);
-        return this;
-    }
-    
-    public PersonBuilder withStringProperty(String property, String value){
-        withProperty(property, value);
-        return this;
-    }
-    
-    public PersonBuilder withMultipleStringProperty(String property, Set<String> values){
-        withPropertySet(property, values);
-        return this;
-    }
-    
     public <T> PersonBuilder withProperty(String property, T value){
         properties.put(Objects.requireNonNull(property), Objects.requireNonNull(value));
         return this;

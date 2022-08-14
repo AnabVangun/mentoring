@@ -18,19 +18,15 @@ final class PersonAndPersonBuilderTest implements
     public Stream<PersonArgs> argumentsSupplier() {
         return Stream.of(
                 new PersonArgs("Person with simple integer properties", 
-                        Map.of("First",1,"Second",-1000), 
-                        Map.of(), Map.of(), Map.of(), "person with integer properties"),
-                new PersonArgs("Person with simple boolean properties", Map.of(), 
-                        Map.of("first",false,"second",true), Map.of(), Map.of(), 
-                        "person with boolean properties"),
-                new PersonArgs("Person with simple string properties", Map.of(), Map.of(),
+                        Map.of("First",1,"Second",-1000),
+                        Map.of(), Map.of(), "person with integer properties"),
+                new PersonArgs("Person with simple string properties", Map.of(),
                         Map.of("première","string","seconde",""), Map.of(), 
                         "person with string properties"),
-                new PersonArgs("Person with simple multiple string properties", Map.of(), Map.of(), 
+                new PersonArgs("Person with simple multiple string properties", Map.of(),
                         Map.of(), Map.of("premier",Set.of("1","&\t"),"deuxième",Set.of()),
                         "person with multiple string properties"),
                 new PersonArgs("Person with all properties", Map.of("Un entier", Integer.MAX_VALUE),
-                        Map.of("Un booléen",true,"Un deuxième booléen",false,"Un troisième",true),
                         Map.of("s1","1","s2","02","s3","aa3","s4","_'&4"),
                         Map.of("un set", Set.of("1"), "deux sets", Set.of("a","b","c","d")),
                         "person with c0mpl3x n@me")
@@ -40,21 +36,15 @@ final class PersonAndPersonBuilderTest implements
     @TestFactory
     Stream<DynamicNode> failFastOnNullInput(){
         Class<NullPointerException> exception = NullPointerException.class;
-        return test(Stream.of(new PersonArgs("specific input", null, null, null, null, null)), 
+        return test(Stream.of(new PersonArgs("specific input", null, null, null, null)), 
                 "fail-fast on null input", args -> {
                     PersonBuilder builder = new PersonBuilder();
                     Assertions.assertAll(
                             () -> assertThrowsExceptionWhenSettingNullProperty(exception,
-                                    (s, i) -> builder.withIntegerProperty(s, i),
+                                    (s, i) -> builder.withProperty(s, i),
                                     0),
                             () -> assertThrowsExceptionWhenSettingNullProperty(exception,
-                                    (s, b) -> builder.withBooleanProperty(s, b), 
-                                    false),
-                            () -> assertThrowsExceptionWhenSettingNullProperty(exception,
-                                    (s, s2) -> builder.withStringProperty(s, s2),
-                                    ""),
-                            () -> assertThrowsExceptionWhenSettingNullProperty(exception,
-                                    (s, set) -> builder.withMultipleStringProperty(s, set), 
+                                    (s, set) -> builder.withPropertySet(s, set), 
                                     Set.of("")),
                             () -> Assertions.assertThrows(exception, 
                                     () -> builder.withFullName(null))
@@ -91,22 +81,16 @@ final class PersonAndPersonBuilderTest implements
         return test("PersonBuilder cannot alter Person after creation", args -> {
             PersonBuilder builder = args.initialisePersonBuilder();
             Person person = builder.build();
-            builder.withIntegerProperty(undefinedProperty, 0);
-            builder.withBooleanProperty(undefinedProperty, true);
-            builder.withStringProperty(undefinedProperty, "");
-            builder.withMultipleStringProperty(undefinedProperty, Set.of());
+            builder.withProperty(undefinedProperty, 0);
+            builder.withPropertySet(undefinedProperty, Set.of());
             
             Class expectedException = IllegalArgumentException.class;
             
             Assertions.assertAll(
                     () -> Assertions.assertThrows(expectedException, 
-                            () -> person.getIntegerProperty(undefinedProperty)),
-                    () -> Assertions.assertThrows(expectedException, 
-                            () -> person.getBooleanProperty(undefinedProperty)),
+                            () -> person.getPropertyAs(undefinedProperty, Integer.class)),
                     () -> Assertions.assertThrows(expectedException,
-                            () -> person.getStringProperty(undefinedProperty)),
-                    () -> Assertions.assertThrows(expectedException,
-                            () -> person.getMultipleStringProperty(undefinedProperty)),
+                            () -> person.getPropertyAsSetOf(undefinedProperty, Boolean.class)),
                     () -> args.assertPersonHasExpectedProperties(person)
             );
         });
@@ -119,16 +103,18 @@ final class PersonAndPersonBuilderTest implements
         Set<String> mutableSet = new HashSet<>();
         mutableSet.addAll(Set.of("first", "second", "third"));
         Stream<PersonArgs> stream = Stream.of(new PersonArgs("empty multiple string property",
-                Map.of(), Map.of(), Map.of(), 
+                Map.of(), Map.of(), 
                 Map.of(empty_set_name, new HashSet<>(),other_set_name, mutableSet), "name"));
         Class exception = UnsupportedOperationException.class;
         return test(stream, "getMultipleStringProperty() returns immutable set", args -> {
            Person person = args.initialisePersonBuilder().build();
            Assertions.assertAll(
                    () -> Assertions.assertThrows(exception, 
-                           () -> person.getMultipleStringProperty(empty_set_name).add("new value")),
+                           () -> person.getPropertyAsSetOf(empty_set_name, String.class)
+                                   .add("new value")),
                    () -> Assertions.assertThrows(exception, 
-                           () -> person.getMultipleStringProperty(other_set_name).add("new value")),
+                           () -> person.getPropertyAsSetOf(other_set_name, String.class)
+                                   .add("new value")),
                    () -> args.assertPersonHasExpectedProperties(person)
            );
         });
@@ -137,15 +123,13 @@ final class PersonAndPersonBuilderTest implements
     @TestFactory
     Stream<DynamicNode> personBuilderChainedCallReturnSelf(){
         Stream<PersonArgs> stream = Stream.of(new PersonArgs("specific case", Map.of(), Map.of(),
-                Map.of(), Map.of(), "John Doe"));
-        return test(stream, "withXXXProperty() returns self", args -> {
+                Map.of(), "John Doe"));
+        return test(stream, "withProperty() returns self", args -> {
            PersonBuilder builder = new PersonBuilder();
            Assertions.assertAll(
-                   () -> Assertions.assertSame(builder, builder.withIntegerProperty("1", 0)),
-                   () -> Assertions.assertSame(builder, builder.withBooleanProperty("2", true)),
-                   () -> Assertions.assertSame(builder, builder.withStringProperty("3", "")),
+                   () -> Assertions.assertSame(builder, builder.withProperty("1", true)),
                    () -> Assertions.assertSame(builder, 
-                           builder.withMultipleStringProperty("4", Set.of())),
+                           builder.withPropertySet("4", Set.of())),
                    () -> Assertions.assertSame(builder, builder.withFullName("John Doe"))
            );
         });
@@ -153,17 +137,15 @@ final class PersonAndPersonBuilderTest implements
     
     static class PersonArgs extends TestArgs{
         final Map<String, Integer> integerProperties;
-        final Map<String, Boolean> booleanProperties;
         final Map<String, String> stringProperties;
         final Map<String, Set<String>> multipleStringProperties;
         final String name;
         
         PersonArgs(String testCase, Map<String, Integer> integerProperties,
-                Map<String, Boolean> booleanProperties, Map<String, String> stringProperties,
+                Map<String, String> stringProperties,
                 Map<String, Set<String>> multipleStringProperties, String name){
             super(testCase);
             this.integerProperties = integerProperties;
-            this.booleanProperties = booleanProperties;
             this.stringProperties = stringProperties;
             this.multipleStringProperties = multipleStringProperties;
             this.name = name;
@@ -173,13 +155,11 @@ final class PersonAndPersonBuilderTest implements
             //This proves that withXXXProperty methods modify the builder on which they are called.
             PersonBuilder result = new PersonBuilder();
             integerProperties.entrySet().forEach(entry -> 
-                    result.withIntegerProperty(entry.getKey(), entry.getValue()));
-            booleanProperties.entrySet().forEach(entry -> 
-                    result.withBooleanProperty(entry.getKey(), entry.getValue()));
+                    result.withProperty(entry.getKey(), entry.getValue()));
             stringProperties.entrySet().forEach(entry ->
-                    result.withStringProperty(entry.getKey(), entry.getValue()));
+                    result.withProperty(entry.getKey(), entry.getValue()));
             multipleStringProperties.entrySet().forEach(entry ->
-                    result.withMultipleStringProperty(entry.getKey(), entry.getValue()));
+                    result.withPropertySet(entry.getKey(), entry.getValue()));
             result.withFullName(name);
             return result;
         }
@@ -189,19 +169,15 @@ final class PersonAndPersonBuilderTest implements
                     () -> Assertions.assertAll(
                             integerProperties.entrySet().stream().map(entry -> 
                                     () -> Assertions.assertEquals(entry.getValue(), 
-                                            (Integer) person.getIntegerProperty(entry.getKey())))),
-                    () -> Assertions.assertAll(
-                            booleanProperties.entrySet().stream().map(entry ->
-                                    () -> Assertions.assertEquals(entry.getValue(),
-                                            (Boolean) person.getBooleanProperty(entry.getKey())))),
+                                            person.getPropertyAs(entry.getKey(), Integer.class)))),
                     () -> Assertions.assertAll(
                             stringProperties.entrySet().stream().map(entry ->
                                     () -> Assertions.assertEquals(entry.getValue(),
-                                            person.getStringProperty(entry.getKey())))),
+                                            person.getPropertyAs(entry.getKey(), String.class)))),
                     () -> Assertions.assertAll(
                             multipleStringProperties.entrySet().stream().map(entry ->
                                     () -> Assertions.assertEquals(entry.getValue(), 
-                                            person.getMultipleStringProperty(entry.getKey())))),
+                                            person.getPropertyAsSetOf(entry.getKey(), String.class)))),
                     () -> Assertions.assertEquals(name, person.getFullName())
             );
         }
