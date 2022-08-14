@@ -10,6 +10,27 @@ import java.util.Map;
 import java.util.Set;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.PersonBuilder;
+/*
+TODO: test this class.
+First: implement a test in PersonConfiguration to check that the properties returned by 
+getAllPropertiesHeaderNames are exactly all the properties
+Constructor: 
+    1. check that NPEs are thrown.
+    2. check that IOExceptions are thrown if properties are missing
+    3. check that no exception are thrown if all properties are present
+ParseLine:
+    1. check that parseline returns a person consistent with the line.
+
+Finally, rewrite Person and PersonBuilder to use a map for the properties.
+    Issues: where to define what type of treatment is expected by each class?
+        Possibility: 
+            Person has a Map<String, Object> for its properties and get(Class<T> class, String property)
+            PersonBuilder has a method withProperty(String property, T value)
+            PersonConfiguration has a Set<Property<Class<T>>> for its expected properties
+            PersonParser has a Map<Class<T>, Function<String, T>> for the parsing of each type
+        To add a new type, impact only on PersonConfiguration instance and PersonParser code.
+Then, rewrite PersonConfiguration and refactor PersonParser
+*/
 
 public class PersonParser {
     private final Map<String, Integer> propertyNameIndices = new HashMap<>();
@@ -23,27 +44,27 @@ public class PersonParser {
     }
     
     private void parseHeader(String[] header) throws IOException{
-        Collection<String> pendingProperties = 
+        Collection<String> neededProperties = 
                 new HashSet<>(configuration.getAllPropertiesHeaderNames());
         for (int i = 0; i < header.length; i++){
-            recordPropertyIndexIfPending(header[i], i, pendingProperties);
+            recordPropertyIndexIfNeeded(header[i], i, neededProperties);
         }
-        failIfPropertiesAreMissing(header, pendingProperties);
+        failIfPropertiesAreMissing(header, neededProperties);
     }
     
-    private void recordPropertyIndexIfPending(String propertyName, int index, 
-            Collection<String> pendingProperties){
-        if (pendingProperties.contains(propertyName)){
+    private void recordPropertyIndexIfNeeded(String propertyName, int index, 
+            Collection<String> neededProperties){
+        if (neededProperties.contains(propertyName)){
             propertyNameIndices.put(propertyName, index);
-            pendingProperties.remove(propertyName);
+            neededProperties.remove(propertyName);
         }
     }
     
-    private void failIfPropertiesAreMissing(String[] header, Collection<String> pendingProperties)
+    private void failIfPropertiesAreMissing(String[] header, Collection<String> neededProperties)
             throws IOException{
-        if (! pendingProperties.isEmpty()){
-            throw new IOException(String.format("Missing property %s in header %s",
-                    pendingProperties, Arrays.toString(header)));
+        if (! neededProperties.isEmpty()){
+            throw new IOException(String.format("Expected properties %s missing in header %s",
+                    neededProperties, Arrays.toString(header)));
         }
     }
     

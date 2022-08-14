@@ -8,25 +8,17 @@ import java.util.Set;
  * a {@link PersonBuilder} object.
  */
 public final class Person {
-    private final Map<String, Integer> integerProperties;
-    private final Map<String, Boolean> booleanProperties;
-    private final Map<String, String> stringProperties;
-    private final Map<String, Set<String>> multipleStringProperties;
+    private final Map<String, Object> properties;
+    private final Map<String, Set<?>> multipleProperties;
     private final String fullName;
     
-    Person(Map<String, Integer> integerProperties, 
-            Map<String, Boolean> booleanProperties,
-            Map<String, String> stringProperties, 
-            Map<String, Set<String>> multipleStringProperties,
-            String name){
-        this.integerProperties = Collections.unmodifiableMap(integerProperties);
-        this.booleanProperties = Collections.unmodifiableMap(booleanProperties);
-        this.stringProperties = Collections.unmodifiableMap(stringProperties);
+    Person(Map<String, Object> properties, Map<String, Set<?>> multipleProperties, String name){
+        this.properties = Collections.unmodifiableMap(properties);
         /*
-        Caveat: the fact that the values of multipleStringProperties are immutable is guaranteed 
+        Caveat: the fact that the values of multipleProperties are immutable is guaranteed 
         by PersonBuilder.
         */
-        this.multipleStringProperties = Collections.unmodifiableMap(multipleStringProperties);
+        this.multipleProperties = Collections.unmodifiableMap(multipleProperties);
         this.fullName = name;
     }
     
@@ -35,35 +27,45 @@ public final class Person {
     }
     
     public int getIntegerProperty(String property){
-        if (!integerProperties.containsKey(property)){
-            throw new IllegalArgumentException(String.format(
-                    "Person %s has no %s integer property", this, property));
-        }
-        return integerProperties.get(property);
+        return getPropertyAs(property, Integer.class);
     }
     
     public boolean getBooleanProperty(String property){
-        if (!booleanProperties.containsKey(property)){
-            throw new IllegalArgumentException(String.format(
-                    "Person %s has no %s boolean property", this, property));
-        }
-        return booleanProperties.get(property);
+        return getPropertyAs(property, Boolean.class);
     }
     
     public String getStringProperty(String property){
-        if (!stringProperties.containsKey(property)){
-            throw new IllegalArgumentException(String.format(
-                    "Person %s has no %s string property", this, property));
-        }
-        return stringProperties.get(property);
+        return getPropertyAs(property, String.class);
     }
     
     public Set<String> getMultipleStringProperty(String property){
-        if (!multipleStringProperties.containsKey(property)){
+        return getPropertyAsSetOf(property, String.class);
+    }
+    
+    public <T> T getPropertyAs(String property, Class<T> type){
+        if (!properties.containsKey(property)){
             throw new IllegalArgumentException(String.format(
-                    "Person %s has no %s multiple string property", this, property));
+                    "Person %s has no %s property", this, property));
+        } else if (!type.isInstance(properties.get(property))){
+            throw new ClassCastException(String.format(
+                    "Property %s of person %s (%s) is not of required type, %s", property, this,
+                    properties.get(property), type));
         }
-        return multipleStringProperties.get(property);
+        return type.cast(properties.get(property));
+    }
+    
+    @SuppressWarnings("unchecked")
+    public <T> Set<T> getPropertyAsSetOf(String property, Class<T> type){
+        if (!multipleProperties.containsKey(property)){
+            throw new IllegalArgumentException(String.format(
+                    "Person %s has no %s multiple property", this, property));
+        } else if (!(multipleProperties.get(property) instanceof Set)){
+            //FIXME: in if-condition, java 11 does not allow Set<T> after instanceof.
+            throw new ClassCastException(String.format(
+                    "Property %s of person %s (%s) is not of required type, %s", property, this,
+                    properties.get(property), type));
+        }
+        return (Set<T>) multipleProperties.get(property);
     }
     
     @Override

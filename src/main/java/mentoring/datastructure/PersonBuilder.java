@@ -13,10 +13,8 @@ import java.util.Set;
  */
 public final class PersonBuilder {
     public static final String DEFAULT_NAME = "DEFAULT_NAME";
-    private Map<String, Integer> integerProperties;
-    private Map<String, Boolean> booleanProperties;
-    private Map<String, String> stringProperties;
-    private Map<String, Set<String>> multipleStringProperties;
+    private Map<String, Object> properties;
+    private Map<String, Set<?>> multipleProperties;
     private String name;
     
     public PersonBuilder(){
@@ -24,30 +22,38 @@ public final class PersonBuilder {
     }
     
     private void clear(){
-        integerProperties = new HashMap<>();
-        booleanProperties = new HashMap<>();
-        stringProperties = new HashMap<>();
-        multipleStringProperties = new HashMap<>();
+        properties = new HashMap<>();
+        multipleProperties = new HashMap<>();
         name = DEFAULT_NAME;
     }
     
     public PersonBuilder withIntegerProperty(String property, int value){
-        integerProperties.put(Objects.requireNonNull(property), value);
+        withProperty(property, value);
         return this;
     }
     
     public PersonBuilder withBooleanProperty(String property, boolean value){
-        booleanProperties.put(Objects.requireNonNull(property), value);
+        withProperty(property, value);
         return this;
     }
     
     public PersonBuilder withStringProperty(String property, String value){
-        stringProperties.put(Objects.requireNonNull(property), Objects.requireNonNull(value));
+        withProperty(property, value);
         return this;
     }
     
     public PersonBuilder withMultipleStringProperty(String property, Set<String> values){
-        multipleStringProperties.put(Objects.requireNonNull(property), Set.copyOf(values));
+        withPropertySet(property, values);
+        return this;
+    }
+    
+    public <T> PersonBuilder withProperty(String property, T value){
+        properties.put(Objects.requireNonNull(property), Objects.requireNonNull(value));
+        return this;
+    }
+    
+    public <T> PersonBuilder withPropertySet(String property, Set<T> values){
+        multipleProperties.put(Objects.requireNonNull(property), Set.copyOf(values));
         return this;
     }
     
@@ -57,12 +63,7 @@ public final class PersonBuilder {
     }
     
     public Person build(){
-        Person result = new Person(integerProperties,
-            booleanProperties,
-            stringProperties,
-            multipleStringProperties,
-            name
-        );
+        Person result = new Person(properties, multipleProperties, name);
         clear();
         return result;
     }

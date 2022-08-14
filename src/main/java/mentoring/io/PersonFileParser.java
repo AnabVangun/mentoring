@@ -7,14 +7,17 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
-import mentoring.configuration.PojoPersonConfiguration;
+import mentoring.configuration.PersonConfiguration;
 
 public class PersonFileParser {
-    private final PojoPersonConfiguration configuration;
+    private final PersonConfiguration configuration;
     private CSVReader reader;
     private PersonParser parser;
+    /*
+    TODO: test this class. Start by testing PersonParser.
+    */
     
-    public PersonFileParser(PojoPersonConfiguration configuration) throws IOException{
+    public PersonFileParser(PersonConfiguration configuration) throws IOException{
         this.configuration = configuration;
     }
     
