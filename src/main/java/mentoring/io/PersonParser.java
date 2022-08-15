@@ -12,8 +12,6 @@ import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.PersonBuilder;
 /*
 TODO: test this class.
-First: implement a test in PersonConfiguration to check that the properties returned by 
-getAllPropertiesHeaderNames are exactly all the properties
 Constructor: 
     1. check that NPEs are thrown.
     2. check that IOExceptions are thrown if properties are missing
