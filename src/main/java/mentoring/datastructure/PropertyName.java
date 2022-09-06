@@ -1,17 +1,18 @@
 package mentoring.datastructure;
-
-public final class PropertyName<T> {
+//TODO document this class
+//TODO replace T with PropertyType
+public final class PropertyName {
     private final String headerName;
     private final String name;
-    private final Class<T> type;
+    private final PropertyType type;
     
-    public PropertyName(String name, String headerName, Class<T> type){
+    public PropertyName(String name, String headerName, PropertyType type){
         this.headerName = headerName;
         this.name = name;
         this.type = type;
     }
     
-    public PropertyName(String name, Class<T> type){
+    public PropertyName(String name, PropertyType type){
         this(name, name, type);
     }
     
@@ -23,7 +24,7 @@ public final class PropertyName<T> {
         return headerName;
     }
     
-    public Class<T> getType(){
+    public PropertyType getType(){
         return type;
     }
 }

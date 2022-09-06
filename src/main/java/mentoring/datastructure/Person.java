@@ -26,7 +26,15 @@ public final class Person {
         return fullName;
     }
     
-    public <T> T getPropertyAs(String property, Class<T> type){
+    /**
+     * Returns the given property with the given type. An exception will be raised if the property
+     * does not exist or cannot be cast.
+     * @param <T> type to which the property must be cast
+     * @param property name of the property to get
+     * @param type  type to which the property must be cast
+     * @return the value of the property cast to the given type.
+     */
+    public <T> T getPropertyAs(String property, Class<T> type) {
         if (!properties.containsKey(property)){
             throw new IllegalArgumentException(String.format(
                     "Person %s has no %s property", this, property));
@@ -38,6 +46,14 @@ public final class Person {
         return type.cast(properties.get(property));
     }
     
+    /**
+     * Returns the given property as a set of elements with the given type. 
+     * An exception will be raised if the property does not exist or cannot be cast.
+     * @param <T> type to which the property must be cast
+     * @param property name of the property to get
+     * @param type  type to which the property must be cast
+     * @return a set containing the values of the property cast to the given type.
+     */
     @SuppressWarnings("unchecked")
     public <T> Set<T> getPropertyAsSetOf(String property, Class<T> type){
         if (!multipleProperties.containsKey(property)){
@@ -55,5 +71,21 @@ public final class Person {
     @Override
     public String toString(){
         return String.format("Person %s", fullName);
+    }
+    
+    @Override
+    public boolean equals(Object other){
+        if(! (other instanceof Person)){
+            return false;
+        }
+        Person cast = (Person) other;
+        return (fullName.equals(cast.fullName) 
+                && properties.equals(cast.properties)
+                && multipleProperties.equals(cast.multipleProperties));
+    }
+    
+    @Override
+    public int hashCode(){
+        return fullName.hashCode() + 31*(properties.hashCode() + 31*multipleProperties.hashCode());
     }
 }

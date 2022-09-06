@@ -6,36 +6,37 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import mentoring.datastructure.PropertyName;
+import mentoring.datastructure.PropertyType;
 
 public enum PojoPersonConfiguration implements PersonConfiguration{
-    TEST_CONFIGURATION(Set.of(new PropertyName<>("Anglais", Boolean.class), 
-            new PropertyName<>("Promotion", Integer.class)), 
-            Set.of(new PropertyName<>("Métiers","Activités et métiers", String.class), 
-                    new PropertyName<>("Motivation", String.class)), 
+    TEST_CONFIGURATION(Set.of(new PropertyName("Anglais", PropertyType.BOOLEAN), 
+            new PropertyName("Promotion", PropertyType.INTEGER)), 
+            Set.of(new PropertyName("Métiers","Activités et métiers", PropertyType.STRING), 
+                    new PropertyName("Motivation", PropertyType.STRING)), 
             ";", "%s %s (X%s)", List.of("Prénom","Nom","Promotion")),
     MENTEE_CONFIGURATION_REAL_DATA(Set.of(
-            new PropertyName<>("Promotion","Promotion, cycle", String.class),
-            new PropertyName<>("Maturité","maturité", Integer.class),
-            new PropertyName<>("Email","E-mail", String.class)),
-            Set.of(new PropertyName<>("Métiers","résumé métier secteur", String.class), 
-                    new PropertyName<>("Langue","Option : langue préférentielle", String.class)),
+            new PropertyName("Promotion","Promotion, cycle", PropertyType.INTEGER),
+            new PropertyName("Maturité","maturité", PropertyType.INTEGER),
+            new PropertyName("Email","E-mail", PropertyType.STRING)),
+            Set.of(new PropertyName("Métiers","résumé métier secteur", PropertyType.STRING), 
+                    new PropertyName("Langue","Option : langue préférentielle", PropertyType.STRING)),
             ",", "%s %s (X%s)", List.of("Prénom", "NOM", "Promotion, cycle")),
     MENTOR_CONFIGURATION_REAL_DATA(Set.of(
-            new PropertyName<>("Anglophone","anglophone", Boolean.class),
-            new PropertyName<>("Promotion","Promotion (X09, ...)", String.class),
-            new PropertyName<>("Email","Adresse email", String.class)),
-            Set.of(new PropertyName<>("Métiers","Résumé métier secteur", String.class)),
+            new PropertyName("Anglophone","anglophone", PropertyType.BOOLEAN),
+            new PropertyName("Promotion","Promotion (X09, ...)", PropertyType.STRING),
+            new PropertyName("Email","Adresse email", PropertyType.STRING)),
+            Set.of(new PropertyName("Métiers","Résumé métier secteur", PropertyType.STRING)),
             ",", "%s %s (%s)", List.of("Prénom", "Nom", "Promotion (X09, ...)"));
     
-    private final Set<PropertyName<? extends Object>> properties;
-    private final Set<PropertyName<? extends Object>> multipleProperties;
+    private final Set<PropertyName> properties;
+    private final Set<PropertyName> multipleProperties;
     private final String separator;
     private final String nameFormat;
     private final List<String> nameProperties;
     private final Collection<String> allPropertiesHeaderNames;
     
-    private PojoPersonConfiguration(Set<PropertyName<? extends Object>> properties, 
-            Set<PropertyName<? extends Object>> multipleProperties, 
+    private PojoPersonConfiguration(Set<PropertyName> properties, 
+            Set<PropertyName> multipleProperties, 
             String separator, String nameFormat,
             List<String> nameProperties){
         Set<String> tmpAllProperties = new HashSet<>();
@@ -51,12 +52,12 @@ public enum PojoPersonConfiguration implements PersonConfiguration{
     }
 
     @Override
-    public Set<PropertyName<? extends Object>> getPropertiesNames() {
+    public Set<PropertyName> getPropertiesNames() {
         return properties;
     }
 
     @Override
-    public Set<PropertyName<? extends Object>> getMultiplePropertiesNames() {
+    public Set<PropertyName> getMultiplePropertiesNames() {
         return multipleProperties;
     }
 

@@ -15,14 +15,14 @@ public interface PersonConfiguration {
      * Returns the {@link PropertyName} instances describing single-valued properties.
      * @return the identification of single-valued properties for this configuration
      */
-    Set<PropertyName<? extends Object>> getPropertiesNames();
+    Set<PropertyName> getPropertiesNames();
     
     /**
      * Returns the {@link PropertyName} instances describing multi-valued properties. Multi-valued
      * properties are properties associated with collections of values.
      * @return the identification of multi-valued properties for this configuration
      */
-    Set<PropertyName<? extends Object>> getMultiplePropertiesNames();
+    Set<PropertyName> getMultiplePropertiesNames();
     
     /**
      * Returns the separator used in the CSV file to separate values inside multi-valued properties.

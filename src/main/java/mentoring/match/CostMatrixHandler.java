@@ -9,7 +9,7 @@ final class CostMatrixHandler<Mentee, Mentor> {
     final private List<Mentee> mentees;
     final private List<Mentor> mentors;
     final private Collection<ProgressiveCriterion<Mentee, Mentor>> progressiveCriteria;
-    private List<NecessaryCriterion<Mentee, Mentor>> necessaryCriteria = List.of();
+    private Collection<NecessaryCriterion<Mentee, Mentor>> necessaryCriteria = List.of();
     private int[][] costMatrix;
     
     CostMatrixHandler(List<Mentee> mentees, List<Mentor> mentors,
@@ -20,7 +20,7 @@ final class CostMatrixHandler<Mentee, Mentor> {
     }
     
     CostMatrixHandler<Mentee, Mentor> withNecessaryCriteria(
-            List<NecessaryCriterion<Mentee, Mentor>> necessaryCriteria){
+            Collection<NecessaryCriterion<Mentee, Mentor>> necessaryCriteria){
         this.necessaryCriteria = necessaryCriteria;
         return this;
     }

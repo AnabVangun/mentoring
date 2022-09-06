@@ -1,7 +1,5 @@
 package mentoring.datastructure;
 
-import java.util.HashMap;
-import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.stream.Stream;
@@ -14,17 +12,17 @@ final class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyA
 
     @Override
     public Stream<PropertyArgs> argumentsSupplier() {
-        return Stream.of(new OneArgProperty("Simple one-argument property", "name&", Integer.class),
-                new OneArgProperty("One-argument property with empty name", "", Boolean.class),
+        return Stream.of(new OneArgProperty("Simple one-argument property", "name&", PropertyType.INTEGER),
+                new OneArgProperty("One-argument property with empty name", "", PropertyType.BOOLEAN),
                 new TwoArgProperty("Simple two-argument property", "propriété", "headerName", 
-                        Float.class),
+                        PropertyType.STRING),
                 new TwoArgProperty("Two-argument property with equal names", "name", "name", 
-                        String.class),
+                        PropertyType.INTEGER),
                 new TwoArgProperty("Two-argument property with empty name", "", "header_name", 
-                        Set.class),
+                        PropertyType.BOOLEAN),
                 new TwoArgProperty("Two-argument property with empty headerName", "name", "", 
-                        Long.class),
-                new TwoArgProperty("Two-argument property with empty names", "", "", HashMap.class)
+                        PropertyType.STRING),
+                new TwoArgProperty("Two-argument property with empty names", "", "", PropertyType.INTEGER)
             );
     }
     
@@ -40,30 +38,30 @@ final class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyA
                 args.convert().getHeaderName()));
     }
     
-    static abstract class PropertyArgs<T> extends TestArgs{
-        final Class<T> expectedType;
+    static abstract class PropertyArgs extends TestArgs{
+        final PropertyType expectedType;
         
-        abstract PropertyName<T> convert();
+        abstract PropertyName convert();
         abstract String getExpectedName();
         abstract String getExpectedHeaderName();
 
-        PropertyArgs(String testCase, Class<T> type){
+        PropertyArgs(String testCase, PropertyType type){
             super(testCase);
             expectedType = type;
         }
     }
 
-    static class OneArgProperty<T> extends PropertyArgs<T>{
+    static class OneArgProperty extends PropertyArgs{
         private final String name;
 
-        OneArgProperty(String testCase, String name, Class<T> type){
+        OneArgProperty(String testCase, String name, PropertyType type){
             super(testCase, type);
             this.name = name;
         }
 
         @Override
-        PropertyName<T> convert() {
-            return new PropertyName<>(name, expectedType);
+        PropertyName convert() {
+            return new PropertyName(name, expectedType);
         }
 
         @Override
@@ -77,18 +75,18 @@ final class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyA
         }
     }
 
-    static class TwoArgProperty<T> extends PropertyArgs<T>{
+    static class TwoArgProperty extends PropertyArgs{
         private final String name;
         private final String headerName;
 
-        TwoArgProperty(String testCase, String name, String headerName, Class<T> type){
+        TwoArgProperty(String testCase, String name, String headerName, PropertyType type){
             super(testCase, type);
             this.name = name;
             this.headerName = headerName;
         }
 
         @Override
-        PropertyName<T> convert() {
+        PropertyName convert() {
             return new PropertyName(name, headerName, expectedType);
         }
 

@@ -4,6 +4,8 @@ import java.util.function.Function;
 import mentoring.datastructure.Person;
 import mentoring.match.Match;
 
+//TODO document this class
+//TODO test this class
 public enum PojoResultConfiguration implements ResultConfiguration<Person, Person> {
     NAMES_AND_SCORE(new String[]{"Mentoré", "Mentor", "Coût"},
         match -> new String[]{match.getMentee().getFullName(), 

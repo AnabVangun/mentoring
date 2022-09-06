@@ -32,6 +32,8 @@ public class Main {
         String menteeFilePath;
         String mentorFilePath;
         String destinationFilePath;
+        Data data = Data.TEST;
+        boolean writeToFile = false;
         PojoPersonConfiguration menteeConfiguration;
         PojoPersonConfiguration mentorConfiguration;
         PojoCriteriaConfiguration criteriaConfiguration;
@@ -40,8 +42,8 @@ public class Main {
                 .withFullName("PAS DE MENTOR").build();
         Person defaultMentee = new PersonBuilder().withProperty("Email", "")
                 .withFullName("PAS DE MENTORÉ").build();
-        switch("TEST"){
-            case "TEST":
+        switch(data){
+            case TEST:
                 menteeFilePath = "resources\\main\\Filleul_Trivial.csv";
                 menteeConfiguration = PojoPersonConfiguration.TEST_CONFIGURATION;
                 mentorFilePath = "resources\\main\\Mentor_Trivial.csv";
@@ -50,7 +52,7 @@ public class Main {
                 destinationFilePath = "resources\\\\main\\\\Results_Trivial.csv";
                 resultConfiguration = PojoResultConfiguration.NAMES_AND_SCORE;
                 break;
-            case "REAL":
+            case REAL:
                 menteeFilePath = "..\\..\\..\\AX\\2022_Mentoring\\palmares metiers X_V2_simplifie.csv";
                 menteeConfiguration = PojoPersonConfiguration.MENTEE_CONFIGURATION_REAL_DATA;
                 mentorFilePath = "..\\..\\..\\AX\\2022_Mentoring\\mentors eleves travail_tlm.csv";
@@ -65,12 +67,9 @@ public class Main {
         try(
                 FileReader menteesFile = new FileReader(menteeFilePath, Charset.forName("utf-8"));
                 FileReader mentorsFile = new FileReader(mentorFilePath, Charset.forName("utf-8"));
-                //Option 1: output to std.out
-                Writer resultDestination = new PrintWriter(System.out, true, 
-                    Charset.forName("utf-8"));
-                //Option 2: output to file
-                //Writer resultDestination = new PrintWriter(
-                //        new FileOutputStream(destinationFilePath), true, Charset.forName("utf-8"));
+                Writer resultDestination = new PrintWriter(
+                        (writeToFile ? new FileOutputStream(destinationFilePath) : System.out),
+                        true, Charset.forName("utf-8"));
                 ){
             List<Person> mentees = new PersonFileParser(menteeConfiguration).parse(menteesFile);
             List<Person> mentors = new PersonFileParser(mentorConfiguration).parse(mentorsFile);
@@ -90,4 +89,5 @@ public class Main {
         }
     }
     
+    static enum Data {TEST, REAL}
 }

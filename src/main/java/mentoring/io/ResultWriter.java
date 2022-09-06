@@ -5,7 +5,8 @@ import java.io.Writer;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.match.Match;
 import mentoring.match.Matches;
-
+//TODO document this class
+//TODO test this class
 public class ResultWriter<Mentee, Mentor> {
     private final CSVWriter writer;
     private final ResultConfiguration<Mentee, Mentor> resultConfiguration;

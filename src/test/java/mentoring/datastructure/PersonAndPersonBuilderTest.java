@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
@@ -31,6 +32,12 @@ final class PersonAndPersonBuilderTest implements
                         Map.of("un set", Set.of("1"), "deux sets", Set.of("a","b","c","d")),
                         "person with c0mpl3x n@me")
         );
+    }
+    
+    public Stream<Pair<PersonArgs, PersonArgs>> argumentPairsSupplier(){
+        return argumentsSupplier().flatMap(args -> 
+                argumentsSupplier().filter(innerArgs -> !innerArgs.name.equals(args.name))
+                        .map(innerArgs -> Pair.of(args, innerArgs)));
     }
     
     @TestFactory
@@ -133,6 +140,56 @@ final class PersonAndPersonBuilderTest implements
                    () -> Assertions.assertSame(builder, builder.withFullName("John Doe"))
            );
         });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> equalsReturnsTrueWhenAppropriate(){
+        return test("equals() on equal values", args -> 
+                Assertions.assertEquals(args.initialisePersonBuilder().build(), 
+                        args.initialisePersonBuilder().build()));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> equalsIsNotSensitiveToSetOrder(){
+        return test(Stream.of(new PersonArgs("specific test case", null, 
+                null, null, null)), "equals() on equal values with unsorted sets", args -> {
+                    Person first = new PersonBuilder().withPropertySet("property", Set.of(true, 1))
+                            .build();
+                    Person second = new PersonBuilder().withPropertySet("property", Set.of(1, true))
+                            .build();
+                    Assertions.assertEquals(first, second);
+                });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> equalsReturnsFalseWhenAppropriate(){
+        return test(argumentPairsSupplier(), "equals() on different values", args -> 
+                Assertions.assertNotEquals(args.getLeft().initialisePersonBuilder().build(), 
+                        args.getRight().initialisePersonBuilder().build()));
+    }
+    
+    
+    @TestFactory
+    Stream<DynamicNode> hashCodeReturnsSameValueOnEqualInput(){
+        return test("hashCode() on equal values", args ->
+                Assertions.assertEquals(args.initialisePersonBuilder().build().hashCode(), 
+                        args.initialisePersonBuilder().build().hashCode()));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> hashCodeReturnsConstantValue(){
+        return test("hashCode() repeatedly", args -> {
+            Person person = args.initialisePersonBuilder().build();
+            Assertions.assertEquals(person.hashCode(), person.hashCode());
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> hashCodeReturnsDifferentValuesWhenAppropriate(){
+        return test(argumentPairsSupplier(), "hashCode() on different values", args ->
+                Assertions.assertNotEquals(
+                        args.getLeft().initialisePersonBuilder().build().hashCode(), 
+                        args.getRight().initialisePersonBuilder().build().hashCode()));
     }
     
     static class PersonArgs extends TestArgs{

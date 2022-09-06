@@ -141,7 +141,9 @@ final class CostMatrixHandlerTest implements TestFramework<CostMatrixHandlerTest
     Stream<DynamicNode> failToSolveUninitialisedCostMatrix(){
         return test("solveCostMatrix() fails if called before buildCostMatrix()", args -> {
             CostMatrixHandler<Integer,Integer> matrixHandler = args.convert();
-            //TODO here, we should rightly expect a RuntimeException but we suffer from an error in assignmentproblem
+            /* FIXME here, we should rightly expect a more specific RuntimeException but we suffer 
+            from an error in assignmentproblem
+            */
             Assertions.assertThrows(RuntimeException.class, 
                     () -> matrixHandler.solveCostMatrix(new HungarianSolver(-1)));
         });

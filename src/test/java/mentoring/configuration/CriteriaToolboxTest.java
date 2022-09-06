@@ -45,10 +45,10 @@ class CriteriaToolboxTest implements TestFramework<Object>{
                 "computeSetProximity(): value and symetry", args -> {
                     Assertions.assertAll(
                             () -> Assertions.assertEquals(args.expected, 
-                                    CriteriaToolbox.computeSetProximity(args.first, args.second)),
+                                    CriteriaToolbox.computeSetDistance(args.first, args.second)),
                             () -> Assertions.assertEquals(
-                                    CriteriaToolbox.computeSetProximity(args.first, args.second), 
-                                    CriteriaToolbox.computeSetProximity(args.second, args.first)));
+                                    CriteriaToolbox.computeSetDistance(args.first, args.second), 
+                                    CriteriaToolbox.computeSetDistance(args.second, args.first)));
                 });
     }
     
@@ -144,15 +144,15 @@ class CriteriaToolboxTest implements TestFramework<Object>{
             int executiveOffset = CriteriaToolbox.Letter.EXECUTIVE.offset;
             return Stream.of(new YearArgs("four-digit string", 1992, "1992"),
                     new YearArgs("standard letter and five-digit string", 65216, "X65216"),
-                    new YearArgs("executive and four-digit string", 1234+executiveOffset, "E1234"),
-                    new YearArgs("space after prefix", 1992, "X   1992"));
+                    new YearArgs("executive and four-digit string", 1234+executiveOffset, "e1234"),
+                    new YearArgs("space after prefix", 1992, "x   1992"));
         }
 
         static Stream<YearArgs> partialYearsArgsSupplier(){
             int executiveOffset = CriteriaToolbox.Letter.EXECUTIVE.offset;
             return Stream.of(new YearArgs("two-digit string of current century", 7412, "12"),
                     new YearArgs("letter and three-digit string of current millenium", 
-                            7398, "X398"),
+                            7398, "x398"),
                     new YearArgs("letter and two-digit string of past century", 
                             7382+executiveOffset, "E82"),
                     new YearArgs("letter and leading zeroes", 7001, "X001"));
