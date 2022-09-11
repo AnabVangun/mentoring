@@ -8,12 +8,17 @@ import java.util.Set;
 import mentoring.datastructure.PropertyName;
 import mentoring.datastructure.PropertyType;
 
+/**
+ * Example person configurations for test cases.
+ */
 public enum PojoPersonConfiguration implements PersonConfiguration{
+    /** Configuration used in simple test cases. */
     TEST_CONFIGURATION(Set.of(new PropertyName("Anglais", PropertyType.BOOLEAN), 
             new PropertyName("Promotion", PropertyType.INTEGER)), 
             Set.of(new PropertyName("Métiers","Activités et métiers", PropertyType.STRING), 
                     new PropertyName("Motivation", PropertyType.STRING)), 
             ";", "%s %s (X%s)", List.of("Prénom","Nom","Promotion")),
+    /** Configuration used for real mentee data in the 2021 data set. */
     MENTEE_CONFIGURATION_REAL_DATA(Set.of(
             new PropertyName("Promotion","Promotion, cycle", PropertyType.INTEGER),
             new PropertyName("Maturité","maturité", PropertyType.INTEGER),
@@ -21,6 +26,7 @@ public enum PojoPersonConfiguration implements PersonConfiguration{
             Set.of(new PropertyName("Métiers","résumé métier secteur", PropertyType.STRING), 
                     new PropertyName("Langue","Option : langue préférentielle", PropertyType.STRING)),
             ",", "%s %s (X%s)", List.of("Prénom", "NOM", "Promotion, cycle")),
+    /** Configuration used for real mentor data in the 2021 data set. */
     MENTOR_CONFIGURATION_REAL_DATA(Set.of(
             new PropertyName("Anglophone","anglophone", PropertyType.BOOLEAN),
             new PropertyName("Promotion","Promotion (X09, ...)", PropertyType.STRING),

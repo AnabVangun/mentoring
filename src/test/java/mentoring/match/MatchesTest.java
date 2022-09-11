@@ -3,7 +3,9 @@ package mentoring.match;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
@@ -11,7 +13,7 @@ import org.junit.jupiter.api.function.Executable;
 import test.tools.TestArgs;
 import test.tools.TestFramework;
 
-final class MatchesTest implements TestFramework<MatchesTest.MatchesArgs>{
+public final class MatchesTest implements TestFramework<MatchesTest.MatchesArgs>{
 
     @Override
     public Stream<MatchesArgs> argumentsSupplier() {
@@ -40,7 +42,7 @@ final class MatchesTest implements TestFramework<MatchesTest.MatchesArgs>{
     @TestFactory
     public Stream<DynamicNode> iteratorTest(){
         return test("iterator()", args -> {
-            Matches matches = new Matches(args.matches);
+            Matches matches = args.convert();
             Iterator<Match<String,String>> expectedIterator = args.matchesCopy.iterator();
             Iterator<Match<String,String>> actualIterator = matches.iterator();
             Assertions.assertAll(args.matchesCopy.stream().map(ignored -> {
@@ -50,14 +52,23 @@ final class MatchesTest implements TestFramework<MatchesTest.MatchesArgs>{
         });
     }
     
-    static class MatchesArgs extends TestArgs{
+    public static class MatchesArgs extends TestArgs{
         final List<Match<String, String>> matches;
         final List<Match<String, String>> matchesCopy = new ArrayList<>();
 
-        MatchesArgs(String name, List<Match<String, String>> matches){
+        public MatchesArgs(String name, List<Match<String, String>> matches){
             super(name);
             this.matches = matches;
             matches.forEach(matchesCopy::add);
+        }
+        
+        public MatchesArgs(List<Pair<String, String>> matches){
+            this("", matches.stream().map(pair -> new Match<>(pair.getLeft(), pair.getRight(), 0))
+                    .collect(Collectors.toList()));
+        }
+        
+        public Matches<String, String> convert(){
+            return new Matches<>(matches);
         }
     }
 }

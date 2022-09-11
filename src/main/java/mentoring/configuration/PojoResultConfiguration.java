@@ -4,12 +4,15 @@ import java.util.function.Function;
 import mentoring.datastructure.Person;
 import mentoring.match.Match;
 
-//TODO document this class
-//TODO test this class
+/**
+ * Example result-writing configurations for test cases.
+ */
 public enum PojoResultConfiguration implements ResultConfiguration<Person, Person> {
+    /** Writes the names and the total cost of a pair. */
     NAMES_AND_SCORE(new String[]{"Mentoré", "Mentor", "Coût"},
         match -> new String[]{match.getMentee().getFullName(), 
             match.getMentor().getFullName(), Integer.toString(match.getCost())}),
+    /** Writes the names, e-mail addresses and the total cost of a pair. */
     NAMES_EMAILS_AND_SCORE(new String[]{
         "Mentoré", "email mentoré", "Mentor", "email mentor", "Coût"},
         match -> new String[]{match.getMentee().getFullName(),

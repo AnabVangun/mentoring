@@ -13,13 +13,11 @@ import mentoring.configuration.PersonConfiguration;
 /**
  * A parser for CSV files based on a schema defined at runtime.
  * 
- * <p>This class is not thread-safe but is safe for reuse: if two files use the same configuration, 
- * the same instance can parse them both sequentially.
+ * <p>This class is thread-safe and is safe for reuse: if two files use the same configuration, 
+ * the same instance can parse them both.
  */
 public final class PersonFileParser {
     private final PersonConfiguration configuration;
-    private CSVReader reader;
-    private PersonParser parser;
     
     /**
      * Initialises a parser.
@@ -37,7 +35,8 @@ public final class PersonFileParser {
      * @throws IOException if the file cannot be read or does not correspond to its configuration.
      */
     public List<Person> parse(Reader fileReader) throws IOException{
-        initialiseParserAndReader(fileReader);
+        CSVReader reader = new CSVReader(fileReader);
+        PersonParser parser = initialiseParser(reader);
         List<Person> result = new ArrayList<>();
         for (String[] line: reader){
             result.add(parser.parseLine(line));
@@ -45,10 +44,9 @@ public final class PersonFileParser {
         return result;
     }
     
-    private void initialiseParserAndReader(Reader fileReader) throws IOException{
-        reader = new CSVReader(fileReader);
+    private PersonParser initialiseParser(CSVReader reader) throws IOException{
         try {
-            parser = new PersonParser(configuration, reader.readNext());
+            return new PersonParser(configuration, reader.readNext());
         } catch (CsvValidationException e){
             throw new IOException("Something went wrong in the CSV Parser", e);
         }

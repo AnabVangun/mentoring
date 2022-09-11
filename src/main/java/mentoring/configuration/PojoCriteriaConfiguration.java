@@ -9,7 +9,7 @@ import mentoring.match.ProgressiveCriterion;
 import mentoring.match.NecessaryCriterion;
 
 /**
- * Example configurations for test cases.
+ * Example criteria configurations for test cases.
  */
 public enum PojoCriteriaConfiguration implements CriteriaConfiguration<Person,Person>{    
     /** Configuration used in simple test cases. */

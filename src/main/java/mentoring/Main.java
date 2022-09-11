@@ -80,9 +80,8 @@ public class Main {
                     .withPlaceholderPersons(defaultMentee, defaultMentor);
             Matches<Person, Person> results = solver.build();
             
-            ResultWriter<Person,Person> writer = new ResultWriter<>(resultDestination, 
-                resultConfiguration);
-            writer.writeMatches(results);
+            ResultWriter<Person,Person> writer = new ResultWriter<>(resultConfiguration);
+            writer.writeMatches(results, resultDestination);
             resultDestination.flush();
         } catch (IOException e){
             e.printStackTrace();
