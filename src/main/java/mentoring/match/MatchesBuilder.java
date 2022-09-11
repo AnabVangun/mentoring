@@ -26,7 +26,6 @@ public final class MatchesBuilder<Mentee, Mentor> {
     /**
      * A value such that all candidate matches with this cost will be considered invalid.
      */
-    //TODO make sure that all values higher than PROHIBITIVE_VALUE are viewed as prohibitive.
     public static final int PROHIBITIVE_VALUE = Integer.MAX_VALUE;
     private Integer unassignedValue = null;
     private Solver solver = new HungarianSolver(unassignedValue);
