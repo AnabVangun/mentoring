@@ -9,10 +9,10 @@ import java.util.Set;
  */
 public final class Person {
     private final Map<String, Object> properties;
-    private final Map<String, Set<?>> multipleProperties;
+    private final Map<String, Map<?, ?>> multipleProperties;
     private final String fullName;
     
-    Person(Map<String, Object> properties, Map<String, Set<?>> multipleProperties, String name){
+    Person(Map<String, Object> properties, Map<String, Map<?,?>> multipleProperties, String name){
         this.properties = Collections.unmodifiableMap(properties);
         /*
         Caveat: the fact that the values of multipleProperties are immutable is guaranteed 
@@ -49,23 +49,38 @@ public final class Person {
     /**
      * Returns the given property as a set of elements with the given type. 
      * An exception will be raised if the property does not exist or cannot be cast.
-     * @param <T> type to which the property must be cast
+     * @param <T> type to which the property elements must be cast
      * @param property name of the property to get
      * @param type  type to which the property must be cast
      * @return a set containing the values of the property cast to the given type.
      */
     @SuppressWarnings("unchecked")
     public <T> Set<T> getPropertyAsSetOf(String property, Class<T> type){
+        return (Set<T>) getPropertyAsMapOf(property, type, Object.class).keySet();
+    }
+    
+    /**
+     * Returns the given property as a map of elements with the given types. 
+     * An exception will be raised if the property does not exist or cannot be cast.
+     * @param <K> type to which the property keys must be cast
+     * @param <V> type to which the property values must be cast
+     * @param property name of the property to get
+     * @param keyType  type to which the property keys must be cast
+     * @param valueType type to which the property values must be cast
+     * @return a set containing the values of the property cast to the given type.
+     */
+    @SuppressWarnings("unchecked")
+    public <K,V> Map<K,V> getPropertyAsMapOf(String property, Class<K> keyType, Class<V> valueType){
         if (!multipleProperties.containsKey(property)){
             throw new IllegalArgumentException(String.format(
                     "Person %s has no %s multiple property", this, property));
-        } else if (!(multipleProperties.get(property) instanceof Set)){
-            //FIXME: in if-condition, java 11 does not allow Set<T> after instanceof.
+        } else if (!(multipleProperties.get(property) instanceof Map)){
+            //FIXME: in if-condition, java 11 does not allow Map<K,V> after instanceof.
             throw new ClassCastException(String.format(
-                    "Property %s of person %s (%s) is not of required type, %s", property, this,
-                    properties.get(property), type));
+                    "Property %s of person %s (%s) is not of required types, %s and %s", 
+                    property, this, properties.get(property), keyType, valueType));
         }
-        return (Set<T>) multipleProperties.get(property);
+        return (Map<K,V>) multipleProperties.get(property);
     }
     
     @Override

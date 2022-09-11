@@ -3,7 +3,7 @@ package mentoring.datastructure;
 /**
  * Immutable description of a property.
  */
-public final class PropertyName {
+public class PropertyName {
     private final String headerName;
     private final String name;
     private final PropertyType type;

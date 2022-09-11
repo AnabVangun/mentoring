@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Class used to build {@link Person} objects. A single builder can build several unrelated objects:
@@ -14,7 +16,7 @@ import java.util.Set;
 public final class PersonBuilder {
     public static final String DEFAULT_NAME = "DEFAULT_NAME";
     private Map<String, Object> properties;
-    private Map<String, Set<?>> multipleProperties;
+    private Map<String, Map<?,?>> multipleProperties;
     private String name;
     
     public PersonBuilder(){
@@ -33,7 +35,15 @@ public final class PersonBuilder {
     }
     
     public <T> PersonBuilder withPropertySet(String property, Set<T> values){
-        multipleProperties.put(Objects.requireNonNull(property), Set.copyOf(values));
+        multipleProperties.put(Objects.requireNonNull(property), 
+                values.stream().collect(Collectors.toMap(Function.identity(), x -> 0)));
+        return this;
+    }
+    
+    //TODO: test withPropertyMap and getPropertyAsMapOf
+    public <K,V> PersonBuilder withPropertyMap(String property, Map<K,V> entries){
+        multipleProperties.put(Objects.requireNonNull(property),
+                Map.copyOf(entries));
         return this;
     }
     

@@ -8,7 +8,7 @@ import org.junit.jupiter.api.TestFactory;
 import test.tools.TestArgs;
 import test.tools.TestFramework;
 
-final class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyArgs>{
+class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyArgs>{
 
     @Override
     public Stream<PropertyArgs> argumentsSupplier() {
@@ -38,6 +38,12 @@ final class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyA
                 args.convert().getHeaderName()));
     }
     
+    @TestFactory
+    Stream<DynamicNode> getType(){
+        return test("getType()", args -> assertEquals(args.expectedType,
+                args.convert().getType()));
+    }
+    
     static abstract class PropertyArgs extends TestArgs{
         final PropertyType expectedType;
         
@@ -48,6 +54,10 @@ final class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyA
         PropertyArgs(String testCase, PropertyType type){
             super(testCase);
             expectedType = type;
+        }
+        
+        PropertyType getExpectedValueType(){
+            throw new UnsupportedOperationException("Method used only in MapPropertyArg objects");
         }
     }
 
