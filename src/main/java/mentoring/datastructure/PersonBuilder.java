@@ -40,7 +40,6 @@ public final class PersonBuilder {
         return this;
     }
     
-    //TODO: test withPropertyMap and getPropertyAsMapOf
     public <K,V> PersonBuilder withPropertyMap(String property, Map<K,V> entries){
         multipleProperties.put(Objects.requireNonNull(property),
                 Map.copyOf(entries));

@@ -20,6 +20,7 @@ public enum PojoResultConfiguration implements ResultConfiguration<Person, Perso
             match.getMentor().getFullName(),
             match.getMentor().getPropertyAs("Email", String.class),
             Integer.toString(match.getCost())});
+    //TODO add 2023 configuration : Mentor (prénom, nom, email) Eleve (prénom, nom, email), Mentor (email) Score de la paire
 
     private final String[] header;
     private final Function<Match<Person, Person>, String[]> lineFormater;

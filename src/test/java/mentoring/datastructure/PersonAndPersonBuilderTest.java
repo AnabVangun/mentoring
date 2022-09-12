@@ -1,5 +1,6 @@
 package mentoring.datastructure;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -20,16 +21,20 @@ final class PersonAndPersonBuilderTest implements
         return Stream.of(
                 new PersonArgs("Person with simple integer properties", 
                         Map.of("First",1,"Second",-1000),
-                        Map.of(), Map.of(), "person with integer properties"),
+                        Map.of(), Map.of(), Map.of(), "person with integer properties"),
                 new PersonArgs("Person with simple string properties", Map.of(),
-                        Map.of("première","string","seconde",""), Map.of(), 
+                        Map.of("première","string","seconde",""), Map.of(), Map.of(), 
                         "person with string properties"),
                 new PersonArgs("Person with simple multiple string properties", Map.of(),
-                        Map.of(), Map.of("premier",Set.of("1","&\t"),"deuxième",Set.of()),
+                        Map.of(), Map.of("premier",Set.of("1","&\t"),"deuxième",Set.of()), Map.of(),
                         "person with multiple string properties"),
+                new PersonArgs("Person with map properties", Map.of(), Map.of(), Map.of(),
+                        Map.of("foo", Map.of(1,false), "bar", Map.of(2,true)), 
+                        "person with map properties"),
                 new PersonArgs("Person with all properties", Map.of("Un entier", Integer.MAX_VALUE),
                         Map.of("s1","1","s2","02","s3","aa3","s4","_'&4"),
                         Map.of("un set", Set.of("1"), "deux sets", Set.of("a","b","c","d")),
+                        Map.of("une map", Map.of(6, false), "deux map", Map.of(-72, false)),
                         "person with c0mpl3x n@me")
         );
     }
@@ -43,7 +48,7 @@ final class PersonAndPersonBuilderTest implements
     @TestFactory
     Stream<DynamicNode> failFastOnNullInput(){
         Class<NullPointerException> exception = NullPointerException.class;
-        return test(Stream.of(new PersonArgs("specific input", null, null, null, null)), 
+        return test(Stream.of(new PersonArgs("specific input", null, null, null, null, null)), 
                 "fail-fast on null input", args -> {
                     PersonBuilder builder = new PersonBuilder();
                     Assertions.assertAll(
@@ -53,6 +58,9 @@ final class PersonAndPersonBuilderTest implements
                             () -> assertThrowsExceptionWhenSettingNullProperty(exception,
                                     (s, set) -> builder.withPropertySet(s, set), 
                                     Set.of("")),
+                            () -> assertThrowsExceptionWhenSettingNullProperty(exception, 
+                                    (s, map) -> builder.withPropertyMap(s, map),
+                                    Map.of(1,false)),
                             () -> Assertions.assertThrows(exception, 
                                     () -> builder.withFullName(null))
                     );
@@ -85,11 +93,13 @@ final class PersonAndPersonBuilderTest implements
     @TestFactory
     Stream<DynamicNode> personBuilderCannotMutatePersonAfterCreation(){
         String undefinedProperty = "____UNDEFINED_____";
+        String undefinedMapProperty = "____UNDEFINED____";
         return test("PersonBuilder cannot alter Person after creation", args -> {
             PersonBuilder builder = args.initialisePersonBuilder();
             Person person = builder.build();
             builder.withProperty(undefinedProperty, 0);
             builder.withPropertySet(undefinedProperty, Set.of());
+            builder.withPropertyMap(undefinedMapProperty, Map.of());
             
             Class expectedException = IllegalArgumentException.class;
             
@@ -98,22 +108,26 @@ final class PersonAndPersonBuilderTest implements
                             () -> person.getPropertyAs(undefinedProperty, Integer.class)),
                     () -> Assertions.assertThrows(expectedException,
                             () -> person.getPropertyAsSetOf(undefinedProperty, Boolean.class)),
+                    () -> Assertions.assertThrows(expectedException,
+                            () -> person.getPropertyAsMapOf(undefinedMapProperty, Integer.class, 
+                                    Boolean.class)),
                     () -> args.assertPersonHasExpectedProperties(person)
             );
         });
     }
     
     @TestFactory
-    Stream<DynamicNode> multipleStringPropertiesAreImmutable(){
+    Stream<DynamicNode> multiplePropertiesAreImmutable(){
         String empty_set_name = "EMPTY";
         String other_set_name = "OTHER";
         Set<String> mutableSet = new HashSet<>();
         mutableSet.addAll(Set.of("first", "second", "third"));
-        Stream<PersonArgs> stream = Stream.of(new PersonArgs("empty multiple string property",
+        Stream<PersonArgs> stream = Stream.of(new PersonArgs("specific test case",
                 Map.of(), Map.of(), 
-                Map.of(empty_set_name, new HashSet<>(),other_set_name, mutableSet), "name"));
+                Map.of(empty_set_name, new HashSet<>(),other_set_name, mutableSet), 
+                Map.of(), "name"));
         Class exception = UnsupportedOperationException.class;
-        return test(stream, "getMultipleStringProperty() returns immutable set", args -> {
+        return test(stream, "getPropertyAsSetOf() returns immutable set", args -> {
            Person person = args.initialisePersonBuilder().build();
            Assertions.assertAll(
                    () -> Assertions.assertThrows(exception, 
@@ -128,9 +142,34 @@ final class PersonAndPersonBuilderTest implements
     }
     
     @TestFactory
+    Stream<DynamicNode> MapPropertiesAreImmutable(){
+        String empty_map_name = "EMPTY";
+        String other_map_name = "OTHER";
+        Map<Integer, Boolean> mutableMap = new HashMap<>();
+        mutableMap.putAll(Map.of(1, true, 2, false));
+        Stream<PersonArgs> stream = Stream.of(new PersonArgs("specific test case",
+                Map.of(), Map.of(), Map.of(),
+                Map.of(empty_map_name, new HashMap<>(),other_map_name, mutableMap), 
+                "name"));
+        Class exception = UnsupportedOperationException.class;
+        return test(stream, "getPropertyAsMapOf() returns immutable map", args -> {
+           Person person = args.initialisePersonBuilder().build();
+           Assertions.assertAll(
+                   () -> Assertions.assertThrows(exception, 
+                           () -> person.getPropertyAsMapOf(empty_map_name, Integer.class, 
+                                   Boolean.class).put(3, false)),
+                   () -> Assertions.assertThrows(exception, 
+                           () -> person.getPropertyAsMapOf(other_map_name, Integer.class,
+                                   Boolean.class).put(1, false)),
+                   () -> args.assertPersonHasExpectedProperties(person)
+           );
+        });
+    }
+    
+    @TestFactory
     Stream<DynamicNode> personBuilderChainedCallReturnSelf(){
         Stream<PersonArgs> stream = Stream.of(new PersonArgs("specific case", Map.of(), Map.of(),
-                Map.of(), "John Doe"));
+                Map.of(), Map.of(), "John Doe"));
         return test(stream, "withProperty() returns self", args -> {
            PersonBuilder builder = new PersonBuilder();
            Assertions.assertAll(
@@ -151,7 +190,7 @@ final class PersonAndPersonBuilderTest implements
     
     @TestFactory
     Stream<DynamicNode> equalsIsNotSensitiveToSetOrder(){
-        return test(Stream.of(new PersonArgs("specific test case", null, 
+        return test(Stream.of(new PersonArgs("specific test case", null, null,
                 null, null, null)), "equals() on equal values with unsorted sets", args -> {
                     Person first = new PersonBuilder().withPropertySet("property", Set.of(true, 1))
                             .build();
@@ -196,15 +235,18 @@ final class PersonAndPersonBuilderTest implements
         final Map<String, Integer> integerProperties;
         final Map<String, String> stringProperties;
         final Map<String, Set<String>> multipleStringProperties;
+        final Map<String, Map<Integer, Boolean>> mapProperties;
         final String name;
         
         PersonArgs(String testCase, Map<String, Integer> integerProperties,
                 Map<String, String> stringProperties,
-                Map<String, Set<String>> multipleStringProperties, String name){
+                Map<String, Set<String>> multipleStringProperties, 
+                Map<String, Map<Integer, Boolean>> mapProperties, String name){
             super(testCase);
             this.integerProperties = integerProperties;
             this.stringProperties = stringProperties;
             this.multipleStringProperties = multipleStringProperties;
+            this.mapProperties = mapProperties;
             this.name = name;
         }
         
@@ -217,6 +259,8 @@ final class PersonAndPersonBuilderTest implements
                     result.withProperty(entry.getKey(), entry.getValue()));
             multipleStringProperties.entrySet().forEach(entry ->
                     result.withPropertySet(entry.getKey(), entry.getValue()));
+            mapProperties.entrySet().forEach(entry ->
+                    result.withPropertyMap(entry.getKey(), entry.getValue()));
             result.withFullName(name);
             return result;
         }
@@ -235,6 +279,11 @@ final class PersonAndPersonBuilderTest implements
                             multipleStringProperties.entrySet().stream().map(entry ->
                                     () -> Assertions.assertEquals(entry.getValue(), 
                                             person.getPropertyAsSetOf(entry.getKey(), String.class)))),
+                    () -> Assertions.assertAll(
+                            mapProperties.entrySet().stream().map(entry -> 
+                                    () -> Assertions.assertEquals(entry.getValue(), 
+                                            person.getPropertyAsMapOf(entry.getKey(), Integer.class, 
+                                                    Boolean.class)))),
                     () -> Assertions.assertEquals(name, person.getFullName())
             );
         }
