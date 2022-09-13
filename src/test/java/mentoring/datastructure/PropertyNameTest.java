@@ -1,5 +1,6 @@
 package mentoring.datastructure;
 
+import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.stream.Stream;
@@ -57,6 +58,14 @@ class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyArgs>{
         }
         
         PropertyType getExpectedValueType(){
+            throw new UnsupportedOperationException("Method used only in MapPropertyArg objects");
+        }
+        
+        String[] getMapInput(){
+            throw new UnsupportedOperationException("Method used only in MapPropertyArg objects");
+        }
+        
+        Map<? extends Object, ? extends Object> getExpectedResult(){
             throw new UnsupportedOperationException("Method used only in MapPropertyArg objects");
         }
     }

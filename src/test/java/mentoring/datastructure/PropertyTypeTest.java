@@ -46,7 +46,7 @@ class PropertyTypeTest implements TestFramework<PropertyTypeTest.PropertyTypeArg
         final Object output;
         final PropertyType type;
         
-        public PropertyTypeArgs(String testCase, PropertyType type, String input, Object output) {
+        public PropertyTypeArgs(String testCase, PropertyType<?> type, String input, Object output) {
             super(String.format("type %s for %s", type, testCase));
             this.type = type;
             this.input = input;
