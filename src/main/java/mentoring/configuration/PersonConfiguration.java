@@ -3,6 +3,7 @@ package mentoring.configuration;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import mentoring.datastructure.MultiplePropertyName;
 import mentoring.datastructure.PropertyName;
 /**
  * The definition of a person's properties.
@@ -15,15 +16,14 @@ public interface PersonConfiguration {
      * Returns the {@link PropertyName} instances describing single-valued properties.
      * @return the identification of single-valued properties for this configuration
      */
-    Set<PropertyName> getPropertiesNames();
+    Set<PropertyName<?>> getPropertiesNames();
     
     /**
      * Returns the {@link PropertyName} instances describing multi-valued properties. Multi-valued
      * properties are properties associated with collections of values.
      * @return the identification of multi-valued properties for this configuration
      */
-    Set<PropertyName> getMultiplePropertiesNames();
-    
+    Set<? extends MultiplePropertyName<?,?>> getMultiplePropertiesNames();
     /**
      * Returns the separator used in the CSV file to separate values inside multi-valued properties.
      * @return the separator for String.split() to get the individual parts of multi-valued 

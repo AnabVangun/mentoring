@@ -11,7 +11,7 @@ import org.junit.jupiter.api.TestFactory;
 
 class MultiplePropertyNameTest extends PropertyNameTest{
     @Override
-    public Stream<PropertyArgs> argumentsSupplier() {
+    public Stream<PropertyArgs<?,?>> argumentsSupplier() {
         return Stream.of(
                 new TwoArgMapProperty<>("Simple two-argument property", "propriété", "headerName", 
                         PropertyType.STRING, PropertyType.STRING,
@@ -47,8 +47,8 @@ class MultiplePropertyNameTest extends PropertyNameTest{
                         ((MultiplePropertyName) args.convert()).buildMap(args.getMapInput())));
     }
 
-    static class TwoArgMapProperty<K,V> extends TwoArgProperty{
-        final PropertyType valueType;
+    static class TwoArgMapProperty<K,V> extends TwoArgProperty<K, V>{
+        final PropertyType<V> valueType;
         final Function<String[], Map<? extends K,? extends V>> parser;
         final String[] mapInput;
         final Map<? extends K, ? extends V> expectedResult;

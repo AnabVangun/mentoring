@@ -1,6 +1,5 @@
 package mentoring.datastructure;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -42,5 +41,5 @@ public class IndexedPropertyName<K> extends MultiplePropertyName<K,Integer> {
             }
             return result;
         };
-    };
+    }
 }
