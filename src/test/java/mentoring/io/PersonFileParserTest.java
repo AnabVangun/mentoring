@@ -29,7 +29,7 @@ class PersonFileParserTest implements TestFramework<PersonFileParserArgs>{
                         "fifth", List.of(), 0),
                 new PersonFileParserArgs("one person", DummyPersonConfiguration.MULTIPLE_PROPERTIES, 
                         "third,fourth" + NEWLINE + "vrai|faux,0", List.of(
-                                new PersonBuilder().withPropertySet("third", Set.of(true, false))
+                                new PersonBuilder().withPropertyMap("third", Map.of(true, 0, false, 1))
                                         .withPropertySet("fourth", Set.of(0)).withFullName("").build()),1),
                 new PersonFileParserArgs("three persons", DummyPersonConfiguration.SIMPLE_PROPERTIES,
                         "first,second" + NEWLINE + "string,1" + NEWLINE + "foo,2" + NEWLINE + "bar,3", List.of(

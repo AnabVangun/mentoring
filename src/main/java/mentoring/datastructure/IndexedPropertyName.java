@@ -7,7 +7,7 @@ import java.util.function.Function;
 
 /**
  * Immutable description of a multiple property where the value associated with a key is its index
- * in the parsed property.
+ * in the parsed property. If the key is present several times, only its lowest index is kept.
  * @param <K> type of the key in the key-value pairs stored in the property.
  */
 public class IndexedPropertyName<K> extends MultiplePropertyName<K,Integer> {

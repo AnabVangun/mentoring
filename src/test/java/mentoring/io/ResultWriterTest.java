@@ -24,17 +24,18 @@ class ResultWriterTest implements TestFramework<ResultWriterArgs> {
     }
     
     @TestFactory
+    @SuppressWarnings("unchecked")
     Stream<DynamicNode> constructor_npe(){
         return test(Stream.of((ResultConfiguration) null), 
                 "ResultWriter() fails on null input", args ->
                         Assertions.assertThrows(NullPointerException.class, 
-                                () -> new ResultWriter(args)));
+                                () -> new ResultWriter<>(args)));
     }
     
     @TestFactory
     Stream<DynamicNode> constructor(){
         return test(Stream.of(ResultWriterArgs.ONE), "ResultWriter() succeeds on valid input", 
-                args -> new ResultWriter(args.getConfiguration()));
+                args -> new ResultWriter<>(args.getConfiguration()));
     }
     
     @TestFactory
@@ -43,7 +44,7 @@ class ResultWriterTest implements TestFramework<ResultWriterArgs> {
                 new ResultWriterArgs("null writer", "", 
                         new MatchesArgs(List.of(Pair.of("a","b"))).convert(), null)),
                 "writeMatches() throws NPE on null input", args -> {
-                    ResultWriter writer = new ResultWriter(args.getConfiguration());
+                    ResultWriter<String, String> writer = new ResultWriter<>(args.getConfiguration());
                     Assertions.assertThrows(NullPointerException.class, () -> 
                             writer.writeMatches(args.input, args.destination)
                     );
@@ -53,14 +54,14 @@ class ResultWriterTest implements TestFramework<ResultWriterArgs> {
     @TestFactory
     Stream<DynamicNode> writeMatches_expectedResult(){
         return test("writeMatches() returns the expected result", args -> {
-            ResultWriter writer = new ResultWriter(args.getConfiguration());
+            ResultWriter<String, String> writer = new ResultWriter<>(args.getConfiguration());
             writer.writeMatches(args.input, args.destination);
             Assertions.assertEquals(args.expectedResult, args.destination.toString());
         });
     }
     
     static class ResultWriterArgs extends TestArgs {
-        private final ResultConfiguration<Integer, String> mock;
+        private final ResultConfiguration<String, String> mock;
         private final String expectedResult;
         private final Matches<String, String> input;
         private final Writer destination;
@@ -70,6 +71,7 @@ class ResultWriterTest implements TestFramework<ResultWriterArgs> {
             this(testCase, expectedResult, input, new StringWriter());
         }
         
+        @SuppressWarnings("unchecked")
         private ResultWriterArgs(String testCase, String expectedResult,
                 Matches<String, String> input, Writer destination){
             super(testCase);
@@ -93,7 +95,7 @@ class ResultWriterTest implements TestFramework<ResultWriterArgs> {
                 new MatchesArgs(List.of(Pair.of("a","b"), Pair.of("c","d"), Pair.of("e","f")))
                         .convert());
         
-        ResultConfiguration<Integer, String> getConfiguration(){
+        ResultConfiguration<String, String> getConfiguration(){
             return mock;
         }
     }

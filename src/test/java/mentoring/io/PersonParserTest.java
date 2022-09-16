@@ -93,7 +93,7 @@ class PersonParserTest implements TestFramework<PersonParserArgs>{
                         Map.of(new String[]{"foo","vrai","-43|12"},
                                 new PersonBuilder().withFullName("")
                                         .withPropertySet("fourth", Set.of(12,-43))
-                                        .withPropertySet("third", Set.of(true)).build())),
+                                        .withPropertyMap("third", Map.of(true, 0)).build())),
                 new PersonParserArgs(DummyPersonConfiguration.NAME_PROPERTIES.toString(), 
                         DummyPersonConfiguration.NAME_PROPERTIES, 
                         new String[]{"fifth"}, 
@@ -105,8 +105,8 @@ class PersonParserTest implements TestFramework<PersonParserArgs>{
                         Map.of(new String[]{"foo","-98765432","oui|faux|vrai","2147483647|0","bar","foo","barfoo"},
                                 new PersonBuilder().withProperty("pFirst", "foo")
                                         .withProperty("pSecond", -98765432)
-                                        .withPropertySet("pThird", Set.of(true, false))
-                                        .withPropertySet("pFourth", Set.of(0, 2147483647))
+                                        .withPropertyMap("pThird", Map.of(true, 0, false, 1))
+                                        .withPropertyMap("pFourth", Map.of(0, 1, 2147483647, 0))
                                         .withFullName("bar foo barfoo").build()))),
                 "parseLine() returns the expected Person", args -> args.assertCorrectParsing());
     }

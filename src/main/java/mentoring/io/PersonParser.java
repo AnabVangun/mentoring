@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.stream.Collectors;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.PersonBuilder;
 
@@ -66,12 +65,8 @@ final class PersonParser {
         configuration.getMultiplePropertiesNames().forEach(property -> {
             String[] splitValue = line[propertyNameIndices.get(property.getHeaderName())]
                     .split(configuration.getSeparator());
-            Object[] parsedValue = new Object[splitValue.length];
-            for (int i = 0; i < splitValue.length; i++){
-                parsedValue[i] = property.getType().parse(splitValue[i]);
-            }
-            builder.withPropertySet(property.getName(), 
-                    Arrays.stream(parsedValue).collect(Collectors.toSet()));
+            builder.withPropertyMap(property.getName(), 
+                    property.buildMap(splitValue));
         });
         Object[] nameValues = configuration.getNamePropertiesHeaderNames().stream()
                 .map(property -> line[propertyNameIndices.get(property)]).toArray();
