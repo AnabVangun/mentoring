@@ -25,7 +25,7 @@ final class CostMatrixHandler<Mentee, Mentor> {
         return this;
     }
     
-    CostMatrixHandler buildCostMatrix(){
+    CostMatrixHandler<Mentee, Mentor> buildCostMatrix(){
         /** Cell [i][j] is the cost of associating mentee i with mentor j. */
         costMatrix = new int[mentees.size()][mentors.size()];
         for(int i = 0; i < mentees.size(); i++){

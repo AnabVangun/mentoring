@@ -34,6 +34,7 @@ public final class PersonBuilder {
         return this;
     }
     
+    @Deprecated
     public <T> PersonBuilder withPropertySet(String property, Set<T> values){
         multipleProperties.put(Objects.requireNonNull(property), 
                 values.stream().collect(Collectors.toMap(Function.identity(), x -> 0)));

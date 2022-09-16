@@ -18,8 +18,7 @@ import mentoring.io.ResultWriter;
 import mentoring.match.Matches;
 import mentoring.match.MatchesBuilder;
 
-/*TODO: add Map-parsing functions in PersonParser.
-TODO: Make PojoPersonConfiguration, PojoCriteriaConfiguration and PojoResultConfiguration for 2023 
+/*TODO: Make PojoPersonConfiguration, PojoCriteriaConfiguration for 2023 
 database.
 */
 /**

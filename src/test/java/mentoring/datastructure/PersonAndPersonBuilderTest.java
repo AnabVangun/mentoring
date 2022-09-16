@@ -46,6 +46,7 @@ final class PersonAndPersonBuilderTest implements
     }
     
     @TestFactory
+    @SuppressWarnings("deprecation")
     Stream<DynamicNode> failFastOnNullInput(){
         Class<NullPointerException> exception = NullPointerException.class;
         return test(Stream.of(new PersonArgs("specific input", null, null, null, null, null)), 
@@ -91,6 +92,7 @@ final class PersonAndPersonBuilderTest implements
     }
     
     @TestFactory
+    @SuppressWarnings("deprecation")
     Stream<DynamicNode> personBuilderCannotMutatePersonAfterCreation(){
         String undefinedProperty = "____UNDEFINED_____";
         String undefinedMapProperty = "____UNDEFINED____";
@@ -101,7 +103,7 @@ final class PersonAndPersonBuilderTest implements
             builder.withPropertySet(undefinedProperty, Set.of());
             builder.withPropertyMap(undefinedMapProperty, Map.of());
             
-            Class expectedException = IllegalArgumentException.class;
+            Class<IllegalArgumentException> expectedException = IllegalArgumentException.class;
             
             Assertions.assertAll(
                     () -> Assertions.assertThrows(expectedException, 
@@ -117,6 +119,7 @@ final class PersonAndPersonBuilderTest implements
     }
     
     @TestFactory
+    @SuppressWarnings("deprecation")
     Stream<DynamicNode> multiplePropertiesAreImmutable(){
         String empty_set_name = "EMPTY";
         String other_set_name = "OTHER";
@@ -126,7 +129,7 @@ final class PersonAndPersonBuilderTest implements
                 Map.of(), Map.of(), 
                 Map.of(empty_set_name, new HashSet<>(),other_set_name, mutableSet), 
                 Map.of(), "name"));
-        Class exception = UnsupportedOperationException.class;
+        Class<UnsupportedOperationException> exception = UnsupportedOperationException.class;
         return test(stream, "getPropertyAsSetOf() returns immutable set", args -> {
            Person person = args.initialisePersonBuilder().build();
            Assertions.assertAll(
@@ -151,7 +154,7 @@ final class PersonAndPersonBuilderTest implements
                 Map.of(), Map.of(), Map.of(),
                 Map.of(empty_map_name, new HashMap<>(),other_map_name, mutableMap), 
                 "name"));
-        Class exception = UnsupportedOperationException.class;
+        Class<UnsupportedOperationException> exception = UnsupportedOperationException.class;
         return test(stream, "getPropertyAsMapOf() returns immutable map", args -> {
            Person person = args.initialisePersonBuilder().build();
            Assertions.assertAll(
@@ -167,6 +170,7 @@ final class PersonAndPersonBuilderTest implements
     }
     
     @TestFactory
+    @SuppressWarnings("deprecation")
     Stream<DynamicNode> personBuilderChainedCallReturnSelf(){
         Stream<PersonArgs> stream = Stream.of(new PersonArgs("specific case", Map.of(), Map.of(),
                 Map.of(), Map.of(), "John Doe"));
@@ -189,6 +193,7 @@ final class PersonAndPersonBuilderTest implements
     }
     
     @TestFactory
+    @SuppressWarnings("deprecation")
     Stream<DynamicNode> equalsIsNotSensitiveToSetOrder(){
         return test(Stream.of(new PersonArgs("specific test case", null, null,
                 null, null, null)), "equals() on equal values with unsorted sets", args -> {
@@ -250,6 +255,7 @@ final class PersonAndPersonBuilderTest implements
             this.name = name;
         }
         
+        @SuppressWarnings("deprecation")
         PersonBuilder initialisePersonBuilder(){
             //This proves that withXXXProperty methods modify the builder on which they are called.
             PersonBuilder result = new PersonBuilder();
@@ -265,6 +271,7 @@ final class PersonAndPersonBuilderTest implements
             return result;
         }
         
+        @SuppressWarnings("deprecation")
         void assertPersonHasExpectedProperties(Person person){
             Assertions.assertAll(
                     () -> Assertions.assertAll(

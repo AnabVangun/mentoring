@@ -90,7 +90,7 @@ final class MatchTest implements TestFramework<MatchTest.MatchArgs>{
         }
         
         Match<Object, Object> convert(){
-            return new Match(mentee, mentor, cost);
+            return new Match<>(mentee, mentor, cost);
         }
     }
     

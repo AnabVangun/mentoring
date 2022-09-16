@@ -78,6 +78,7 @@ class PersonParserTest implements TestFramework<PersonParserArgs>{
     }
     
     @TestFactory
+    @SuppressWarnings("deprecation")
     Stream<DynamicNode> parseLine(){
         return test(Stream.of(
                 new PersonParserArgs(DummyPersonConfiguration.SIMPLE_PROPERTIES.toString(), 

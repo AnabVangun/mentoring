@@ -10,18 +10,25 @@ import mentoring.match.Match;
 public enum PojoResultConfiguration implements ResultConfiguration<Person, Person> {
     /** Writes the names and the total cost of a pair. */
     NAMES_AND_SCORE(new String[]{"Mentoré", "Mentor", "Coût"},
-        match -> new String[]{match.getMentee().getFullName(), 
-            match.getMentor().getFullName(), Integer.toString(match.getCost())}),
+            match -> new String[]{match.getMentee().getFullName(),
+                match.getMentor().getFullName(), Integer.toString(match.getCost())}),
     /** Writes the names, e-mail addresses and the total cost of a pair. */
     NAMES_EMAILS_AND_SCORE(new String[]{
         "Mentoré", "email mentoré", "Mentor", "email mentor", "Coût"},
-        match -> new String[]{match.getMentee().getFullName(),
-            match.getMentee().getPropertyAs("Email", String.class),
-            match.getMentor().getFullName(),
-            match.getMentor().getPropertyAs("Email", String.class),
-            Integer.toString(match.getCost())});
-    //TODO add 2023 configuration : Mentor (prénom, nom, email) Eleve (prénom, nom, email), Mentor (email) Score de la paire
-
+            match -> new String[]{match.getMentee().getFullName(),
+                match.getMentee().getPropertyAs("Email", String.class),
+                match.getMentor().getFullName(),
+                match.getMentor().getPropertyAs("Email", String.class),
+                Integer.toString(match.getCost())}),
+    NAMES_EMAILS_DUPLICATE_AND_SCORE(new String[]{
+        "Mentor", "email mentor", "Mentoré", "email mentoré", "email mentor bis", "Coût"},
+            match -> new String[]{match.getMentor().getFullName(),
+                match.getMentor().getPropertyAs("Email", String.class),
+                match.getMentee().getFullName(),
+                match.getMentee().getPropertyAs("Email", String.class),
+                match.getMentor().getPropertyAs("Email", String.class),
+                Integer.toString(match.getCost())});
+    
     private final String[] header;
     private final Function<Match<Person, Person>, String[]> lineFormater;
     

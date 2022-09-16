@@ -55,6 +55,7 @@ public final class Person {
      * @return a set containing the values of the property cast to the given type.
      */
     @SuppressWarnings("unchecked")
+    @Deprecated
     public <T> Set<T> getPropertyAsSetOf(String property, Class<T> type){
         return (Set<T>) getPropertyAsMapOf(property, type, Object.class).keySet();
     }

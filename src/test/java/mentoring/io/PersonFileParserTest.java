@@ -23,6 +23,7 @@ class PersonFileParserTest implements TestFramework<PersonFileParserArgs>{
     static final String NEWLINE = System.getProperty("line.separator");
     
     @Override
+    @SuppressWarnings("deprecation")
     public Stream<PersonFileParserArgs> argumentsSupplier(){
         return Stream.of(
                 new PersonFileParserArgs("no person", DummyPersonConfiguration.NAME_PROPERTIES, 

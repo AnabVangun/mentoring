@@ -42,7 +42,7 @@ class ResultWriterTest implements TestFramework<ResultWriterArgs> {
     Stream<DynamicNode> writeMatches_npe(){
         return test(Stream.of(new ResultWriterArgs("null matches", "", null), 
                 new ResultWriterArgs("null writer", "", 
-                        new MatchesArgs(List.of(Pair.of("a","b"))).convert(), null)),
+                        new MatchesArgs<>(List.of(Pair.of("a","b"))).convert(), null)),
                 "writeMatches() throws NPE on null input", args -> {
                     ResultWriter<String, String> writer = new ResultWriter<>(args.getConfiguration());
                     Assertions.assertThrows(NullPointerException.class, () -> 
@@ -86,13 +86,13 @@ class ResultWriterTest implements TestFramework<ResultWriterArgs> {
         
         static final ResultWriterArgs ONE = new ResultWriterArgs("One match", 
                 "\"1\",\"2\"\n\"3\",\"4\"\n",
-                new MatchesArgs(List.of(Pair.of("a","b"))).convert());
+                new MatchesArgs<>(List.of(Pair.of("a","b"))).convert());
         static final ResultWriterArgs TWO = new ResultWriterArgs("Two matches", 
                 "\"1\",\"2\"\n\"3\",\"4\"\n\"5\",\"6\"\n",
-                new MatchesArgs(List.of(Pair.of("a","b"), Pair.of("c","d"))).convert());
+                new MatchesArgs<>(List.of(Pair.of("a","b"), Pair.of("c","d"))).convert());
         static final ResultWriterArgs THREE = new ResultWriterArgs("Three matches", 
                 "\"1\",\"2\"\n\"3\",\"4\"\n\"5\",\"6\"\n\"7\",\"8\"\n",
-                new MatchesArgs(List.of(Pair.of("a","b"), Pair.of("c","d"), Pair.of("e","f")))
+                new MatchesArgs<>(List.of(Pair.of("a","b"), Pair.of("c","d"), Pair.of("e","f")))
                         .convert());
         
         ResultConfiguration<String, String> getConfiguration(){
