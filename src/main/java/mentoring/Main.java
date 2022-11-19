@@ -18,9 +18,6 @@ import mentoring.io.ResultWriter;
 import mentoring.match.Matches;
 import mentoring.match.MatchesBuilder;
 
-/*TODO: Make PojoPersonConfiguration, PojoCriteriaConfiguration for 2023 
-database.
-*/
 /**
  * Proof of concept of the mentoring application.
  */
@@ -35,8 +32,8 @@ public class Main {
         String menteeFilePath;
         String mentorFilePath;
         String destinationFilePath;
-        Data data = Data.TEST;
-        boolean writeToFile = false;
+        Data data = Data.REAL2023;
+        boolean writeToFile = true;
         PojoPersonConfiguration menteeConfiguration;
         PojoPersonConfiguration mentorConfiguration;
         PojoCriteriaConfiguration criteriaConfiguration;
@@ -62,6 +59,15 @@ public class Main {
                 mentorConfiguration = PojoPersonConfiguration.MENTOR_CONFIGURATION_REAL_DATA;
                 criteriaConfiguration = PojoCriteriaConfiguration.CRITERIA_CONFIGURATION_REAL_DATA;
                 destinationFilePath = "..\\..\\..\\AX\\2022_Mentoring\\result.csv";
+                resultConfiguration = PojoResultConfiguration.NAMES_EMAILS_AND_SCORE;
+                break;
+            case REAL2023:
+                menteeFilePath = "..\\..\\..\\AX\\2023_Mentoring\\Adapter\\20221016_new_eleves.csv";
+                menteeConfiguration = PojoPersonConfiguration.MENTEE_CONFIGURATION_2023_DATA;
+                mentorFilePath = "..\\..\\..\\AX\\2023_Mentoring\\Adapter\\20221016_new_mentors.csv";
+                mentorConfiguration = PojoPersonConfiguration.MENTOR_CONFIGURATION_2023_DATA;
+                criteriaConfiguration = PojoCriteriaConfiguration.CRITERIA_CONFIGURATION_2023_DATA;
+                destinationFilePath = "..\\..\\..\\AX\\2023_Mentoring\\Adapter\\20221016_result.csv";
                 resultConfiguration = PojoResultConfiguration.NAMES_EMAILS_AND_SCORE;
                 break;
             default:
@@ -91,5 +97,5 @@ public class Main {
         }
     }
     
-    static enum Data {TEST, REAL}
+    static enum Data {TEST, REAL, REAL2023}
 }

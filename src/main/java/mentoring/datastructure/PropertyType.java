@@ -1,7 +1,9 @@
 package mentoring.datastructure;
 
+import java.text.Normalizer;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 /**
  * All the types of properties that can be used for a {@link Person}.
@@ -20,6 +22,8 @@ public final class PropertyType<T> {
             new PropertyType<>(Integer.class, s -> Integer.parseInt(s));
     public final static PropertyType<String> STRING =
             new PropertyType<>(String.class, Function.identity());
+    public final static PropertyType<String> SIMPLIFIED_LOWER_STRING =
+            new PropertyType<>(String.class, PropertyType::simplifyString);
     
     private final Class<T> type;
     private final Function<String,? extends T> parser;
@@ -37,5 +41,16 @@ public final class PropertyType<T> {
     
     public Class<T> getType(){
         return type;
+    }
+    
+    private final static Pattern SIMPLIFICATION_PATTERN = Pattern.compile("[\\s\\p{M}]");
+    
+    private static String simplifyString(String input){
+        return SIMPLIFICATION_PATTERN.matcher(normalizeDiacriticRepresentation(input))
+                .replaceAll("").toLowerCase();
+    }
+    
+    private static String normalizeDiacriticRepresentation(String input){
+        return Normalizer.normalize(input, Normalizer.Form.NFKD);
     }
 }

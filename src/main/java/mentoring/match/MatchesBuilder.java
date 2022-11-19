@@ -3,11 +3,11 @@ package mentoring.match;
 import assignmentproblem.Result;
 import assignmentproblem.Solver;
 import assignmentproblem.hungariansolver.HungarianSolver;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 /**
  * Builder used to match mentees and mentors. The only mandatory parameters to build a 
  * {@link Matches} instance are the arguments of the public constructor: the simplest use of this 
@@ -116,10 +116,9 @@ public final class MatchesBuilder<Mentee, Mentor> {
     }
     
     private Matches<Mentee, Mentor> formatMatchesWithPlaceholders(Result rawResult){
-        Stream<Match<Mentee, Mentor>> concatenation = Stream.concat(
-            buildMenteeMatchesWithValidOrDefaultMentor(rawResult), 
-            buildDefaultMatchesForUnassignedMentors(rawResult));
-        return new Matches<>(concatenation.collect(Collectors.toList()));
+        List<Match<Mentee, Mentor>> matches = buildMenteeMatchesWithValidOrDefaultMentor(rawResult);
+        matches.addAll(buildDefaultMatchesForUnassignedMentors(rawResult));
+        return new Matches<>(matches);
     }
     
     private Matches<Mentee, Mentor> filterAndFormatValidMatches(Result rawResult){
@@ -137,21 +136,29 @@ public final class MatchesBuilder<Mentee, Mentor> {
                 && costMatrixHandler.isMatchScoreNotProhibitive(menteeIndex, mentorIndex));
     }
     
-    private Stream<Match<Mentee, Mentor>> 
+    private List<Match<Mentee, Mentor>> 
         buildMenteeMatchesWithValidOrDefaultMentor(Result rawResult){
         List<Integer> rowAssignments = rawResult.getRowAssignments();
-        return IntStream.range(0, rowAssignments.size())
-            .mapToObj(i -> buildMatchWithValidOrDefaultMentor(i, rowAssignments.get(i)));
+        List<Match<Mentee, Mentor>> result = new ArrayList<>(rowAssignments.size());
+        for (int i = 0; i < rowAssignments.size(); i++){
+            result.add(buildMatchWithValidOrDefaultMentor(i, rowAssignments.get(i)));
+        }
+        return result;
     }
     
-    private Stream<Match<Mentee,Mentor>> buildDefaultMatchesForUnassignedMentors(Result rawResult){
+    private List<Match<Mentee,Mentor>> buildDefaultMatchesForUnassignedMentors(Result rawResult){
         List<Integer> colAssignments = rawResult.getColumnAssignments();
-        return IntStream.range(0, colAssignments.size())
-            .filter(j -> ! isValidMatch(colAssignments.get(j), j))
-            .mapToObj(this::buildDefaultMentorMatch);
+        List<Match<Mentee,Mentor>> result = new ArrayList<>();
+        for (int j = 0; j < colAssignments.size(); j++){
+            if (!isValidMatch(colAssignments.get(j),j)){
+                result.add(buildDefaultMentorMatch(j));
+            }
+        }
+        return result;
     }
     
-    private Match<Mentee, Mentor> buildMatchWithValidOrDefaultMentor(int menteeIndex, int mentorIndex){
+    private Match<Mentee, Mentor> buildMatchWithValidOrDefaultMentor(int menteeIndex, 
+            Integer mentorIndex){
         if (isValidMatch(menteeIndex, mentorIndex)){
             return buildMatch(menteeIndex, mentorIndex);
         } else {

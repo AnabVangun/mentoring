@@ -1,6 +1,7 @@
 package mentoring.configuration;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import mentoring.configuration.CriteriaToolbox.Letter;
@@ -53,6 +54,30 @@ class CriteriaToolboxTest implements TestFramework<Object>{
     }
     
     @TestFactory
+    Stream<DynamicNode> computeMapSetProximity(){
+        int multiplier = CriteriaToolbox.SET_PROXIMITY_MULTIPLIER;
+        Set<Integer> set = Set.of(0,1);
+        return test(Stream.of(
+                new SetMapArgs("no element", multiplier, set, Map.of(), 1),
+                new SetMapArgs("one non-common element", multiplier*2, 
+                        set, Map.of(2,0),1),
+                new SetMapArgs("one common element", (int) (multiplier * 0.8), 
+                        set, Map.of(1,0), 0.2),
+                new SetMapArgs("two non-common elements", (int) (multiplier * 1.4), 
+                        set, Map.of(2,0,3,1),0.4),
+                new SetMapArgs("two partially common elements", (int) (multiplier * 1.2), 
+                        set, Map.of(0,1,2,0),0.6),
+                new SetMapArgs("two common elements", (int) (multiplier * 0.2), 
+                        set, Map.of(0,0,1,1),0.8),
+                new SetMapArgs("three partially common elements", (int) (multiplier * 1.14285714285), 
+                        set, Map.of(0,2,1,1,2,0),1)),
+                "computeWeightedAsymetricMapDistance() returns the expected value", 
+                args -> Assertions.assertEquals(args.expected, 
+                        CriteriaToolbox.computeWeightedAsymetricMapDistance(args.map, args.set, 
+                                args.spikeFactor)));
+    }
+    
+    @TestFactory
     Stream<DynamicNode> isValidPrefix_validInput(){
         return test(Arrays.stream(Letter.values()), "Letter.isValidPrefix() on valid input", args ->
                     Assertions.assertTrue(Letter.isValidPrefix(args.prefix)));
@@ -101,6 +126,33 @@ class CriteriaToolboxTest implements TestFramework<Object>{
                             () -> CriteriaToolbox.getYear(args.formatted)));
     }
     
+    @TestFactory
+    Stream<DynamicNode> exponentialDistance_correctOuput(){
+        return test(DistanceArgs.argsSupplier(),
+                "exponentialDistance() returns expected result", args -> 
+                    Assertions.assertEquals(args.expectedResult, 
+                            CriteriaToolbox.exponentialDistance(args.indices, args.first, 
+                                    args.second, args.baseValue)));
+    }
+    @TestFactory
+    Stream<DynamicNode> exponentialDistance_symmetry(){
+        return test(DistanceArgs.argsSupplier(),
+                "exponentialDistance() is symmetric", args -> 
+                    Assertions.assertEquals(CriteriaToolbox.exponentialDistance(args.indices, args.first, 
+                                    args.second, args.baseValue),
+                            CriteriaToolbox.exponentialDistance(args.indices, args.second, 
+                                    args.first, args.baseValue)));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> exponentialDistance_invalidInput(){
+        return test(Stream.of(new DistanceArgs("invalid input", Map.of(), "", "b", 0, 0)),
+                "exponentialDistance() throws an exception on invalid input", args ->
+                    Assertions.assertThrows(RuntimeException.class, () -> 
+                            CriteriaToolbox.exponentialDistance(args.indices, args.first, 
+                                    args.second, args.baseValue)));
+    }
+    
     static class DoubleBooleanArgs extends TestArgs {
         final boolean expected;
         final boolean first;
@@ -125,6 +177,22 @@ class CriteriaToolboxTest implements TestFramework<Object>{
             this.expected = expected;
             this.first = first;
             this.second = second;
+        }
+    }
+    
+    static class SetMapArgs extends TestArgs{
+        final int expected;
+        final Set<Integer> set;
+        final Map<Integer, Integer> map;
+        final double spikeFactor;
+
+        public SetMapArgs(String testCase, int expected, Set<Integer> first, 
+                Map<Integer, Integer> second, double spikeFactor) {
+            super(testCase);
+            this.expected = expected;
+            this.set = first;
+            this.map = second;
+            this.spikeFactor = spikeFactor;
         }
     }
     
@@ -160,6 +228,31 @@ class CriteriaToolboxTest implements TestFramework<Object>{
         
         static Stream<YearArgs> FullSupplier(){
             return Stream.concat(CompleteYearArgsSupplier(), partialYearsArgsSupplier());
+        }
+    }
+    
+    static class DistanceArgs extends TestArgs{
+        final Map<String, Integer> indices;
+        final String first;
+        final String second;
+        final int baseValue;
+        final int expectedResult;
+        
+        DistanceArgs(String testCase, Map<String, Integer> indices, String first, String second, 
+                int baseValue, int expectedResult) {
+            super(testCase);
+            this.indices = indices;
+            this.first = first;
+            this.second = second;
+            this.baseValue = baseValue;
+            this.expectedResult = expectedResult;
+        }
+        
+        static Stream<DistanceArgs> argsSupplier(){
+            return Stream.of(new DistanceArgs("equal input", Map.of("", 1), "", "", 2, 1),
+                    new DistanceArgs("zero base value", Map.of("",1,"a",2),"","a",0,0),
+                    new DistanceArgs("one-off distance", Map.of("a",1,"b",2),"a","b",2,2),
+                    new DistanceArgs("more-than-one-off distance", Map.of("a",0,"b",3),"a","b",3,27));
         }
     }
     

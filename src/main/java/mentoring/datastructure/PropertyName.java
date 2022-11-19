@@ -6,6 +6,7 @@ package mentoring.datastructure;
  * @param <T> the type of element stored in the property.
  */
 public class PropertyName<T> {
+    //TODO consider deprecating the two-args form and simply adding a self-returning method withHeaderName
     private final String headerName;
     private final String name;
     private final PropertyType<T> type;

@@ -17,7 +17,10 @@ class PropertyTypeTest implements TestFramework<PropertyTypeTest.PropertyTypeArg
                     new PropertyTypeArgs("positive integer", INTEGER, "8765", 8765),
                     new PropertyTypeArgs("zero", INTEGER, "000", 0),
                     new PropertyTypeArgs("negative integer", INTEGER, "-1", -1),
-                    new PropertyTypeArgs("string", STRING, "string", "string"));
+                    new PropertyTypeArgs("string", STRING, "string", "string"),
+                    new PropertyTypeArgs("Simple string", SIMPLIFIED_LOWER_STRING, "string", "string"),
+                    new PropertyTypeArgs("Complex string", SIMPLIFIED_LOWER_STRING, 
+                            "éèàäëïöüÿâêîôû? ÈÀÂÎñ", "eeaaeiouyaeiou?eaain"));
         }
     
     @TestFactory

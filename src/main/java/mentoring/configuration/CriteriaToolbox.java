@@ -1,6 +1,7 @@
 package mentoring.configuration;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -89,6 +90,49 @@ public final class CriteriaToolbox {
     }
     
     /**
+     * Computes the distance between the map and the set, where the map values represent an 
+     * ordering of the map keys.
+     * @param <E> type of the keys of the map and the elements of the set
+     * @param map that must be evaluated against the set, where each value is the index of the key
+     * (on a 0-indexed basis)
+     * @param set that must be evaluated against the map
+     * @param spikeFactor the higher the spikeFactor, the farther from the mean distance the return
+     * value for a given map and a given set will be. {@code spikeFactor} MUST be between 0 and 1,
+     * both included.
+     * @throws IllegalArgumentException if spikeFactor is out of bounds or if the values in map do
+     * not correspond to an indexing of its keys.
+     * @return an estimation of how close the map and the set are
+     */
+    public static <E> int computeWeightedAsymetricMapDistance(
+            Map<? extends E, ? extends Integer> map, 
+            Set<? extends E> set, double spikeFactor) throws IllegalArgumentException{
+        if (spikeFactor < 0 || spikeFactor > 1){
+            throw new IllegalArgumentException("Received spikeFactor " + spikeFactor 
+                    + ", expected value between 0 and 1.");
+        }
+        double baseScore = (1.0 - spikeFactor * computeScoreConfiguration(map, set));
+        return (int) Math.round(SET_PROXIMITY_MULTIPLIER * baseScore);
+    }
+    
+    private static <E> double computeScoreConfiguration(Map<? extends E, ? extends Integer> map, 
+            Set<? extends E> set){
+        double result = 0;
+        int size = map.size();
+        if (size == 0){
+            return 0;
+        }
+        for (Map.Entry<? extends E, ? extends Integer> entry: map.entrySet()){
+            if(entry.getValue() < 0 || entry.getValue() >= size){
+                throw new IllegalArgumentException("Map " + map + " contains entry " + entry 
+                        + " with value out of bounds, expected between 0 and " + size + ".");
+            }
+            result += (set.contains(entry.getKey()) ? 1 : -1) 
+                    * (1 << (size - 1 - entry.getValue()));
+        }
+        return result / ((1 << size) - 1);
+    }
+    
+    /**
      * Extracts the year from a String representation of a promotion.
      * @param formattedYear composed of two parts: a possibly-empty prefix of any number of letters 
      * indicating the type of degree of the promotion, and a non-zero number of digits. There might 
@@ -141,5 +185,10 @@ public final class CriteriaToolbox {
             result -= baseNumber;
         }
         return result;
+    }
+    
+    public static <E> int exponentialDistance(Map<? extends E, ? extends Integer> indices, E first, 
+            E second, int baseValue){
+        return (int) Math.pow(baseValue, Math.abs(indices.get(first) - indices.get(second)));
     }
 }
