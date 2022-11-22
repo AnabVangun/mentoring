@@ -22,15 +22,6 @@ public class IndexedPropertyName<K> extends MultiplePropertyName<K,Integer> {
         super(name, headerName, keyType, PropertyType.INTEGER, getParser(keyType));
     }
     
-    /**
-     * Initialises a new MultiplePropertyName.
-     * @param name of the property in {@link Person} objects
-     * @param keyType expected type of the property key
-     */
-    public IndexedPropertyName(String name, PropertyType<K> keyType) {
-        super(name, name, keyType, PropertyType.INTEGER, getParser(keyType));
-    }
-    
     private static <K> Function<String[], Map<? extends K, ? extends Integer>> getParser(
             PropertyType<K> keyType){
         return input -> {

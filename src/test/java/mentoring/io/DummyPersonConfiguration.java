@@ -11,11 +11,12 @@ import mentoring.datastructure.PropertyType;
 import mentoring.datastructure.SetPropertyName;
 
 enum DummyPersonConfiguration implements PersonConfiguration{
-        SIMPLE_PROPERTIES(Set.of(new PropertyName<>("first", PropertyType.STRING), 
-                new PropertyName<>("second", PropertyType.INTEGER)), 
+        SIMPLE_PROPERTIES(Set.of(new PropertyName<>("first", "first", PropertyType.STRING), 
+                new PropertyName<>("second", "second", PropertyType.INTEGER)), 
             Set.of(), "", List.of(), Set.of("first", "second")),
-        MULTIPLE_PROPERTIES(Set.of(), Set.of(new IndexedPropertyName<>("third", PropertyType.BOOLEAN), 
-                new SetPropertyName<>("fourth", PropertyType.INTEGER)), 
+        MULTIPLE_PROPERTIES(Set.of(), Set.of(new IndexedPropertyName<>("third", "third", 
+                PropertyType.BOOLEAN), 
+                new SetPropertyName<>("fourth", "fourth", PropertyType.INTEGER)), 
             "", List.of(), Set.of("third", "fourth")),
         NAME_PROPERTIES(Set.of(), Set.of(), "%s", List.of("fifth"), Set.of("fifth")),
         ALL_PROPERTIES(Set.of(new PropertyName<>("pFirst", "first", PropertyType.STRING),

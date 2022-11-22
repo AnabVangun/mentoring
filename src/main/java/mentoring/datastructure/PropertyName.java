@@ -6,7 +6,6 @@ package mentoring.datastructure;
  * @param <T> the type of element stored in the property.
  */
 public class PropertyName<T> {
-    //TODO consider deprecating the two-args form and simply adding a self-returning method withHeaderName
     private final String headerName;
     private final String name;
     private final PropertyType<T> type;
@@ -23,15 +22,6 @@ public class PropertyName<T> {
         this.type = type;
     }
     
-    /**
-     * Initialises a new PropertyName.
-     * @param name of the property in {@link Person} objects and in the header of data files
-     * @param type expected type of the property
-     */
-    public PropertyName(String name, PropertyType<T> type){
-        this(name, name, type);
-    }
-    
     /** Returns the name used for this property in {@link Person} objects. */
     public String getName(){
         return name;
@@ -44,5 +34,9 @@ public class PropertyName<T> {
     
     public PropertyType<T> getType(){
         return type;
+    }
+    
+    public PropertyName<T> withHeaderName(String headerName){
+        return new PropertyName<>(name, headerName, type);
     }
 }

@@ -16,10 +16,10 @@ import mentoring.datastructure.SetPropertyName;
  */
 public enum PojoPersonConfiguration implements PersonConfiguration{
     /** Configuration used in simple test cases. */
-    TEST_CONFIGURATION(Set.of(new PropertyName<>("Anglais", PropertyType.BOOLEAN), 
-            new PropertyName<>("Promotion", PropertyType.INTEGER)), 
+    TEST_CONFIGURATION(Set.of(new PropertyName<>("Anglais", "Anglais", PropertyType.BOOLEAN), 
+            new PropertyName<>("Promotion", "Promotion", PropertyType.INTEGER)), 
             Set.of(new SetPropertyName<>("Métiers","Activités et métiers", PropertyType.STRING), 
-                    new SetPropertyName<>("Motivation", PropertyType.STRING)), 
+                    new SetPropertyName<>("Motivation", "Motivation", PropertyType.STRING)), 
             ";", "%s %s (X%s)", List.of("Prénom","Nom","Promotion")),
     /** Configuration used for real mentee data in the 2021 data set. */
     MENTEE_CONFIGURATION_REAL_DATA(Set.of(

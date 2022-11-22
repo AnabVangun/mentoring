@@ -13,17 +13,17 @@ class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyArgs<?,
 
     @Override
     public Stream<PropertyArgs<?,?>> argumentsSupplier() {
-        return Stream.of(new OneArgProperty<>("Simple one-argument property", "name&", PropertyType.INTEGER),
-                new OneArgProperty<>("One-argument property with empty name", "", PropertyType.BOOLEAN),
-                new TwoArgProperty<>("Simple two-argument property", "propriété", "headerName", 
+        return Stream.of(
+                new PropertyArgs<>("Simple two-argument property", "propriété", "headerName", 
                         PropertyType.STRING),
-                new TwoArgProperty<>("Two-argument property with equal names", "name", "name", 
+                new PropertyArgs<>("Two-argument property with equal names", "name", "name", 
                         PropertyType.INTEGER),
-                new TwoArgProperty<>("Two-argument property with empty name", "", "header_name", 
+                new PropertyArgs<>("Two-argument property with empty name", "", "header_name", 
                         PropertyType.BOOLEAN),
-                new TwoArgProperty<>("Two-argument property with empty headerName", "name", "", 
+                new PropertyArgs<>("Two-argument property with empty headerName", "name", "", 
                         PropertyType.STRING),
-                new TwoArgProperty<>("Two-argument property with empty names", "", "", PropertyType.INTEGER)
+                new PropertyArgs<>("Two-argument property with empty names", "", "", 
+                        PropertyType.INTEGER)
             );
     }
     
@@ -45,16 +45,28 @@ class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyArgs<?,
                 args.convert().getType()));
     }
     
-    static abstract class PropertyArgs<K,V> extends TestArgs{
+    static class PropertyArgs<K,V> extends TestArgs{
         final PropertyType<K> expectedType;
+        private final String name;
+        private final String headerName;
         
-        abstract PropertyName<K> convert();
-        abstract String getExpectedName();
-        abstract String getExpectedHeaderName();
-
-        PropertyArgs(String testCase, PropertyType<K> type){
+        PropertyArgs(String testCase, String name, String headerName, PropertyType<K> type){
             super(testCase);
             expectedType = type;
+            this.name = name;
+            this.headerName = headerName;
+        }
+        
+        PropertyName<K> convert() {
+            return new PropertyName<>(name, headerName, expectedType);
+        }
+
+        String getExpectedName() {
+            return this.name;
+        }
+
+        String getExpectedHeaderName() {
+            return this.headerName;
         }
         
         PropertyType<V> getExpectedValueType(){
@@ -67,56 +79,6 @@ class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyArgs<?,
         
         Map<? extends K, ? extends V> getExpectedResult(){
             throw new UnsupportedOperationException("Method used only in MapPropertyArg objects");
-        }
-    }
-
-    static class OneArgProperty<K, V> extends PropertyArgs<K, V>{
-        private final String name;
-
-        OneArgProperty(String testCase, String name, PropertyType<K> type){
-            super(testCase, type);
-            this.name = name;
-        }
-
-        @Override
-        PropertyName<K> convert() {
-            return new PropertyName<>(name, expectedType);
-        }
-
-        @Override
-        String getExpectedName() {
-            return this.name;
-        }
-
-        @Override
-        String getExpectedHeaderName() {
-            return this.name;
-        }
-    }
-
-    static class TwoArgProperty<K,V> extends PropertyArgs<K,V>{
-        private final String name;
-        private final String headerName;
-
-        TwoArgProperty(String testCase, String name, String headerName, PropertyType<K> type){
-            super(testCase, type);
-            this.name = name;
-            this.headerName = headerName;
-        }
-
-        @Override
-        PropertyName<K> convert() {
-            return new PropertyName<>(name, headerName, expectedType);
-        }
-
-        @Override
-        String getExpectedName() {
-            return this.name;
-        }
-
-        @Override
-        String getExpectedHeaderName() {
-            return this.headerName;
         }
     }
 }

@@ -22,15 +22,6 @@ public class SetPropertyName<K> extends MultiplePropertyName<K,Integer> {
         super(name, headerName, keyType, PropertyType.INTEGER, getParser(keyType));
     }
     
-    /**
-     * Initialises a new SetPropertyName.
-     * @param name of the property in {@link Person} objects
-     * @param keyType expected type of the property key
-     */
-    public SetPropertyName(String name, PropertyType<K> keyType) {
-        this(name, name, keyType);
-    }
-    
     private static <K> Function<String[], Map<? extends K, ? extends Integer>> getParser(
             PropertyType<K> keyType){
         return input -> Arrays.stream(input).collect(Collectors.toMap(keyType::parse, 
