@@ -24,6 +24,8 @@ public final class PropertyType<T> {
             new PropertyType<>(String.class, Function.identity());
     public final static PropertyType<String> SIMPLIFIED_LOWER_STRING =
             new PropertyType<>(String.class, PropertyType::simplifyString);
+    public final static PropertyType<Year> YEAR = 
+            new PropertyType<>(Year.class, Year::getYear);
     
     private final Class<T> type;
     private final Function<String,? extends T> parser;

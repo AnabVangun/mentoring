@@ -6,14 +6,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import mentoring.datastructure.Person;
+import mentoring.datastructure.Year;
 import mentoring.match.ProgressiveCriterion;
 import mentoring.match.NecessaryCriterion;
 
 /**
  * Example criteria configurations for test cases.
  */
-public final class PojoCriteriaConfiguration implements CriteriaConfiguration<Person,Person>{    
-    //TODO: improve use of constants.
+public final class PojoCriteriaConfiguration implements CriteriaConfiguration<Person,Person>{
     private static final String LANGUAGES_PROPERTY = "Langue";
     private static final String ENGLISH_PROPERTY = "Anglais";
     private static final String ENGLISH_SPEAKING_PROPERTY = "Anglophone";
@@ -64,8 +64,8 @@ public final class PojoCriteriaConfiguration implements CriteriaConfiguration<Pe
                 List.of((mentee, mentor) -> {
                     return YEAR_WEIGHT 
                         * (mentee.getPropertyAs(YEAR_PROPERTY, Integer.class) 
-                            - CriteriaToolbox.getYear(mentor.getPropertyAs(YEAR_PROPERTY, 
-                                    String.class)));
+                            - mentor.getPropertyAs(YEAR_PROPERTY, 
+                                    Year.class).getNormalizedYear());
                     },
                     (mentee, mentor) -> {
                         Set<String> menteeActivities = 
@@ -93,10 +93,10 @@ public final class PojoCriteriaConfiguration implements CriteriaConfiguration<Pe
                                     MEETING_WEIGHT),
                             (mentee, mentor ) -> 
                                 YEAR_WEIGHT * Math.abs(
-                                        CriteriaToolbox.getYear(mentee.getPropertyAs(
-                                                YEAR_PROPERTY, String.class)) - 10 
-                                        - CriteriaToolbox.getYear(mentor.getPropertyAs(
-                                                YEAR_PROPERTY, String.class))), 
+                                        mentee.getPropertyAs(
+                                                YEAR_PROPERTY, Year.class).getNormalizedYear() - 10 
+                                        - mentor.getPropertyAs(
+                                                YEAR_PROPERTY, Year.class).getNormalizedYear()), 
                             (mentee, mentor) -> MATURITY_WEIGHT * 
                                     Math.abs(mentee.getPropertyAs(MATURITY2023, 
                                             Integer.class)

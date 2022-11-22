@@ -33,7 +33,7 @@ public class Main {
         String mentorFilePath;
         String destinationFilePath;
         Data data = Data.REAL2023;
-        boolean writeToFile = true;
+        boolean writeToFile = false;
         PojoPersonConfiguration menteeConfiguration;
         PojoPersonConfiguration mentorConfiguration;
         PojoCriteriaConfiguration criteriaConfiguration;
