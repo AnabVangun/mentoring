@@ -83,6 +83,10 @@ public final class Year {
         public static Curriculum getDefault(){
             return INGENIEUR;
         }
+        
+        static Curriculum parseCurriculum(String input){
+            return lookup.get(input);
+        }
     }
     
     /**
@@ -115,8 +119,7 @@ public final class Year {
         if (cursus.equals("")){
             return Curriculum.getDefault();
         } else if (Curriculum.isValidPrefix(cursus)){
-            //FIXME: this should be a method call rather than a direct call to lookup.
-            return Curriculum.lookup.get(cursus);
+            return Curriculum.parseCurriculum(cursus);
         } else {
             throw new IllegalArgumentException("Cursus " + cursus + " in year " + matcher.group(0)
                     + " is not valid");
