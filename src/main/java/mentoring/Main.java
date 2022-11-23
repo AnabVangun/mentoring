@@ -27,6 +27,7 @@ public class Main {
      * 
      * @param args the command line arguments, ignored for now.
      */
+    @SuppressWarnings("CallToPrintStackTrace")
     public static void main(String[] args) {
         System.out.println("Build and solve cost matrix");
         String menteeFilePath;

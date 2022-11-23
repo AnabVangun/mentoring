@@ -6,7 +6,9 @@ import java.util.Collection;
 import java.util.List;
 
 final class CostMatrixHandler<Mentee, Mentor> {
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     final private List<Mentee> mentees;
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     final private List<Mentor> mentors;
     final private Collection<ProgressiveCriterion<Mentee, Mentor>> progressiveCriteria;
     private Collection<NecessaryCriterion<Mentee, Mentor>> necessaryCriteria = List.of();

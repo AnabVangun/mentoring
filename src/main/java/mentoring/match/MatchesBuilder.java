@@ -20,7 +20,9 @@ import java.util.stream.IntStream;
  * @param <Mentor> class representing an individual mentor
  */
 public final class MatchesBuilder<Mentee, Mentor> {
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     final private List<Mentee> mentees;
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     final private List<Mentor> mentors;
     final CostMatrixHandler<Mentee, Mentor> costMatrixHandler;
     /**

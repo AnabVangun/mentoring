@@ -27,7 +27,8 @@ public enum PojoPersonConfiguration implements PersonConfiguration{
             new PropertyName<>("Maturité","maturité", PropertyType.INTEGER),
             new PropertyName<>("Email","E-mail", PropertyType.STRING)),
             Set.of(new SetPropertyName<>("Métiers","résumé métier secteur", PropertyType.STRING), 
-                    new SetPropertyName<>("Langue","Option : langue préférentielle", PropertyType.STRING)),
+                    new SetPropertyName<>("Langue","Option : langue préférentielle", 
+                            PropertyType.STRING)),
             ",", "%s %s (X%s)", List.of("Prénom", "NOM", "Promotion, cycle")),
     /** Configuration used for real mentor data in the 2021 data set. */
     MENTOR_CONFIGURATION_REAL_DATA(Set.of(
@@ -39,7 +40,8 @@ public enum PojoPersonConfiguration implements PersonConfiguration{
     /**Configuration used for real mentee data in the preprocessed 2022 data set. */
     MENTEE_CONFIGURATION_2023_DATA(
             Set.of(new PropertyName<>("Email", "email", PropertyType.STRING),
-                    new PropertyName<>("Promotion", "Promotion et cycle (par exemple X20)", PropertyType.YEAR),
+                    new PropertyName<>("Promotion", "Promotion et cycle (par exemple X20)", 
+                            PropertyType.YEAR),
                     new PropertyName<>("Maturité", 
                             "Quel est le degré de maturité de ton projet académique et professionnel actuel ?", 
                             PropertyType.INTEGER),
@@ -63,7 +65,8 @@ public enum PojoPersonConfiguration implements PersonConfiguration{
     /**Configuration used for real mentor data in the preprocessed 2022 data set. */
     MENTOR_CONFIGURATION_2023_DATA(
             Set.of(new PropertyName<>("Email", "email", PropertyType.STRING),
-                    new PropertyName<>("Promotion", "Promotion et cycle (par exemple X11)", PropertyType.YEAR),
+                    new PropertyName<>("Promotion", "Promotion et cycle (par exemple X11)", 
+                            PropertyType.YEAR),
                     new PropertyName<>("Maturité", 
                             "Tu préfères mentorer un étudiant dont le projet professionnel est :", 
                             PropertyType.INTEGER),

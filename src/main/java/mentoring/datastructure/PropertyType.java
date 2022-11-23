@@ -17,9 +17,9 @@ public final class PropertyType<T> {
     private static final Set<String> TRUE_VALUES = Set.of("oui","vrai","yes","true");
     
     public final static PropertyType<Boolean> BOOLEAN = 
-            new PropertyType<>(Boolean.class, s -> TRUE_VALUES.contains(s));
+            new PropertyType<>(Boolean.class, TRUE_VALUES::contains);
     public final static PropertyType<Integer> INTEGER =
-            new PropertyType<>(Integer.class, s -> Integer.parseInt(s));
+            new PropertyType<>(Integer.class, Integer::valueOf);
     public final static PropertyType<String> STRING =
             new PropertyType<>(String.class, Function.identity());
     public final static PropertyType<String> SIMPLIFIED_LOWER_STRING =

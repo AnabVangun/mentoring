@@ -1,6 +1,5 @@
 package mentoring.configuration;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -68,11 +67,11 @@ public final class CriteriaToolbox {
             throw new IllegalArgumentException("Received spikeFactor " + spikeFactor 
                     + ", expected value between 0 and 1.");
         }
-        double baseScore = (1.0 - spikeFactor * computeScoreConfiguration(map, set));
+        double baseScore = (1.0 - spikeFactor * computeConfigurationScore(map, set));
         return (int) Math.round(SET_PROXIMITY_MULTIPLIER * baseScore);
     }
     
-    private static <E> double computeScoreConfiguration(Map<? extends E, ? extends Integer> map, 
+    private static <E> double computeConfigurationScore(Map<? extends E, ? extends Integer> map, 
             Set<? extends E> set){
         double result = 0;
         int size = map.size();

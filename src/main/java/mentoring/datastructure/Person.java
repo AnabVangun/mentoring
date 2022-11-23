@@ -8,7 +8,9 @@ import java.util.Set;
  * a {@link PersonBuilder} object.
  */
 public final class Person {
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private final Map<String, Object> properties;
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private final Map<String, Map<?, ?>> multipleProperties;
     private final String fullName;
     
@@ -74,13 +76,14 @@ public final class Person {
         if (!multipleProperties.containsKey(property)){
             throw new IllegalArgumentException(String.format(
                     "Person %s has no %s multiple property", this, property));
-        } else if (!(multipleProperties.get(property) instanceof Map)){
-            //FIXME: in if-condition, java 11 does not allow Map<K,V> after instanceof.
+        }
+        try {
+            return (Map<K,V>) multipleProperties.get(property);
+        } catch (ClassCastException e){
             throw new ClassCastException(String.format(
                     "Property %s of person %s (%s) is not of required types, %s and %s", 
                     property, this, properties.get(property), keyType, valueType));
         }
-        return (Map<K,V>) multipleProperties.get(property);
     }
     
     @Override
@@ -90,10 +93,9 @@ public final class Person {
     
     @Override
     public boolean equals(Object other){
-        if(! (other instanceof Person)){
+        if(! (other instanceof Person cast)){
             return false;
         }
-        Person cast = (Person) other;
         return (fullName.equals(cast.fullName) 
                 && properties.equals(cast.properties)
                 && multipleProperties.equals(cast.multipleProperties));

@@ -31,10 +31,9 @@ public final class Match<Mentee, Mentor> {
     
     @Override
     public boolean equals(Object o){
-        if (! (o instanceof Match)){
+        if (! (o instanceof Match cast)){
             return false;
         }
-        Match cast = (Match) o;
         return mentee.equals(cast.mentee) && mentor.equals(cast.mentor) && cost == cast.cost;
     }
     
