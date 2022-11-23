@@ -27,11 +27,11 @@ class PersonFileParserTest implements TestFramework<PersonFileParserArgs>{
     public Stream<PersonFileParserArgs> argumentsSupplier(){
         return Stream.of(
                 new PersonFileParserArgs("no person", DummyPersonConfiguration.NAME_PROPERTIES, 
-                        "fifth", List.of(), 0),
+                        "fifth", List.of()),
                 new PersonFileParserArgs("one person", DummyPersonConfiguration.MULTIPLE_PROPERTIES, 
                         "third,fourth" + NEWLINE + "vrai|faux,0", List.of(
                                 new PersonBuilder().withPropertyMap("third", Map.of(true, 0, false, 1))
-                                        .withPropertySet("fourth", Set.of(0)).withFullName("").build()),1),
+                                        .withPropertySet("fourth", Set.of(0)).withFullName("").build())),
                 new PersonFileParserArgs("three persons", DummyPersonConfiguration.SIMPLE_PROPERTIES,
                         "first,second" + NEWLINE + "string,1" + NEWLINE + "foo,2" + NEWLINE + "bar,3", List.of(
                                 new PersonBuilder().withProperty("first", "string")
@@ -40,7 +40,7 @@ class PersonFileParserTest implements TestFramework<PersonFileParserArgs>{
                                         .withProperty("second", 2).withFullName("").build(),
                                 new PersonBuilder().withProperty("first","bar")
                                         .withProperty("second",3).withFullName("").build()
-                        ), 3));
+                        )));
     }
     
     @TestFactory
@@ -72,15 +72,13 @@ class PersonFileParserTest implements TestFramework<PersonFileParserArgs>{
         final PersonConfiguration configuration;
         final String input;
         final List<Person> output;
-        final int numberOfLines;
         
         PersonFileParserArgs(String testCase, PersonConfiguration configuration, 
-                String input, List<Person> output, int numberOfLines){
+                String input, List<Person> output){
             super(testCase);
             this.configuration = configuration;
             this.input = input;
             this.output = output;
-            this.numberOfLines = numberOfLines;
         }
         
         PersonFileParser convert(){
