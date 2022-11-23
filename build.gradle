@@ -1,4 +1,4 @@
-version '1.0.0-theta'
+version '1.0.0'
 
 apply plugin: 'java'
 apply plugin: 'jacoco'
