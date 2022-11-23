@@ -112,51 +112,30 @@ class CriteriaToolboxTest implements TestFramework<Object>{
         }
     }
     
-    static class DoubleSetArgs extends TestArgs{
-        final int expected;
-        final Set<Integer> first;
-        final Set<Integer> second;
+    static record DoubleSetArgs(String testCase, int expected, Set<Integer> first, 
+        Set<Integer> second){
         
-        public DoubleSetArgs(String testCase, int expected, Set<Integer> first, 
-                Set<Integer> second) {
-            super(testCase);
-            this.expected = expected;
-            this.first = first;
-            this.second = second;
+        @Override
+        public String toString(){
+            return testCase;
         }
     }
     
-    static class SetMapArgs extends TestArgs{
-        final int expected;
-        final Set<Integer> set;
-        final Map<Integer, Integer> map;
-        final double spikeFactor;
-
-        public SetMapArgs(String testCase, int expected, Set<Integer> first, 
-                Map<Integer, Integer> second, double spikeFactor) {
-            super(testCase);
-            this.expected = expected;
-            this.set = first;
-            this.map = second;
-            this.spikeFactor = spikeFactor;
+    static record SetMapArgs(String testCase, int expected, Set<Integer> set, 
+        Map<Integer, Integer> map, double spikeFactor) {
+        
+        @Override
+        public String toString(){
+            return testCase;
         }
     }
     
-    static class DistanceArgs extends TestArgs{
-        final Map<String, Integer> indices;
-        final String first;
-        final String second;
-        final int baseValue;
-        final int expectedResult;
+    static record DistanceArgs(String testCase, Map<String, Integer> indices, String first, 
+        String second, int baseValue, int expectedResult) {
         
-        DistanceArgs(String testCase, Map<String, Integer> indices, String first, String second, 
-                int baseValue, int expectedResult) {
-            super(testCase);
-            this.indices = indices;
-            this.first = first;
-            this.second = second;
-            this.baseValue = baseValue;
-            this.expectedResult = expectedResult;
+        @Override
+        public String toString(){
+            return testCase;
         }
         
         static Stream<DistanceArgs> argsSupplier(){

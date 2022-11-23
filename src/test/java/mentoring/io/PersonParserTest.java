@@ -112,17 +112,12 @@ class PersonParserTest implements TestFramework<PersonParserArgs>{
                 "parseLine() returns the expected Person", args -> args.assertCorrectParsing());
     }
     
-    static class PersonParserArgs extends TestArgs{
-        final PersonConfiguration configuration;
-        final String[] header;
-        final Map<String[], Person> persons;
+    static record PersonParserArgs(String testCase, PersonConfiguration configuration, 
+        String[] header, Map<String[], Person> persons) {
         
-        public PersonParserArgs(String testCase, PersonConfiguration configuration, String[] header,
-                Map<String[], Person> persons) {
-            super(testCase);
-            this.configuration = configuration;
-            this.header = header;
-            this.persons = persons;
+        @Override
+        public String toString(){
+            return this.testCase;
         }
         
         PersonParser convertWithException() throws IOException{

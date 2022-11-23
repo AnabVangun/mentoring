@@ -68,17 +68,12 @@ class PersonFileParserTest implements TestFramework<PersonFileParserArgs>{
         });
     }
     
-    static class PersonFileParserArgs extends TestArgs{
-        final PersonConfiguration configuration;
-        final String input;
-        final List<Person> output;
+    static record PersonFileParserArgs(String testCase, PersonConfiguration configuration, 
+        String input, List<Person> output) {
         
-        PersonFileParserArgs(String testCase, PersonConfiguration configuration, 
-                String input, List<Person> output){
-            super(testCase);
-            this.configuration = configuration;
-            this.input = input;
-            this.output = output;
+        @Override
+        public String toString(){
+            return this.testCase;
         }
         
         PersonFileParser convert(){

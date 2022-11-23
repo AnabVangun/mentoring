@@ -4,7 +4,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
-import test.tools.TestArgs;
 import test.tools.TestFramework;
 
 final class MatchTest implements TestFramework<MatchTest.MatchArgs>{
@@ -78,30 +77,17 @@ final class MatchTest implements TestFramework<MatchTest.MatchArgs>{
                         args.second.convert().hashCode()));
     }
     
-    static class MatchArgs extends TestArgs{
-        final Object mentee;
-        final Object mentor;
-        final int cost;
-        MatchArgs(String testCase, Object mentee, Object mentor, int cost){
-            super(testCase);
-            this.mentee = mentee;
-            this.mentor = mentor;
-            this.cost = cost;
-        }
-        
+    static record MatchArgs(String testCase, Object mentee, Object mentor, int cost) {
         Match<Object, Object> convert(){
             return new Match<>(mentee, mentor, cost);
         }
+        
+        @Override
+        public String toString(){
+            return testCase;
+        }
     }
     
-    static class MatchPairOfArgs extends TestArgs{
-        final MatchArgs first;
-        final MatchArgs second;
-        
-        MatchPairOfArgs(String testCase, MatchArgs first, MatchArgs second){
-            super(testCase);
-            this.first = first;
-            this.second = second;
-        }
+    static record MatchPairOfArgs(String testCase, MatchArgs first, MatchArgs second) {
     }
 }

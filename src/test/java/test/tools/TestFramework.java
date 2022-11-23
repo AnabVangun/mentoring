@@ -17,7 +17,10 @@ import org.junit.jupiter.api.function.Executable;
  * other using a specified stream of arguments.
  * 
  * @param <T> the type of arguments used to run the tests. The {@code toString()} method SHOULD be
- * overridden to provide a description of the specific test case represented by the argument.
+ * overridden to provide a description of the specific test case represented by the argument. 
+ * @see TestArgs an abstract class overriding the {@code toString()} method so as to take care of 
+ * the recommended requirements of this framework. This class is provided for convenience, it is not
+ * required that {@code T} inherits from it.
  */
 public interface TestFramework<T> {
 	/**Returns a {@link Stream} of arguments to perform a test. */

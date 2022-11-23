@@ -11,16 +11,16 @@ class PojoPersonConfigurationTest implements PersonConfigurationTest<PojoPersonC
         return Arrays.stream(PojoPersonConfiguration.values()).map(PojoPersonConfigurationArgs::new);
     }
     
-    static class PojoPersonConfigurationArgs extends PersonConfigurationArgs{
-        final PojoPersonConfiguration configuration;
-
-        public PojoPersonConfigurationArgs(PojoPersonConfiguration configuration) {
-            super(configuration.toString());
-            this.configuration = configuration;
+    static record PojoPersonConfigurationArgs(PojoPersonConfiguration configuration) 
+            implements PersonConfigurationArgs {
+        
+        @Override
+        public String toString(){
+            return configuration.toString();
         }
 
         @Override
-        PersonConfiguration convert() {
+        public PersonConfiguration convert() {
             return configuration;
         }
         

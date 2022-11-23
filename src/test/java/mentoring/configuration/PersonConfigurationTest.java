@@ -57,10 +57,6 @@ interface PersonConfigurationTest<T extends PersonConfigurationArgs> extends Tes
     }
 }
 
-abstract class PersonConfigurationArgs extends TestArgs{
-    PersonConfigurationArgs(String testCase){
-        super(testCase);
-    }
-    
+interface PersonConfigurationArgs {
     abstract PersonConfiguration convert();
 } 

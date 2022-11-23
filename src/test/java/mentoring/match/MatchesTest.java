@@ -54,6 +54,7 @@ public final class MatchesTest implements TestFramework<MatchesTest.MatchesArgs>
     }
     
     public static class MatchesArgs<K, V> extends TestArgs{
+        //This class is not a record because in Java17, records do not allow computed instance variables.
         final List<Match<K, V>> matches;
         final List<Match<K, V>> matchesCopy = new ArrayList<>();
 

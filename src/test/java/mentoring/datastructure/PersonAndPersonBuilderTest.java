@@ -221,20 +221,13 @@ final class PersonAndPersonBuilderTest implements
                         args.getRight().initialisePersonBuilder().build().hashCode()));
     }
     
-    static class PersonArgs extends TestArgs{
-        final Map<String, Integer> integerProperties;
-        final Map<String, String> stringProperties;
-        final Map<String, Map<Integer, Boolean>> mapProperties;
-        final String name;
+    static record PersonArgs(String testCase, Map<String, Integer> integerProperties, 
+        Map<String, String> stringProperties, Map<String, Map<Integer, Boolean>> mapProperties,
+        String name) {
         
-        PersonArgs(String testCase, Map<String, Integer> integerProperties,
-                Map<String, String> stringProperties,
-                Map<String, Map<Integer, Boolean>> mapProperties, String name){
-            super(testCase);
-            this.integerProperties = integerProperties;
-            this.stringProperties = stringProperties;
-            this.mapProperties = mapProperties;
-            this.name = name;
+        @Override
+        public String toString(){
+            return testCase;
         }
         
         PersonBuilder initialisePersonBuilder(){

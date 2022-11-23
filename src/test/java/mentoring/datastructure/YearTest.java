@@ -66,21 +66,14 @@ class YearTest implements TestFramework<YearArgs> {
     }
     
     
-    static class YearArgs extends TestArgs{
-        final Curriculum expectedCurriculum;
-        final int expectedEntryYear;
-        final int expectedNormalizedYear;
-        final String input;
+    static record YearArgs (String testCase, Curriculum expectedCurriculum, int expectedEntryYear,
+        int expectedNormalizedYear, String input) {
         
         static final int CURRENT_YEAR = 7468;
         
-        YearArgs(String testCase, Curriculum expectedCurriculum, int expectedEntryYear, 
-                int expectedNormalizedYear, String input) {
-            super(testCase);
-            this.expectedCurriculum = expectedCurriculum;
-            this.expectedEntryYear = expectedEntryYear;
-            this.expectedNormalizedYear = expectedNormalizedYear;
-            this.input = input;
+        @Override
+        public String toString(){
+            return this.testCase;
         }
         
         void assertEqualToExpectedYear(Year actual){
