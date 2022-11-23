@@ -19,28 +19,23 @@ interface PersonConfigurationTest<T extends PersonConfigurationArgs> extends Tes
                     PersonConfiguration configuration = args.convert();
                     Collection<String> actual = 
                             configuration.getAllPropertiesHeaderNames();
-                    Assertions.assertAll(
-                            () -> Assertions.assertAll(
-                                    () -> configuration.getPropertiesNames().forEach(
-                                            p -> Assertions.assertTrue(actual.contains(
-                                                    p.getHeaderName()), 
-                                                    () -> "Property " + p.getName() 
-                                                            + " is missing from " + actual)
-                                    )),
-                            () -> Assertions.assertAll(
-                                    () -> configuration.getMultiplePropertiesNames().forEach(
-                                            p -> Assertions.assertTrue(actual.contains(
-                                                    p.getHeaderName()),
-                                                    () -> "Property " + p.getName() 
-                                                            + " is missing from " + actual)
-                                    )),
-                            () -> Assertions.assertAll(
-                                    () -> configuration.getNamePropertiesHeaderNames().forEach(
-                                            s -> Assertions.assertTrue(actual.contains(s),
-                                                    () -> "Property " + s
-                                                            + " is missing from " + actual)))
-                    );
+                    Set<String> missing = new HashSet<>();
+                    configuration.getPropertiesNames().forEach(p -> 
+                            addStringIfMissing(p.getHeaderName(), actual, p.getName(), missing));
+                    configuration.getMultiplePropertiesNames().forEach(p -> 
+                            addStringIfMissing(p.getHeaderName(), actual, p.getName(), missing));
+                    configuration.getNamePropertiesHeaderNames().forEach(s -> 
+                            addStringIfMissing(s, actual, s, missing));
+                    Assertions.assertTrue(missing.isEmpty(), "Properties " + missing 
+                            + " are missing from " + actual);
                 });
+    }
+    
+    private static void addStringIfMissing(String stringToCheck, Collection<String> collectionToCheck,
+            String stringToAdd, Collection<String> collector){
+        if(!collectionToCheck.contains(stringToCheck)){
+            collector.add(stringToAdd);
+        }
     }
     
     @TestFactory

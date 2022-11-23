@@ -12,21 +12,21 @@ class MultiplePropertyNameTest extends PropertyNameTest{
     @Override
     public Stream<PropertyArgs<?,?>> argumentsSupplier() {
         return Stream.of(
-                new MapPropertyArgs<>("Simple two-argument property", "propriété", "headerName", 
+                new MapPropertyArgs<>("Simple property", "propriété", "headerName", 
                         PropertyType.STRING, PropertyType.STRING,
                         entries -> Map.of(entries[0], entries[entries.length-1]),
                         new String[]{"first", "second", "third"}, Map.of("first","third")),
-                new MapPropertyArgs<>("Two-argument property with equal names", "name", "name", 
+                new MapPropertyArgs<>("Property with equal names", "name", "name", 
                         PropertyType.INTEGER, PropertyType.STRING,
                         entries -> Map.of(0, entries[0], 2, entries[1]),
                         new String[]{"first","second"}, Map.of(0, "first", 2, "second")),
-                new MapPropertyArgs<>("Two-argument property with empty name", "", "header_name", 
+                new MapPropertyArgs<>("Property with empty name", "", "header_name", 
                         PropertyType.BOOLEAN, PropertyType.BOOLEAN,
                         entries -> Map.of(false, true), new String[]{}, Map.of(false, true)),
-                new MapPropertyArgs<>("Two-argument property with empty headerName", "name", "", 
+                new MapPropertyArgs<>("Property with empty headerName", "name", "", 
                         PropertyType.STRING, PropertyType.INTEGER,
                         entries -> Map.of(), new String[]{"first"}, Map.of()),
-                new MapPropertyArgs<>("Two-argument property with empty names", "", "", 
+                new MapPropertyArgs<>("Property with empty names", "", "", 
                         PropertyType.INTEGER, PropertyType.STRING,
                         entries -> Map.of(-12, "third"), new String[]{}, Map.of(-12, "third"))
             );

@@ -14,15 +14,15 @@ class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyArgs<?,
     @Override
     public Stream<PropertyArgs<?,?>> argumentsSupplier() {
         return Stream.of(
-                new PropertyArgs<>("Simple two-argument property", "propriété", "headerName", 
+                new PropertyArgs<>("Simple property", "propriété", "headerName", 
                         PropertyType.STRING),
-                new PropertyArgs<>("Two-argument property with equal names", "name", "name", 
+                new PropertyArgs<>("Property with equal names", "name", "name", 
                         PropertyType.INTEGER),
-                new PropertyArgs<>("Two-argument property with empty name", "", "header_name", 
+                new PropertyArgs<>("Property with empty name", "", "header_name", 
                         PropertyType.BOOLEAN),
-                new PropertyArgs<>("Two-argument property with empty headerName", "name", "", 
+                new PropertyArgs<>("Property with empty headerName", "name", "", 
                         PropertyType.STRING),
-                new PropertyArgs<>("Two-argument property with empty names", "", "", 
+                new PropertyArgs<>("Property with empty names", "", "", 
                         PropertyType.INTEGER)
             );
     }

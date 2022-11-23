@@ -9,18 +9,18 @@ class SetPropertyNameTest extends MultiplePropertyNameTest{
     @Override
     public Stream<PropertyArgs<?,?>> argumentsSupplier() {
         return Stream.of(
-                new SetPropertyArgs<>("Simple two-argument property", "propriété", "headerName", 
+                new SetPropertyArgs<>("Simple property", "propriété", "headerName", 
                         PropertyType.STRING,
                         new String[]{"first", "second", "third"}, 
                         Set.of("first", "second", "third")),
-                new SetPropertyArgs<>("Two-argument property with equal names", "name", "name", 
+                new SetPropertyArgs<>("Property with equal names", "name", "name", 
                         PropertyType.INTEGER, 
                         new String[]{"12","-3"}, Set.of(12, -3)),
-                new SetPropertyArgs<>("Two-argument property with empty name", "", "header_name", 
+                new SetPropertyArgs<>("Property with empty name", "", "header_name", 
                         PropertyType.BOOLEAN, new String[]{"vrai","faux"}, Set.of(true, false)),
-                new SetPropertyArgs<>("Two-argument property with empty headerName", "name", "", 
+                new SetPropertyArgs<>("Property with empty headerName", "name", "", 
                         PropertyType.STRING, new String[]{"first"}, Set.of("first")),
-                new SetPropertyArgs<>("Two-argument property with empty names", "", "", 
+                new SetPropertyArgs<>("Property with empty names", "", "", 
                         PropertyType.INTEGER, new String[]{}, Set.of())
             );
     }

@@ -11,7 +11,7 @@ import test.tools.TestArgs;
 import test.tools.TestFramework;
 
 class YearTest implements TestFramework<YearArgs> {
-    static final String INVALID_LETTER = "K";
+    static final String INVALID_CURRICULUM = "K";
     
     @Override
     public Stream<YearArgs> argumentsSupplier() {
@@ -20,25 +20,25 @@ class YearTest implements TestFramework<YearArgs> {
     
     @TestFactory
     Stream<DynamicNode> isValidPrefix_validInput(){
-        return test(Arrays.stream(Curriculum.values()), "Letter.isValidPrefix() on valid input", args ->
+        return test(Arrays.stream(Curriculum.values()), "Curriculum.isValidPrefix() on valid input", args ->
                     Assertions.assertTrue(Curriculum.isValidPrefix(args.prefix)));
     }
     
     @TestFactory
     Stream<DynamicNode> isValidPrefix_invalidInput(){
-        return test(Stream.of(INVALID_LETTER), "Letter.isValidPrefix() on invalid input", args ->
+        return test(Stream.of(INVALID_CURRICULUM), "Curriculum.isValidPrefix() on invalid input", args ->
                 Assertions.assertFalse(Curriculum.isValidPrefix(args)));
     }
     
     @TestFactory
     Stream<DynamicNode> getOffset_validInput(){
-        return test(Arrays.stream(Curriculum.values()), "Letter.getOffset() on valid input", args ->
+        return test(Arrays.stream(Curriculum.values()), "Curriculum.getOffset() on valid input", args ->
                 Assertions.assertEquals(args.offset, Curriculum.getOffset(args.prefix)));
     }
     
     @TestFactory
     Stream<DynamicNode> getOffset_invalidInput(){
-        return test(Stream.of(INVALID_LETTER), "Letter.getOffset() on invalid input", args ->
+        return test(Stream.of(INVALID_CURRICULUM), "Curriculum.getOffset() on invalid input", args ->
                 Assertions.assertThrows(NullPointerException.class, () -> Curriculum.getOffset(args)));
     }
 
@@ -57,7 +57,7 @@ class YearTest implements TestFramework<YearArgs> {
     @TestFactory
     Stream<DynamicNode> getYear_invalidInput(){
         return test(Stream.of(
-                new YearArgs("invalid letter", null, 0, 0, INVALID_LETTER + "6234"),
+                new YearArgs("invalid curriculum", null, 0, 0, INVALID_CURRICULUM + "6234"),
                 new YearArgs("no digits", null, 0, 0, "BCD"),
                 new YearArgs("non-digits char after prefix", null, 0, 0, "X2O12")), // O vs 0
                 "getYear() on invalid input", args ->

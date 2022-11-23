@@ -7,18 +7,18 @@ class IndexedPropertyNameTest extends MultiplePropertyNameTest{
     @Override
     public Stream<PropertyArgs<?,?>> argumentsSupplier() {
         return Stream.of(
-                new IndexedPropertyArgs<>("Simple two-argument property", "propriété", "headerName", 
+                new IndexedPropertyArgs<>("Simple property", "propriété", "headerName", 
                         PropertyType.STRING,
                         new String[]{"first", "second", "third"}, 
                         Map.of("first",0, "second", 1, "third", 2)),
-                new IndexedPropertyArgs<>("Two-argument property with equal names", "name", "name", 
+                new IndexedPropertyArgs<>("Property with equal names", "name", "name", 
                         PropertyType.INTEGER, 
                         new String[]{"12","-3"}, Map.of(12, 0, -3, 1)),
-                new IndexedPropertyArgs<>("Two-argument property with empty name", "", "header_name", 
+                new IndexedPropertyArgs<>("Property with empty name", "", "header_name", 
                         PropertyType.BOOLEAN, new String[]{}, Map.of()),
-                new IndexedPropertyArgs<>("Two-argument property with empty headerName", "name", "", 
+                new IndexedPropertyArgs<>("Property with empty headerName", "name", "", 
                         PropertyType.STRING, new String[]{"first"}, Map.of("first", 0)),
-                new IndexedPropertyArgs<>("Two-argument property with empty names", "", "", 
+                new IndexedPropertyArgs<>("Property with empty names", "", "", 
                         PropertyType.INTEGER, new String[]{}, Map.of())
             );
     }

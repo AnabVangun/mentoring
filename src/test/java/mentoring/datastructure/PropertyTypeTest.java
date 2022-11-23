@@ -12,6 +12,7 @@ class PropertyTypeTest implements TestFramework<PropertyTypeTest.PropertyTypeArg
 
     @Override
     public Stream<PropertyTypeArgs> argumentsSupplier() {
+        //TODO: when Year implements equals and hashCode, add a couple of test cases.
             return Stream.of(new PropertyTypeArgs("true boolean", BOOLEAN, "oui", true),
                     new PropertyTypeArgs("false boolean", BOOLEAN, "foo", false),
                     new PropertyTypeArgs("positive integer", INTEGER, "8765", 8765),
