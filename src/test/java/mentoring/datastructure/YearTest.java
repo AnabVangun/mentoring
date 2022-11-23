@@ -7,7 +7,6 @@ import mentoring.datastructure.YearTest.YearArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
-import test.tools.TestArgs;
 import test.tools.TestFramework;
 
 class YearTest implements TestFramework<YearArgs> {
@@ -44,13 +43,13 @@ class YearTest implements TestFramework<YearArgs> {
 
     @TestFactory
     Stream<DynamicNode> getYear_validInput() {
-        return test(YearArgs.FullSupplier(), "getYear() on valid input", args ->
+        return test(YearArgs.fullSupplier(), "getYear() on valid input", args ->
                 args.assertEqualToExpectedYear(Year.getYear(args.input, YearArgs.CURRENT_YEAR)));
     }
     
     @TestFactory
     Stream<DynamicNode> getYear_OneArgForm(){
-        return test(YearArgs.CompleteYearArgsSupplier(), "getYear() one-arg form on valid input", 
+        return test(YearArgs.completeYearArgsSupplier(), "getYear() one-arg form on valid input", 
                 args -> args.assertEqualToExpectedYear(Year.getYear(args.input)));
     }
     
@@ -65,8 +64,35 @@ class YearTest implements TestFramework<YearArgs> {
                             () -> Year.getYear(args.input)));
     }
     
+    @TestFactory
+    Stream<DynamicNode> equals_equalInput(){
+        return test(YearArgs.fullSupplier(), "equals() returns true when input values are equal",
+                args -> Assertions.assertEquals(Year.getYear(args.input), Year.getYear(args.input)));
+    }
     
-    static record YearArgs (String testCase, Curriculum expectedCurriculum, int expectedEntryYear,
+    @TestFactory
+    Stream<DynamicNode> equals_differentInput(){
+        return test(YearArgs.fullSupplier(), "equals() returns false when input values are different",
+                args -> Assertions.assertNotEquals(Year.getYear(args.input), Year.getYear("D86543")));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> hashCode_equalInput(){
+        return test(YearArgs.fullSupplier(), "hashCode() returns equal value on equal input",
+                args -> Assertions.assertEquals(Year.getYear(args.input).hashCode(),
+                        Year.getYear(args.input).hashCode()));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> hashCode_consistency(){
+        return test(YearArgs.fullSupplier(), "hashCode() returns same value on same input",
+                args -> {
+                    Year year = Year.getYear(args.input);
+                    Assertions.assertEquals(year.hashCode(), year.hashCode());
+                });
+    }
+    
+    static record YearArgs(String testCase, Curriculum expectedCurriculum, int expectedEntryYear,
         int expectedNormalizedYear, String input) {
         
         static final int CURRENT_YEAR = 7468;
@@ -83,7 +109,7 @@ class YearTest implements TestFramework<YearArgs> {
                     () -> Assertions.assertEquals(expectedNormalizedYear, actual.getNormalizedYear()));
         }
         
-        static Stream<YearArgs> CompleteYearArgsSupplier(){
+        static Stream<YearArgs> completeYearArgsSupplier(){
             int executiveOffset = Curriculum.EXECUTIVE.offset;
             return Stream.of(new YearArgs("four-digit string", Curriculum.INGENIEUR, 1992, 
                             1992, "1992"),
@@ -105,8 +131,8 @@ class YearTest implements TestFramework<YearArgs> {
                     new YearArgs("letter and leading zeroes", Curriculum.INGENIEUR, 7001, 7001, "X001"));
         }
         
-        static Stream<YearArgs> FullSupplier(){
-            return Stream.concat(CompleteYearArgsSupplier(), partialYearsArgsSupplier());
+        static Stream<YearArgs> fullSupplier(){
+            return Stream.concat(completeYearArgsSupplier(), partialYearsArgsSupplier());
         }
     }
 }

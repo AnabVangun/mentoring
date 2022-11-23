@@ -10,7 +10,6 @@ import java.util.regex.Pattern;
  *Immutable holder of the properties related to the entry year of a student or an alumni.
  */
 public final class Year {
-    //TODO: implement toString, equals and hashCode
     private final Curriculum curriculum;
     private final int entryYear;
     private final int normalizedYear;
@@ -146,5 +145,23 @@ public final class Year {
             result -= baseNumber;
         }
         return result;
+    }
+    
+    @Override
+    public String toString(){
+        return curriculum.prefix + entryYear;
+    }
+    
+    @Override
+    public boolean equals(Object other){
+        if (!(other instanceof Year cast)){
+            return false;
+        }
+        return curriculum == cast.curriculum && entryYear == cast.entryYear;
+    }
+    
+    @Override
+    public int hashCode(){
+        return curriculum.hashCode() * 31 + Integer.hashCode(entryYear);
     }
 }
