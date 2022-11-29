@@ -110,7 +110,7 @@ public final class Year {
         }
         Curriculum curriculum = extractLetter(matcher);
         int entryYear = extractYear(matcher, currentYear);
-        //TODO: there should be a cache to return the same object when appropriate
+        //TODO: Use Cache to reuse Year objects.
         return new Year(curriculum, entryYear, entryYear + curriculum.offset);
     }
     
