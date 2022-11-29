@@ -10,6 +10,13 @@ import java.util.regex.Pattern;
  *Immutable holder of the properties related to the entry year of a student or an alumni.
  */
 public final class Year {
+    private final static Pattern YEAR_PATTERN = Pattern.compile(
+            "^\\s*([\\w&&[^\\d]]*)\\s*(\\d+)\\s*$");
+    private final static int CURRICULUM_GROUP = 1;
+    private final static int YEAR_GROUP = 2;
+    private final static Cache<YearExtractionInput, Year> cache = 
+            Cache.buildCache(YearExtractionInput.class, Year.class, 10);
+    
     private final Curriculum curriculum;
     private final int entryYear;
     private final int normalizedYear;
@@ -45,11 +52,6 @@ public final class Year {
     public int getNormalizedYear(){
         return normalizedYear;
     }
-    
-    private final static Pattern YEAR_PATTERN = Pattern.compile(
-            "^\\s*([\\w&&[^\\d]]*)\\s*(\\d+)\\s*$");
-    private final static int CURRICULUM_GROUP = 1;
-    private final static int YEAR_GROUP = 2;
     
     /**
      * Enumeration of the possible prefixes before a promotion number.
@@ -103,6 +105,15 @@ public final class Year {
     }
     
     static Year getYear(String formattedYear, int currentYear) throws IllegalArgumentException{
+        YearExtractionInput extracterInput = new YearExtractionInput(formattedYear, currentYear);
+        return cache.computeIfAbsent(extracterInput, Year::getYearData);
+    }
+    
+    private static record YearExtractionInput(String formattedYear, int currentYear) {}
+    
+    private static Year getYearData(YearExtractionInput input) throws IllegalArgumentException{
+        String formattedYear = input.formattedYear;
+        int currentYear = input.currentYear;
         Matcher matcher = YEAR_PATTERN.matcher(formattedYear);
         if (!matcher.matches()){
             throw new IllegalArgumentException("Could not parse " + formattedYear 
@@ -110,7 +121,6 @@ public final class Year {
         }
         Curriculum curriculum = extractLetter(matcher);
         int entryYear = extractYear(matcher, currentYear);
-        //TODO: Use Cache to reuse Year objects.
         return new Year(curriculum, entryYear, entryYear + curriculum.offset);
     }
     
