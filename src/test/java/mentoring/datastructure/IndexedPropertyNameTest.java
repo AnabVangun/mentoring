@@ -26,7 +26,7 @@ class IndexedPropertyNameTest extends MultiplePropertyNameTest{
     static class IndexedPropertyArgs<K> extends MapPropertyArgs<K,Integer>{
 
         IndexedPropertyArgs(String testCase, String name, String headerName, PropertyType<K> keyType,
-                String[] mapInput, Map<? extends K, ? extends Integer> expectedResult){
+                String[] mapInput, Map<K, Integer> expectedResult){
             super(testCase, name, headerName, keyType, PropertyType.INTEGER, null, mapInput, 
                     expectedResult);
         }

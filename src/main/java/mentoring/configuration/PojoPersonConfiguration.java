@@ -89,14 +89,14 @@ public enum PojoPersonConfiguration implements PersonConfiguration{
             ";", "%s %s (%s)", List.of("Prénom", "Nom", "Promotion et cycle (par exemple X11)"));
     
     private final Set<PropertyName<?>> properties;
-    private final Set<? extends MultiplePropertyName<?,?>> multipleProperties;
+    private final Set<MultiplePropertyName<?,?>> multipleProperties;
     private final String separator;
     private final String nameFormat;
     private final List<String> nameProperties;
     private final Collection<String> allPropertiesHeaderNames;
     
     private PojoPersonConfiguration(Set<PropertyName<?>> properties, 
-            Set<? extends MultiplePropertyName<?,?>> multipleProperties, 
+            Set<MultiplePropertyName<?,?>> multipleProperties, 
             String separator, String nameFormat,
             List<String> nameProperties){
         Set<String> tmpAllProperties = new HashSet<>();
@@ -117,7 +117,7 @@ public enum PojoPersonConfiguration implements PersonConfiguration{
     }
 
     @Override
-    public Set<? extends MultiplePropertyName<?,?>> getMultiplePropertiesNames() {
+    public Set<MultiplePropertyName<?,?>> getMultiplePropertiesNames() {
         return multipleProperties;
     }
 

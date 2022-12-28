@@ -77,7 +77,7 @@ class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyArgs<?,
             throw new UnsupportedOperationException("Method used only in MapPropertyArg objects");
         }
         
-        Map<? extends K, ? extends V> getExpectedResult(){
+        Map<K,V> getExpectedResult(){
             throw new UnsupportedOperationException("Method used only in MapPropertyArg objects");
         }
     }

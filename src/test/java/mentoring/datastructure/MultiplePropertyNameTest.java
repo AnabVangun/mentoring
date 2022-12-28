@@ -45,16 +45,16 @@ class MultiplePropertyNameTest extends PropertyNameTest{
                 Assertions.assertEquals(args.getExpectedResult(),
                         ((MultiplePropertyName) args.convert()).buildMap(args.getMapInput())));
     }
-
+    
     static class MapPropertyArgs<K,V> extends PropertyArgs<K, V>{
         final PropertyType<V> valueType;
-        final Function<String[], Map<? extends K,? extends V>> parser;
+        final Function<String[], Map<K,V>> parser;
         final String[] mapInput;
-        final Map<? extends K, ? extends V> expectedResult;
+        final Map<K,V> expectedResult;
 
         MapPropertyArgs(String testCase, String name, String headerName, PropertyType<K> keyType,
-                PropertyType<V> valueType, Function<String[], Map<? extends K,? extends V>> parser,
-                String[] mapInput, Map<? extends K, ? extends V> expectedResult){
+                PropertyType<V> valueType, Function<String[], Map<K,V>> parser,
+                String[] mapInput, Map<K,V> expectedResult){
             super(testCase, name, headerName, keyType);
             this.valueType = valueType;
             this.parser = parser;
@@ -79,7 +79,7 @@ class MultiplePropertyNameTest extends PropertyNameTest{
         }
         
         @Override
-        Map<? extends K, ? extends V> getExpectedResult(){
+        Map<K, V> getExpectedResult(){
             return expectedResult;
         }
     }

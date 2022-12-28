@@ -22,7 +22,7 @@ public class IndexedPropertyName<K> extends MultiplePropertyName<K,Integer> {
         super(name, headerName, keyType, PropertyType.INTEGER, getParser(keyType));
     }
     
-    private static <K> Function<String[], Map<? extends K, ? extends Integer>> getParser(
+    private static <K> Function<String[], Map<K, Integer>> getParser(
             PropertyType<K> keyType){
         return input -> {
             Map<K, Integer> result = new HashMap<>();

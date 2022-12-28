@@ -10,7 +10,7 @@ import java.util.function.Function;
  */
 public class MultiplePropertyName<K,V> extends PropertyName<K>{
     private final PropertyType<V> valueType;
-    private final Function<String[], Map<? extends K,? extends V>> parser;
+    private final Function<String[], Map<K, V>> parser;
     
     /**
      * Initialises a new MultiplePropertyName.
@@ -22,7 +22,7 @@ public class MultiplePropertyName<K,V> extends PropertyName<K>{
      */
     MultiplePropertyName(String name, String headerName, PropertyType<K> keyType,
             PropertyType<V> valueType,
-            Function<String[], Map<? extends K,? extends V>> parser){
+            Function<String[], Map<K,V>> parser){
         super(name, headerName, keyType);
         this.parser = parser;
         this.valueType = valueType;
@@ -33,7 +33,7 @@ public class MultiplePropertyName<K,V> extends PropertyName<K>{
      * @param keys unparsed keys
      * @return a map with values associated to the input properties
      */
-    public Map<? extends K,? extends V> buildMap(String[] keys){
+    public Map<K,V> buildMap(String[] keys){
         return parser.apply(keys);
     }
     

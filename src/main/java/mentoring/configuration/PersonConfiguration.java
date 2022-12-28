@@ -12,6 +12,11 @@ import mentoring.datastructure.PropertyName;
  * database to extract {@link Person} instances and said extracted {@link Person} instances.
  */
 public interface PersonConfiguration {
+    /*
+    TODO: consider implementing equals and hashCode for PropertyName and MultiplePropertyName to 
+    leverage using a set rather than an arbitrary collection.
+    Beware: MultiplePropertyName contains a Function, which is difficult to equate.
+    */
     /**
      * Returns the {@link PropertyName} instances describing single-valued properties.
      * @return the identification of single-valued properties for this configuration
@@ -23,7 +28,7 @@ public interface PersonConfiguration {
      * properties are properties associated with collections of values.
      * @return the identification of multi-valued properties for this configuration
      */
-    Set<? extends MultiplePropertyName<?,?>> getMultiplePropertiesNames();
+    Set<MultiplePropertyName<?,?>> getMultiplePropertiesNames();
     /**
      * Returns the separator used in the CSV file to separate values inside multi-valued properties.
      * @return the separator for String.split() to get the individual parts of multi-valued 

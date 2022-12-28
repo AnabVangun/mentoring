@@ -22,7 +22,7 @@ public class SetPropertyName<K> extends MultiplePropertyName<K,Integer> {
         super(name, headerName, keyType, PropertyType.INTEGER, getParser(keyType));
     }
     
-    private static <K> Function<String[], Map<? extends K, ? extends Integer>> getParser(
+    private static <K> Function<String[], Map<K, Integer>> getParser(
             PropertyType<K> keyType){
         return input -> Arrays.stream(input).collect(Collectors.toMap(keyType::parse, 
                 args -> 0));

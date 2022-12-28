@@ -28,7 +28,7 @@ class SetPropertyNameTest extends MultiplePropertyNameTest{
     static class SetPropertyArgs<K> extends MapPropertyArgs<K,Integer>{
 
         SetPropertyArgs(String testCase, String name, String headerName, PropertyType<K> keyType,
-                String[] mapInput, Set<? extends K> expectedResult){
+                String[] mapInput, Set<K> expectedResult){
             super(testCase, name, headerName, keyType, PropertyType.INTEGER, null, mapInput, 
                     expectedResult.stream()
                             .collect(Collectors.toMap(Function.identity(), args -> 0)));

@@ -27,13 +27,13 @@ enum DummyPersonConfiguration implements PersonConfiguration{
                     "fifth", "sixth", "seventh"));
         
         private final Set<PropertyName<?>> properties;
-        private final Set<? extends MultiplePropertyName<?,?>> multipleProperties;
+        private final Set<MultiplePropertyName<?,?>> multipleProperties;
         private final String nameFormat;
         private final List<String> nameProperties;
         private final Collection<String> allProperties;
         
         private DummyPersonConfiguration(Set<PropertyName<?>> properties,
-                Set<? extends MultiplePropertyName<?,?>> multipleProperties, String nameFormat,
+                Set<MultiplePropertyName<?,?>> multipleProperties, String nameFormat,
                 List<String> nameProperties, Collection<String> allProperties){
             this.properties = properties;
             this.multipleProperties = multipleProperties;
@@ -48,7 +48,7 @@ enum DummyPersonConfiguration implements PersonConfiguration{
         }
 
         @Override
-        public Set<? extends MultiplePropertyName<?,?>> getMultiplePropertiesNames() {
+        public Set<MultiplePropertyName<?,?>> getMultiplePropertiesNames() {
             return this.multipleProperties;
         }
 
