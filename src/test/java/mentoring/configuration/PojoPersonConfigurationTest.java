@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 import mentoring.configuration.PojoPersonConfigurationTest.PojoPersonConfigurationArgs;
 
-class PojoPersonConfigurationTest implements PersonConfigurationTest<PojoPersonConfigurationArgs>{
+class PojoPersonConfigurationTest implements SimplePersonConfigurationTest<PojoPersonConfigurationArgs>{
 
     @Override
     public Stream<PojoPersonConfigurationArgs> argumentsSupplier() {
@@ -12,7 +12,7 @@ class PojoPersonConfigurationTest implements PersonConfigurationTest<PojoPersonC
     }
     
     static record PojoPersonConfigurationArgs(PojoPersonConfiguration configuration) 
-            implements PersonConfigurationArgs {
+            implements SimplePersonConfigurationArgs {
         
         @Override
         public String toString(){

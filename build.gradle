@@ -22,6 +22,7 @@ dependencies {
     implementation files('libs/AssignmentProblem-2.0.1.jar')
     implementation 'com.opencsv:opencsv:5.5.1'
     implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation 'org.snakeyaml:snakeyaml-engine:2.5'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.6.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.2'

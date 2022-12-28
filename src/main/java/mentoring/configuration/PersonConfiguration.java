@@ -16,6 +16,7 @@ public interface PersonConfiguration {
     TODO: consider implementing equals and hashCode for PropertyName and MultiplePropertyName to 
     leverage using a set rather than an arbitrary collection.
     Beware: MultiplePropertyName contains a Function, which is difficult to equate.
+    Once done, go leverage them to simplify ExtendedPersonConfigurationTest
     */
     /**
      * Returns the {@link PropertyName} instances describing single-valued properties.

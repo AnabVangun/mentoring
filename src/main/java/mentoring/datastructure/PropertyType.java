@@ -1,6 +1,7 @@
 package mentoring.datastructure;
 
 import java.text.Normalizer;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -26,11 +27,27 @@ public final class PropertyType<T> {
             new PropertyType<>(String.class, PropertyType::simplifyString);
     public final static PropertyType<Year> YEAR = 
             new PropertyType<>(Year.class, Year::getYear);
+    //When adding a new type, add it to lookup.
+    
+    private static final Map<String, PropertyType<?>> lookup = Map.of("boolean", BOOLEAN,
+            "integer", INTEGER,
+            "string", STRING,
+            "simplifiedlowerstring", SIMPLIFIED_LOWER_STRING,
+            "year", YEAR);
+    
+    public static PropertyType<?> valueOf(String property){
+        String simplified = property.toLowerCase().replace("_","");
+        if (! lookup.containsKey(simplified)) {
+            throw new IllegalArgumentException("Property %s could not be found, valid values are %s"
+                    .formatted(property, lookup.keySet()));
+        }
+        return lookup.get(simplified);
+    }
     
     private final Class<T> type;
-    private final Function<String,? extends T> parser;
+    private final Function<String,T> parser;
     
-    private PropertyType(Class<T> type, Function<String,? extends T> parser){
+    private PropertyType(Class<T> type, Function<String,T> parser){
         /*It is actually necessary to store type: otherwise, retrieving it afterwards is much 
         more complex.*/
         this.type = type;

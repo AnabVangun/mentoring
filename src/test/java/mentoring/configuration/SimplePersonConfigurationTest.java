@@ -7,10 +7,15 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
-import test.tools.TestArgs;
 import test.tools.TestFramework;
 
-interface PersonConfigurationTest<T extends PersonConfigurationArgs> extends TestFramework<T> {
+/**
+ * Tests for all the {@link PersonConfiguration} implementations.
+ * @param <T> the actual SimplePersonConfigurationArgs implementation.
+ * @see {@link ExtendedPersonConfigurationTest} for a more extensive test suite.
+ */
+public interface SimplePersonConfigurationTest<T extends SimplePersonConfigurationArgs> 
+        extends TestFramework<T> {
     
     @TestFactory
     default Stream<DynamicNode> getAllPropertiesHeaderNames_sufficient(){
@@ -56,7 +61,3 @@ interface PersonConfigurationTest<T extends PersonConfigurationArgs> extends Tes
                 });
     }
 }
-
-interface PersonConfigurationArgs {
-    abstract PersonConfiguration convert();
-} 
