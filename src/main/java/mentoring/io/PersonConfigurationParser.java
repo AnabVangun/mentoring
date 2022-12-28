@@ -94,12 +94,16 @@ public final class PersonConfigurationParser {
         } else {
             throw new IllegalArgumentException("Property nameFormat is missing");
         }
-        //TODO implement cross checks between nameFormat and nameProperties
         List<String> nameProperties;
         if(loaded.containsKey("nameProperties")){
             nameProperties = (List<String>) loaded.get("nameProperties");
         } else {
             throw new IllegalArgumentException("Property nameProperties is missing");
+        }
+        if (! PersonConfiguration.isValidNameDefinition(nameFormat, nameProperties)){
+            throw new IllegalArgumentException(
+                    "%s and %s do not constitute a valid name definition"
+                            .formatted(nameFormat, nameProperties));
         }
         return new PersonConfigurationImplementation(configurationName, 
                 Collections.unmodifiableSet(properties), 
@@ -107,11 +111,11 @@ public final class PersonConfigurationParser {
                 separator, nameFormat, 
                 Collections.unmodifiableList(nameProperties));
     }
+    
     /*
         TODO make PersonConfiguration an abstract class; define behaviour for all getters, make all
     properties final and have constructor do all the assignment.
     */
-    
     private static class PersonConfigurationImplementation implements PersonConfiguration {
         private final String configurationName;
         private final Set<PropertyName<?>> properties;

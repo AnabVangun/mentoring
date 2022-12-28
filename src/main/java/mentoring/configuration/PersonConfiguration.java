@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import mentoring.datastructure.MultiplePropertyName;
 import mentoring.datastructure.PropertyName;
+import org.apache.commons.lang3.StringUtils;
 /**
  * The definition of a person's properties.
  * 
@@ -58,4 +59,16 @@ public interface PersonConfiguration {
      * @return the names of all the columns expected by this configuration in a CSV file.
      */
     Collection<String> getAllPropertiesHeaderNames();
+    
+    /**
+     * Verify if its input is a valid definition for computing Person names.
+     * @param nameFormat String with placeholders defining how names will be computed
+     * @param nameProperties List of the property header names that will be used to replace the 
+     * placeholders
+     * @return true if the input can be used to compute names, false otherwise
+     */
+    static boolean isValidNameDefinition(String nameFormat, List<String> nameProperties){
+        int count = StringUtils.countMatches(nameFormat.toLowerCase(), "%s");
+        return nameProperties.size() == count;
+    }
 }

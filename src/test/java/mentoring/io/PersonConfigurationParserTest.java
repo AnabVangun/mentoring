@@ -22,12 +22,6 @@ import org.junit.jupiter.api.TestFactory;
 
 class PersonConfigurationParserTest implements 
         ExtendedPersonConfigurationTest<PersonConfigurationParserArgs>{
-    
-    /*
-    TODO : implement tests
-    3. Add test cases for all the different types of properties
-    4. Define behaviour for when some properties are missing
-    */
 
     @Override
     public Stream<PersonConfigurationParserArgs> argumentsSupplier() {
@@ -50,6 +44,9 @@ class PersonConfigurationParserTest implements
                 new PersonConfigurationParserArgs(
                         "invalidMultiplePropertyAggregationTypeTestConfiguration.yaml",
                         "invalid multiple property aggregation type"),
+                new PersonConfigurationParserArgs(
+                        "invalidNameDefinitionTestConfiguration.yaml",
+                        "inconsistent name definition"),
                 new PersonConfigurationParserArgs(
                         "invalidPropertyTypeTestConfiguration.yaml", "invalid property type"),
                 new PersonConfigurationParserArgs(
@@ -100,8 +97,7 @@ class PersonConfigurationParserTest implements
         
         public PersonConfiguration convertWithException() throws IOException {
             return new PersonConfigurationParser()
-                    //TODO: replace manual file location with context
-                    .parse(new FileReader("resources\\test\\mentoring\\io\\" + filePath,
+                    .parse(new FileReader(getClass().getResource(filePath).getFile(),
                             Charset.forName("utf-8")));
         }
         

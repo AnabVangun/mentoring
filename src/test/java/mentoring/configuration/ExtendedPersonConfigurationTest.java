@@ -15,11 +15,6 @@ import org.junit.jupiter.api.TestFactory;
 public interface ExtendedPersonConfigurationTest<T extends ExtendedPersonConfigurationArgs>
         extends SimplePersonConfigurationTest<T> {
     
-    /*
-    TODO: implement tests
-    1. Check that nameFormat and nameProperties play nice together 
-    */
-    
     String builderName();
     
     @TestFactory
@@ -37,7 +32,9 @@ public interface ExtendedPersonConfigurationTest<T extends ExtendedPersonConfigu
                     () -> Assertions.assertEquals(args.getExpectedNameFormat(),
                             actual.getNameFormat()),
                     () -> Assertions.assertEquals(args.getExpectedNameProperties(), 
-                            actual.getNamePropertiesHeaderNames()));
+                            actual.getNamePropertiesHeaderNames()),
+                    () -> Assertions.assertTrue(PersonConfiguration.isValidNameDefinition(
+                            actual.getNameFormat(), actual.getNamePropertiesHeaderNames())));
         });
     }
     
