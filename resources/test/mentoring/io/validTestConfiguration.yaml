@@ -1,21 +1,21 @@
 #definition of a PersonConfiguration
 configurationName: standard valid test #name of the configuration
 properties: #definition of the simple properties. Each must have three elements: the name of the property, the header of the property column in data files, and the type of the property. The type must be in snake case.
-  - - Anglais
-    - Anglais
-    - boolean
-  - - Promotion
-    - Promotion
-    - integer
+  - name: Anglais
+    headerName: Anglais
+    type: boolean
+  - name: Promotion
+    headerName: Promotion
+    type: integer
 multipleProperties: #definition of the multiple properties. Each must have all the elements of a simple property, in the same order, and then an aggregation type which must be either 'set' or 'indexed'
-  - - Métiers
-    - Activités et métiers
-    - string
-    - set
-  - - Motivation
-    - Motivation
-    - string
-    - indexed
+  - name: Métiers
+    headerName: Activités et métiers
+    type: string
+    aggregation: set
+  - name: Motivation
+    headerName: Motivation
+    type: string
+    aggregation: indexed
 separator: ',' #definition of the separator used to separate values inside multiple property declarations in data files
 nameFormat: '%s %s (X%s)' #format of the full name of a person, in which the placeholders will be replaced by the properties defined in nameProperties
 nameProperties: #header names of the properties used to define the name of a person

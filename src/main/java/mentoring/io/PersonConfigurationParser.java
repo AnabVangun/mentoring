@@ -9,19 +9,19 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import mentoring.configuration.PersonConfiguration;
-import mentoring.datastructure.IndexedPropertyName;
 import mentoring.datastructure.MultiplePropertyName;
 import mentoring.datastructure.PropertyName;
-import mentoring.datastructure.PropertyType;
-import mentoring.datastructure.SetPropertyName;
 import org.snakeyaml.engine.v2.api.Load;
 import org.snakeyaml.engine.v2.api.LoadSettings;
 import org.snakeyaml.engine.v2.exceptions.YamlEngineException;
 
 /**
  * Parser used to build {@link PersonConfiguration} objects from configuration files.
+ * <p>Instances of this class can be reused but are not thread-safe.
  */
 public final class PersonConfigurationParser {
+    private final Load yamlReader = new Load(LoadSettings.builder().build());
+    private Map<String, Object> yamlData;
     /**
      * Use a {@link Reader} to build a {@link PersonConfiguration}.
      * @param reader data source representing in textual format the configuration
@@ -31,85 +31,56 @@ public final class PersonConfigurationParser {
      */
     public PersonConfiguration parse(Reader reader) throws IllegalArgumentException {
         Objects.requireNonNull(reader);
-        Load load = new Load(LoadSettings.builder().build());
-        Map<String, Object> loaded;
-        try {
-            loaded = (Map<String, Object>) load.loadFromReader(reader);
-        } catch (YamlEngineException e){
-            throw new IllegalArgumentException("Could not parse YAML content from reader", e);
-        }
-        //TODO refactor method
-        String configurationName;
-        if(loaded.containsKey("configurationName")){
-            configurationName = (String) loaded.get("configurationName");
-        } else {
-            throw new IllegalArgumentException("Property configurationName is missing");
-        }
-        Set<PropertyName<?>> properties;
-        if(loaded.containsKey("properties")){
-            properties = new HashSet<>();
-            for(List<String> propertyToParse : (List<List<String>>) loaded.get("properties")){
-                if (propertyToParse.size() != 3){
-                    throw new IllegalArgumentException("Expected list of size 3, received " 
-                            + propertyToParse);
-                }
-                properties.add(new PropertyName<>(propertyToParse.get(0),
-                        propertyToParse.get(1), PropertyType.valueOf(propertyToParse.get(2))));
-            }
-        } else {
-            throw new IllegalArgumentException("Property properties is missing");
-        }
-        Set<MultiplePropertyName<?,?>> multipleProperties;
-        if(loaded.containsKey("multipleProperties")){
-            multipleProperties = new HashSet<>();
-            for (List<String> propertyToParse : 
-                    (List<List<String>>) loaded.get("multipleProperties")) {
-                if(propertyToParse.size() != 4){
-                    throw new IllegalArgumentException("Expected list of size 4, received " 
-                            + propertyToParse);
-                }
-                String name = propertyToParse.get(0);
-                String headerName = propertyToParse.get(1);
-                PropertyType<?> type = PropertyType.valueOf(propertyToParse.get(2));
-                MultiplePropertyName<?,?> newProperty = 
-                        switch(propertyToParse.get(3).toLowerCase()){
-                            case "set" -> new SetPropertyName(name, headerName, type);
-                            case "indexed" -> new IndexedPropertyName(name, headerName, type);
-                            default -> throw new IllegalArgumentException("not implemented yet");
-                };
-                multipleProperties.add(newProperty); 
-            }
-        } else {
-            throw new IllegalArgumentException("Property multipleProperties is missing");
-        }
-        String separator;
-        if(loaded.containsKey("separator")){
-            separator = (String) loaded.get("separator");
-        } else {
-            throw new IllegalArgumentException("Property separator is missing");
-        }
-        String nameFormat;
-        if(loaded.containsKey("nameFormat")){
-            nameFormat = (String) loaded.get("nameFormat");
-        } else {
-            throw new IllegalArgumentException("Property nameFormat is missing");
-        }
-        List<String> nameProperties;
-        if(loaded.containsKey("nameProperties")){
-            nameProperties = (List<String>) loaded.get("nameProperties");
-        } else {
-            throw new IllegalArgumentException("Property nameProperties is missing");
-        }
-        if (! PersonConfiguration.isValidNameDefinition(nameFormat, nameProperties)){
-            throw new IllegalArgumentException(
-                    "%s and %s do not constitute a valid name definition"
-                            .formatted(nameFormat, nameProperties));
-        }
+        yamlData = readYaml(reader);
+        String configurationName = (String) extractAttribute("configurationName");
+        Set<PropertyName<?>> properties = extractProperties("properties");
+        Set<MultiplePropertyName<?,?>> multipleProperties = 
+                extractMultipleProperties("multipleProperties");
+        String separator = (String) extractAttribute("separator");
+        String nameFormat = (String) extractAttribute("nameFormat");
+        List<String> nameProperties = (List<String>) extractAttribute("nameProperties");
+        assertValidNameDefinition(nameFormat, nameProperties);
         return new PersonConfigurationImplementation(configurationName, 
                 Collections.unmodifiableSet(properties), 
                 Collections.unmodifiableSet(multipleProperties), 
                 separator, nameFormat, 
                 Collections.unmodifiableList(nameProperties));
+    }
+    
+    private Map<String, Object> readYaml(Reader reader){
+        try {
+            return (Map<String, Object>) yamlReader.loadFromReader(reader);
+        } catch (YamlEngineException e){
+            throw new IllegalArgumentException("Could not parse YAML content from reader", e);
+        }
+    }
+    
+    private Object extractAttribute(String propertyKey){
+        if(yamlData.containsKey(propertyKey)){
+            return yamlData.get(propertyKey);
+        } else {
+            throw new IllegalArgumentException("Property %s is missing.".formatted(propertyKey));
+        }
+    }
+    
+    private Set<PropertyName<?>> extractProperties(String propertyKey){
+        SimplePropertyNameParser parser = new SimplePropertyNameParser();
+        return parser.parsePropertyNames(
+                (Iterable<Map<String, String>>) extractAttribute(propertyKey));
+    }
+    
+    private Set<MultiplePropertyName<?,?>> extractMultipleProperties(String propertyKey){
+        MultiplePropertyNameParser parser = new MultiplePropertyNameParser();
+        return parser.parsePropertyNames(
+                (Iterable<Map<String, String>>) extractAttribute(propertyKey));
+    }
+    
+    private static void assertValidNameDefinition(String nameFormat, List<String> nameProperties){
+        if (! PersonConfiguration.isValidNameDefinition(nameFormat, nameProperties)){
+            throw new IllegalArgumentException(
+                    "%s and %s do not constitute a valid name definition"
+                            .formatted(nameFormat, nameProperties));
+        }
     }
     
     /*
