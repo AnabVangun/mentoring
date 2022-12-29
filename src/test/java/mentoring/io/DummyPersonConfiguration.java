@@ -1,74 +1,40 @@
 package mentoring.io;
 
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.IndexedPropertyName;
-import mentoring.datastructure.MultiplePropertyName;
 import mentoring.datastructure.PropertyName;
 import mentoring.datastructure.PropertyType;
 import mentoring.datastructure.SetPropertyName;
 
-enum DummyPersonConfiguration implements PersonConfiguration{
-        SIMPLE_PROPERTIES(Set.of(new PropertyName<>("first", "first", PropertyType.STRING), 
-                new PropertyName<>("second", "second", PropertyType.INTEGER)), 
-            Set.of(), "", List.of(), Set.of("first", "second")),
-        MULTIPLE_PROPERTIES(Set.of(), Set.of(new IndexedPropertyName<>("third", "third", 
-                PropertyType.BOOLEAN), 
-                new SetPropertyName<>("fourth", "fourth", PropertyType.INTEGER)), 
-            "", List.of(), Set.of("third", "fourth")),
-        NAME_PROPERTIES(Set.of(), Set.of(), "%s", List.of("fifth"), Set.of("fifth")),
-        ALL_PROPERTIES(Set.of(new PropertyName<>("pFirst", "first", PropertyType.STRING),
-                new PropertyName<>("pSecond", "second", PropertyType.INTEGER)),
-            Set.of(new IndexedPropertyName<>("pThird", "third", PropertyType.BOOLEAN), 
-                    new IndexedPropertyName<>("pFourth", "fourth", PropertyType.INTEGER)), "%s %s %s",
-            List.of("fifth", "sixth", "seventh"), Set.of("first", "second", "third", "fourth",
-                    "fifth", "sixth", "seventh"));
+enum DummyPersonConfiguration{
+        SIMPLE_PROPERTIES(new PersonConfiguration("Simple properties",
+                Set.of(new PropertyName<>("first", "first", PropertyType.STRING),
+                        new PropertyName<>("second", "second", PropertyType.INTEGER)),
+                Set.of(), "\\|", "", List.of())),
+        MULTIPLE_PROPERTIES(new PersonConfiguration("Multiple properties", Set.of(), 
+                Set.of(new IndexedPropertyName<>("third", "third", PropertyType.BOOLEAN),
+                        new SetPropertyName<>("fourth", "fourth", PropertyType.INTEGER)), 
+                "\\|", "", List.of())),
+        NAME_PROPERTIES(new PersonConfiguration("Name properties", Set.of(), Set.of(), "\\|", "%s", 
+                List.of("fifth"))),
+        ALL_PROPERTIES(new PersonConfiguration("all properties",
+                Set.of(new PropertyName<>("pFirst", "first", PropertyType.STRING),
+                        new PropertyName<>("pSecond", "second", PropertyType.INTEGER)),
+                Set.of(new IndexedPropertyName<>("pThird", "third", PropertyType.BOOLEAN),
+                        new IndexedPropertyName<>("pFourth", "fourth", PropertyType.INTEGER)), 
+                "\\|", "%s %s %s", List.of("fifth", "sixth", "seventh")));
         
-        private final Set<PropertyName<?>> properties;
-        private final Set<MultiplePropertyName<?,?>> multipleProperties;
-        private final String nameFormat;
-        private final List<String> nameProperties;
-        private final Collection<String> allProperties;
+        public final PersonConfiguration configuration;
         
-        private DummyPersonConfiguration(Set<PropertyName<?>> properties,
-                Set<MultiplePropertyName<?,?>> multipleProperties, String nameFormat,
-                List<String> nameProperties, Collection<String> allProperties){
-            this.properties = properties;
-            this.multipleProperties = multipleProperties;
-            this.nameFormat = nameFormat;
-            this.nameProperties = nameProperties;
-            this.allProperties = allProperties;
+        private DummyPersonConfiguration(PersonConfiguration configuration){
+            this.configuration = configuration;
         }
-
-        @Override
-        public Set<PropertyName<?>> getPropertiesNames() {
-            return this.properties;
-        }
-
-        @Override
-        public Set<MultiplePropertyName<?,?>> getMultiplePropertiesNames() {
-            return this.multipleProperties;
-        }
-
-        @Override
-        public String getSeparator() {
-            return "\\|";
-        }
-
-        @Override
-        public String getNameFormat() {
-            return this.nameFormat;
-        }
-
-        @Override
-        public List<String> getNamePropertiesHeaderNames() {
-            return this.nameProperties;
-        }
-
-        @Override
-        public Collection<String> getAllPropertiesHeaderNames() {
-            return this.allProperties;
+        
+        public static Stream<PersonConfiguration> getConfigurations(){
+            return Arrays.stream(values()).map(value -> value.configuration);
         }
     }

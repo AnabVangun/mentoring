@@ -15,7 +15,6 @@ import mentoring.io.PersonFileParserTest.PersonFileParserArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
-import test.tools.TestArgs;
 import test.tools.TestFramework;
 
 
@@ -26,13 +25,16 @@ class PersonFileParserTest implements TestFramework<PersonFileParserArgs>{
     @SuppressWarnings("deprecation")
     public Stream<PersonFileParserArgs> argumentsSupplier(){
         return Stream.of(
-                new PersonFileParserArgs("no person", DummyPersonConfiguration.NAME_PROPERTIES, 
+                new PersonFileParserArgs("no person", 
+                        DummyPersonConfiguration.NAME_PROPERTIES.configuration, 
                         "fifth", List.of()),
-                new PersonFileParserArgs("one person", DummyPersonConfiguration.MULTIPLE_PROPERTIES, 
+                new PersonFileParserArgs("one person", 
+                        DummyPersonConfiguration.MULTIPLE_PROPERTIES.configuration, 
                         "third,fourth" + NEWLINE + "vrai|faux,0", List.of(
                                 new PersonBuilder().withPropertyMap("third", Map.of(true, 0, false, 1))
                                         .withPropertySet("fourth", Set.of(0)).withFullName("").build())),
-                new PersonFileParserArgs("three persons", DummyPersonConfiguration.SIMPLE_PROPERTIES,
+                new PersonFileParserArgs("three persons", 
+                        DummyPersonConfiguration.SIMPLE_PROPERTIES.configuration,
                         "first,second" + NEWLINE + "string,1" + NEWLINE + "foo,2" + NEWLINE + "bar,3", List.of(
                                 new PersonBuilder().withProperty("first", "string")
                                         .withProperty("second", 1).withFullName("").build(),
@@ -53,7 +55,8 @@ class PersonFileParserTest implements TestFramework<PersonFileParserArgs>{
     @TestFactory
     Stream<DynamicNode> personFileParser_validInput(){
         return test(Stream.of(DummyPersonConfiguration.SIMPLE_PROPERTIES), 
-                "personFileParser() succeeds on valid input", args -> new PersonFileParser(args));
+                "personFileParser() succeeds on valid input", args -> 
+                        new PersonFileParser(args.configuration));
     }
     
     @TestFactory

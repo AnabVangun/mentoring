@@ -21,7 +21,7 @@ class PojoPersonConfigurationTest implements SimplePersonConfigurationTest<PojoP
 
         @Override
         public PersonConfiguration convert() {
-            return configuration;
+            return configuration.getConfiguration();
         }
         
     }
