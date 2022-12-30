@@ -39,7 +39,7 @@ public class Main {
         boolean writeToFile = false;
         PersonConfiguration menteeConfiguration;
         PersonConfiguration mentorConfiguration;
-        CriteriaConfiguration criteriaConfiguration;
+        CriteriaConfiguration<Person, Person> criteriaConfiguration;
         ResultConfiguration<Person, Person> resultConfiguration;
         Person defaultMentor = new PersonBuilder().withProperty("Email", "")
                 .withFullName("PAS DE MENTOR").build();

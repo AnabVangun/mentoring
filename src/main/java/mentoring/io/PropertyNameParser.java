@@ -100,6 +100,7 @@ class MultiplePropertyNameParser extends PropertyNameParser<MultiplePropertyName
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected MultiplePropertyName<?,?> parseSinglePropertyName(Map<String, String> toParse) {
         String name = toParse.get("name");
         String headerName = toParse.get("headerName");

@@ -30,11 +30,22 @@ public final class PersonConfiguration {
     private final List<String> nameProperties;
     private final Collection<String> allPropertiesHeaderNames;
     
+    /**
+     * Create a PersonConfiguration instance.
+     * @param configurationName name of the configuration to create
+     * @param properties properties of the configuration: {@link Person} objects abiding by that 
+     * configuration will have these properties.
+     * @param multipleProperties similar to {@code properties} but for multi-valued properties.
+     * @param separator separator used inside multi-valued properties in CSV files.
+     * @param nameFormat the format of the full name of a person.
+     * @param namePropertiesHeaderNames the names of the columns containing parts of the full name 
+     * of a person.
+     */
     public PersonConfiguration(String configurationName,
                 Set<PropertyName<?>> properties, 
                 Set<MultiplePropertyName<?,?>> multipleProperties, 
                 String separator, String nameFormat,
-                List<String> nameProperties){
+                List<String> namePropertiesHeaderNames){
             this.configurationName = configurationName;
             Set<String> tmpAllProperties = new HashSet<>();
             this.properties = properties;
@@ -42,9 +53,10 @@ public final class PersonConfiguration {
             this.multipleProperties = multipleProperties;
             this.multipleProperties.forEach(p -> tmpAllProperties.add(p.getHeaderName()));
             this.separator = separator;
+            //TODO consider throwing an exception if nameFormat is invalid.
             this.nameFormat = nameFormat;
-            this.nameProperties = nameProperties;
-            tmpAllProperties.addAll(nameProperties);
+            this.nameProperties = namePropertiesHeaderNames;
+            tmpAllProperties.addAll(namePropertiesHeaderNames);
             allPropertiesHeaderNames = Collections.unmodifiableCollection(tmpAllProperties);
     }
     
@@ -92,7 +104,8 @@ public final class PersonConfiguration {
     
     /**
      * Returns the names of the columns containing parts of the full name of a person.
-     * @return 
+     * @return the ordered list of the column used to fill the placeholders in 
+     * {@link #getNameFormat() }.
      * @see #getNameFormat() 
      */
     public List<String> getNamePropertiesHeaderNames(){

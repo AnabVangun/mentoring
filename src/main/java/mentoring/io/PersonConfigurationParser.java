@@ -36,6 +36,7 @@ public final class PersonConfigurationParser {
                 extractMultipleProperties("multipleProperties");
         String separator = (String) extractAttribute("separator");
         String nameFormat = (String) extractAttribute("nameFormat");
+        @SuppressWarnings("unchecked")
         List<String> nameProperties = (List<String>) extractAttribute("nameProperties");
         assertValidNameDefinition(nameFormat, nameProperties);
         return new PersonConfiguration(configurationName, 
@@ -45,6 +46,7 @@ public final class PersonConfigurationParser {
                 Collections.unmodifiableList(nameProperties));
     }
     
+    @SuppressWarnings("unchecked")
     private Map<String, Object> readYaml(Reader reader){
         try {
             return (Map<String, Object>) yamlReader.loadFromReader(reader);
@@ -61,12 +63,14 @@ public final class PersonConfigurationParser {
         }
     }
     
+    @SuppressWarnings("unchecked")
     private Set<PropertyName<?>> extractProperties(String propertyKey){
         SimplePropertyNameParser parser = new SimplePropertyNameParser();
         return parser.parsePropertyNames(
                 (Iterable<Map<String, String>>) extractAttribute(propertyKey));
     }
     
+    @SuppressWarnings("unchecked")
     private Set<MultiplePropertyName<?,?>> extractMultipleProperties(String propertyKey){
         MultiplePropertyNameParser parser = new MultiplePropertyNameParser();
         return parser.parsePropertyNames(
