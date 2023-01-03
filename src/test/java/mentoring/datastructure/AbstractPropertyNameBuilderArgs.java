@@ -54,12 +54,7 @@ abstract class AbstractPropertyNameBuilderArgs<T extends PropertyNameBuilder> ex
 
     protected Stream<Executable> supplyAssertionsPropertyAsExpected(PropertyName<?> actual, 
             boolean withHeaderName){
-        //TODO use PropertyName.equals() here when implemented
-        return Stream.of(
-                () -> Assertions.assertEquals(name, actual.getName()),
-                () -> Assertions.assertEquals(withHeaderName ? headerName : name, 
-                        actual.getHeaderName()),
-                () -> Assertions.assertEquals(type, actual.getType())
-        );
+        return Stream.of(() -> Assertions.assertEquals(
+                new PropertyName<>(name, withHeaderName ? headerName : name, type), actual));
     }
 }

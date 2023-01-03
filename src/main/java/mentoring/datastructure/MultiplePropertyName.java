@@ -41,4 +41,15 @@ public class MultiplePropertyName<K,V> extends PropertyName<K>{
     public PropertyType<V> getValueType(){
         return valueType;
     }
+    
+    @Override
+    public boolean equals(Object o){
+        return o instanceof MultiplePropertyName cast && attributeEquals(cast) 
+                && valueType.equals(cast.valueType) && parser.equals(cast.parser);
+    }
+    
+    @Override
+    public int hashCode(){
+        return (super.hashCode() * 31 + valueType.hashCode()) * 31 + parser.hashCode();
+    }
 }

@@ -80,12 +80,8 @@ abstract class AbstractPropertyNameBuilderTest
                     builder.prepare(args.name + "_1", PropertyType.YEAR)
                             .withHeaderName(args.headerName + "_5");
                     PropertyName<?> property = builder.build();
-                    //TODO use PropertyName.equals() here when implemented
-                    Assertions.assertAll(
-                            () -> Assertions.assertEquals(args.name + "_1", property.getName()),
-                            () -> Assertions.assertEquals(PropertyType.YEAR, property.getType()),
-                            () -> Assertions.assertEquals(args.headerName + "_5", 
-                                    property.getHeaderName()));
+                    Assertions.assertEquals(new PropertyName<>(args.name + "_1", 
+                            args.headerName + "_5", PropertyType.YEAR), property);
                 });
     }
     

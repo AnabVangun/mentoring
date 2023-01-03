@@ -1,9 +1,8 @@
 package mentoring.datastructure;
 
 import java.util.Map;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import test.tools.TestArgs;
@@ -27,22 +26,66 @@ class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyArgs<?,
             );
     }
     
+    protected PropertyArgs<?,?> getDifferentArgs(){
+        return new PropertyArgs<>("Property with different values", "specific_foo", 
+                "differentBar", PropertyType.YEAR);
+    }
+    
     @TestFactory
     Stream<DynamicNode> getName(){
-        return test("getName()", args -> assertEquals(args.getExpectedName(),
+        return test("getName()", args -> Assertions.assertEquals(args.getExpectedName(),
                 args.convert().getName()));
     }
     
     @TestFactory
     Stream<DynamicNode> getHeaderName(){
-        return test("getHeaderName()", args -> assertEquals(args.getExpectedHeaderName(),
+        return test("getHeaderName()", args -> Assertions.assertEquals(args.getExpectedHeaderName(),
                 args.convert().getHeaderName()));
     }
     
     @TestFactory
     Stream<DynamicNode> getType(){
-        return test("getType()", args -> assertEquals(args.expectedType,
+        return test("getType()", args -> Assertions.assertEquals(args.expectedType,
                 args.convert().getType()));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> equals_equalValue(){
+        return test("equals() returns true on equal values", 
+                args -> Assertions.assertEquals(args.convert(), args.convert()));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> equals_differentValue(){
+        return test("equals returns false on different values",
+                args -> Assertions.assertNotEquals(args.convert(), getDifferentArgs().convert()));
+    }
+    
+    @TestFactory
+    protected Stream<DynamicNode> equals_similarMultiplePropertyName(){
+        return test(Stream.of(
+                new PropertyArgs<>("specific test case", "name", "header name", PropertyType.YEAR)),
+                "equals returns false on similar MultiplePropertyName", 
+                args -> Assertions.assertNotEquals(args.convert(), 
+                        new MultiplePropertyName<>("name", "header name", PropertyType.YEAR, 
+                                PropertyType.BOOLEAN, null)));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> hashCode_equalValue(){
+        return test("hashCode() returns the same value for two equal values",
+                args -> Assertions.assertEquals(args.convert().hashCode(), 
+                        args.convert().hashCode()));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> hashCode_consistent(){
+        return test("hashCode() returns the same value when called multiple times",
+                args -> {
+                    PropertyName<?> property = args.convert();
+                    int first = property.hashCode();
+                    Assertions.assertEquals(first, property.hashCode());
+                });
     }
     
     static class PropertyArgs<K,V> extends TestArgs{

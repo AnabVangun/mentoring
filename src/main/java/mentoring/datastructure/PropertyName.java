@@ -39,4 +39,19 @@ public class PropertyName<T> {
     public PropertyName<T> withHeaderName(String headerName){
         return new PropertyName<>(name, headerName, type);
     }
+    
+    @Override
+    public boolean equals(Object o){
+        return o.getClass().equals(PropertyName.class) && attributeEquals((PropertyName) o);
+    }
+    
+    protected boolean attributeEquals(PropertyName other){
+        return name.equals(other.name) && headerName.equals(other.headerName) 
+                && type.equals(other.type);
+    }
+    
+    @Override
+    public int hashCode(){
+        return (name.hashCode() * 31 + headerName.hashCode()) * 31 + type.hashCode();
+    }
 }

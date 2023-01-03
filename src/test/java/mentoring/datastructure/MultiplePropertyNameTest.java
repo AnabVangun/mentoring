@@ -32,6 +32,20 @@ class MultiplePropertyNameTest extends PropertyNameTest{
             );
     }
     
+    @Override
+    protected PropertyArgs<?,?> getDifferentArgs(){
+        return new MapPropertyArgs<>("Property with different values", "propriété",
+                "headerName", PropertyType.STRING, PropertyType.SIMPLIFIED_LOWER_STRING, 
+                entries -> null, null, null);
+    }
+    
+    @Override
+    @TestFactory
+    protected Stream<DynamicNode> equals_similarMultiplePropertyName(){
+        //This test is specific to PropertyName.
+        return Stream.of();
+    }
+    
     @TestFactory
     Stream<DynamicNode> getValueType(){
         return test("getValueType() returns the expected type", args -> 

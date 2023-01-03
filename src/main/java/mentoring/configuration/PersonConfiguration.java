@@ -15,12 +15,6 @@ import org.apache.commons.lang3.StringUtils;
  * database to extract {@link Person} instances and said extracted {@link Person} instances.
  */
 public final class PersonConfiguration {
-    /*
-    TODO: consider implementing equals and hashCode for PropertyName and MultiplePropertyName to 
-    leverage using a set rather than an arbitrary collection.
-    Beware: MultiplePropertyName contains a Function, which is difficult to equate.
-    Once done, go leverage them to simplify ExtendedPersonConfigurationTest
-    */
     
     private final String configurationName;
     private final Set<PropertyName<?>> properties;

@@ -13,9 +13,14 @@ class MultiplePropertyNameBuilderTest extends
     @Override
     public Stream<MultiplePropertyNameBuilderArgs> argumentsSupplier(){
         return Stream.of(
-                new IndexedPropertyNameBuilderArgs("indexed builder", "foo", "bar", 
-                        PropertyType.BOOLEAN),
-                new SetPropertyNameBuilderArgs("set builder", "bar", "foo", PropertyType.INTEGER));
+                new MultiplePropertyNameBuilderArgs("indexed builder", "foo", "bar", 
+                        PropertyType.BOOLEAN, AggregationType.INDEXED,
+                        new IndexedPropertyName<>("foo", "foo", PropertyType.BOOLEAN),
+                        new IndexedPropertyName<>("foo", "bar", PropertyType.BOOLEAN)),
+                new MultiplePropertyNameBuilderArgs("set builder", "bar", "foo", 
+                        PropertyType.INTEGER, AggregationType.SET,
+                        new SetPropertyName<>("bar", "bar", PropertyType.INTEGER),
+                        new SetPropertyName<>("bar", "foo", PropertyType.INTEGER)));
     }
     
     @TestFactory
@@ -43,13 +48,9 @@ class MultiplePropertyNameBuilderTest extends
                             .setAggregation(AggregationType.SET)
                             .withHeaderName(args.headerName + "_5");
                     MultiplePropertyName<?,?> property = builder.build();
-                    //TODO use PropertyName.equals() here when implemented
-                    Assertions.assertAll(
-                            () -> Assertions.assertEquals(args.name + "_1", property.getName()),
-                            () -> Assertions.assertEquals(PropertyType.YEAR, property.getType()),
-                            () -> Assertions.assertEquals(args.headerName + "_5", 
-                                    property.getHeaderName()),
-                            () -> Assertions.assertTrue(property instanceof SetPropertyName));
+                    Assertions.assertEquals(new SetPropertyName<>(args.name + "_1", 
+                            args.headerName + "_5", PropertyType.YEAR),
+                            property);
                 });
     }
     
@@ -61,14 +62,20 @@ class MultiplePropertyNameBuilderTest extends
         });
     }
     
-    abstract static class MultiplePropertyNameBuilderArgs extends 
+    static class MultiplePropertyNameBuilderArgs extends 
             AbstractPropertyNameBuilderArgs<MultiplePropertyNameBuilder>{
         final AggregationType aggregation;
-
+        final MultiplePropertyName<?,?> expectedWithoutOptionalSetters;
+        final MultiplePropertyName<?,?> expectedWithHeaderName;
+        
         public MultiplePropertyNameBuilderArgs(String testCase, String name, String headerName, 
-                PropertyType<?> type, AggregationType aggregation) {
+                PropertyType<?> type, AggregationType aggregation,
+                MultiplePropertyName<?,?> expectedWithoutOptionalSetters,
+                MultiplePropertyName<?,?> expectedWithHeaderName) {
             super(testCase, name, headerName, type);
             this.aggregation = aggregation;
+            this.expectedWithoutOptionalSetters = expectedWithoutOptionalSetters;
+            this.expectedWithHeaderName = expectedWithHeaderName;
         }
 
         @Override
@@ -85,37 +92,13 @@ class MultiplePropertyNameBuilderTest extends
         protected MultiplePropertyNameBuilder readyToBuild(){
             return super.readyToBuild().setAggregation(aggregation);
         }
-    }
-    
-    static class IndexedPropertyNameBuilderArgs extends MultiplePropertyNameBuilderArgs{
-        //TODO: this class becomes obsolete as soon as PropertyName.equals() has been implemented
-        public IndexedPropertyNameBuilderArgs(String testCase, String name, String headerName, 
-                PropertyType<?> type) {
-            super(testCase, name, headerName, type, AggregationType.INDEXED);
-        }
         
-        @Override 
+        @Override
         protected Stream<Executable> supplyAssertionsPropertyAsExpected(PropertyName<?> actual,
                 boolean withHeaderName){
-            return Stream.concat(super.supplyAssertionsPropertyAsExpected(actual, withHeaderName),
-                    Stream.of(() -> Assertions.assertTrue(actual instanceof IndexedPropertyName, 
-                            "expected " + actual + " to be an instance of IndexedPropertyName")));
-        }
-    }
-    
-    static class SetPropertyNameBuilderArgs extends MultiplePropertyNameBuilderArgs{
-        //TODO: this class becomes obsolete as soon as PropertyName.equals() has been implemented
-        public SetPropertyNameBuilderArgs(String testCase, String name, String headerName, 
-                PropertyType<?> type) {
-            super(testCase, name, headerName, type, AggregationType.SET);
-        }
-        
-        @Override 
-        protected Stream<Executable> supplyAssertionsPropertyAsExpected(PropertyName<?> actual,
-                boolean withHeaderName){
-            return Stream.concat(super.supplyAssertionsPropertyAsExpected(actual, withHeaderName),
-                    Stream.of(() -> Assertions.assertTrue(actual instanceof SetPropertyName, 
-                            "expected " + actual + " to be an instance of SetPropertyName")));
+            return Stream.of(() -> Assertions.assertEquals(
+                    withHeaderName ? expectedWithHeaderName : expectedWithoutOptionalSetters, 
+                    actual));
         }
     }
 }
