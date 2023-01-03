@@ -22,8 +22,16 @@ public class SetPropertyName<K> extends MultiplePropertyName<K,Integer> {
         super(name, headerName, keyType, PropertyType.INTEGER, getParser(keyType));
     }
     
-    private static <K> Function<String[], Map<K, Integer>> getParser(
-            PropertyType<K> keyType){
+    private static final Cache<PropertyType, Object> cache = Cache.buildCache(PropertyType.class, 
+            Object.class, 5, true);
+    
+    @SuppressWarnings("unchecked")
+    private static <K> Function<String[], Map<K, Integer>> getParser(PropertyType<K> keyType){
+        return (Function<String[], Map<K, Integer>>) cache.computeIfAbsent(keyType, 
+                SetPropertyName::computeParser);
+    }
+    
+    private static <K> Function<String[], Map<K, Integer>> computeParser(PropertyType<K> keyType){
         return input -> Arrays.stream(input).collect(Collectors.toMap(keyType::parse, 
                 args -> 0));
     }

@@ -2,8 +2,9 @@ package mentoring.datastructure;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
+import org.apache.commons.collections4.map.AbstractReferenceMap;
+import org.apache.commons.collections4.map.ReferenceMap;
 
 /**
  * Standard contract for a cache.
@@ -30,13 +31,33 @@ public interface Cache<K,V> {
      * @return a new empty cache with the given parameters
      * @throws IllegalArgumentException if the capacity is too low
      */
-    static <K, V> Cache<K, V> buildCache(Class<K> keyType, Class<V> valueType, 
-    int capacity) throws IllegalArgumentException {
+    static <K,V> Cache<K,V> buildCache(Class<K> keyType, Class<V> valueType, 
+            int capacity) throws IllegalArgumentException {
+        return buildCache(keyType, valueType, capacity, false);
+    }
+    
+    /**
+     * Generates a new empty cache.
+     * @param <K> the type of keys used to access values
+     * @param <V> the type of values stored
+     * @param keyType the type of keys used to access values
+     * @param valueType the type of values stored
+     * @param capacity the maximum number of simultaneous keys in the cache
+     * @param gcCompatible if true, the values can be garbage-collected and the mappings removed
+     * @return a new empty cache with the given parameters
+     * @throws IllegalArgumentException if the capacity is too low
+     */
+    static <K,V> Cache<K,V> buildCache(Class<K> keyType, Class<V> valueType, int capacity, 
+            boolean gcCompatible) throws IllegalArgumentException{
         if (capacity < 1){
             throw new IllegalArgumentException(
                     "Illegal capacity, expected at least 1 and received " + capacity);
         }
-        return new LruCache<>(keyType, valueType, capacity);
+        if (gcCompatible){
+            return new GcCompatibleCache<>(keyType, valueType, capacity);
+        } else {
+            return new LruCache<>(keyType, valueType, capacity);
+        }
     }
 }
 
@@ -65,6 +86,24 @@ final class LruCache<K,V> implements Cache<K,V> {
 
     @Override
     public V computeIfAbsent(K key, Function<? super K,? extends V> function) {
+        return map.computeIfAbsent(key, function);
+    }
+}
+
+/**
+ * Cache implementation that lets mapping be garbage-collected when values are not referenced 
+ * outside of the cache anymore.
+ */
+final class GcCompatibleCache<K, V> implements Cache<K,V> {
+    final private Map<K,V> map;
+    
+    GcCompatibleCache(Class<? extends K> keyType, Class<? extends V> valueType, int capacity){
+        map = new ReferenceMap<>(AbstractReferenceMap.ReferenceStrength.HARD, 
+                AbstractReferenceMap.ReferenceStrength.WEAK, capacity, 0.75f);
+    }
+    
+    @Override
+    public V computeIfAbsent(K key, Function<? super K, ? extends V> function) {
         return map.computeIfAbsent(key, function);
     }
 }

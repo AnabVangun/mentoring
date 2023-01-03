@@ -13,7 +13,7 @@ import java.util.function.Function;
 public class IndexedPropertyName<K> extends MultiplePropertyName<K,Integer> {
     
     /**
-     * Initialises a new IndexedPropertyName.
+     * Initialise a new IndexedPropertyName.
      * @param name of the property in {@link Person} objects
      * @param headerName of the property in the header of data files
      * @param keyType expected type of the property key
@@ -22,15 +22,23 @@ public class IndexedPropertyName<K> extends MultiplePropertyName<K,Integer> {
         super(name, headerName, keyType, PropertyType.INTEGER, getParser(keyType));
     }
     
-    private static <K> Function<String[], Map<K, Integer>> getParser(
-            PropertyType<K> keyType){
+    private static final Cache<PropertyType, Object> cache = Cache.buildCache(PropertyType.class, 
+            Object.class, 5, true);
+    
+    @SuppressWarnings("unchecked")
+    private static <K> Function<String[], Map<K, Integer>> getParser(PropertyType<K> keyType){
+        return (Function<String[], Map<K, Integer>>) cache.computeIfAbsent(keyType, 
+                IndexedPropertyName::computeParser);
+    }
+    
+    private static <K> Function<String[], Map<K, Integer>> computeParser(PropertyType<K> keyType){
         return input -> {
-            Map<K, Integer> result = new HashMap<>();
-            for(int i = 0; i < input.length; i++){
-                K parsedKey = keyType.parse(input[i]);
-                result.putIfAbsent(parsedKey, i);
-            }
-            return result;
+                    Map<K, Integer> map = new HashMap<>();
+                    for(int i = 0; i < input.length; i++){
+                        K parsedKey = keyType.parse(input[i]);
+                        map.putIfAbsent(parsedKey, i);
+                    }
+                    return map;  
         };
     }
 }

@@ -17,15 +17,17 @@ class CacheTest implements TestFramework<Object> {
     Stream<DynamicNode> buildCache_validInput(){
         return test(Stream.of(
                 new CacheArgs<>("specific valid input", Integer.class, Boolean.class, 1),
-                new CacheArgs<Integer, Boolean>("null input", null, null, 2)), "buildCache() succeeds", args -> 
-                args.convert());
+                new CacheArgs<Integer, Boolean>("null input", null, null, 2),
+                new CacheArgs<>("GC-compatible cache", String.class, Float.class, 1, true)),
+                "buildCache() succeeds", args ->
+                        args.convert());
     }
     
     @TestFactory
     Stream<DynamicNode> buildCache_invalidInput(){
         return test(Stream.of(
                 new CacheArgs<>("zero capacity", null, Float.class, 0),
-                new CacheArgs<>("negative capacity", Double.class, null, -3)), 
+                new CacheArgs<>("negative capacity", Double.class, null, -3, true)), 
                 "buildCache() fails", args -> 
                         Assertions.assertThrows(IllegalArgumentException.class, 
                                 () -> args.convert()));
@@ -33,7 +35,9 @@ class CacheTest implements TestFramework<Object> {
 
     @TestFactory
     Stream<DynamicNode> computeIfAbsent_valueNotInCache(){
-        return test(Stream.of(new CacheArgs<>("specific test case", Integer.class, String.class, 2)),
+        return test(Stream.of(
+                new CacheArgs<>("gc-incompatible cache", Integer.class, String.class, 2, false),
+                new CacheArgs<>("gc-compatible cache", Integer.class, String.class, 5, true)),
                 "computeIfAbsent() returns the expected result if value is not in cache", 
                 args -> {
                     var cache = args.convert();
@@ -45,7 +49,9 @@ class CacheTest implements TestFramework<Object> {
     
     @TestFactory
     Stream<DynamicNode> computeIfAbsent_valueInCache(){
-        return test(Stream.of(new CacheArgs<>("specific test case", Boolean.class, Integer.class, 8)),
+        return test(Stream.of(
+                new CacheArgs<>("gc-incompatible cache", Boolean.class, Integer.class, 8),
+                new CacheArgs<>("gc-compatible cache", Boolean.class, Integer.class, 3)),
                 "computeIfAbsent() returns the value in cache whenever possible",
                 args -> {
                     var cache = args.convert();
@@ -61,6 +67,7 @@ class CacheTest implements TestFramework<Object> {
     @TestFactory
     Stream<DynamicNode> computeIfAbsent_valueRemovedFromCache_Removed(){
         final int CAPACITY = 3;
+        //Test only cache whose size is guaranteed to be limited
         return test(Stream.of(new CacheArgs<>("capacity of one", Integer.class, String.class, 1),
                 new CacheArgs<>("capacity of " + CAPACITY, Integer.class, String.class, CAPACITY)),
                 "computeIfAbsent() removes old values from cache",
@@ -84,6 +91,7 @@ class CacheTest implements TestFramework<Object> {
     @TestFactory
     Stream<DynamicNode> computeIfAbsent_valueRemovedFromCache_PutBackInCache(){
         final int CAPACITY = 3;
+        //Test only cache whose size is guaranteed to be limited
         return test(Stream.of(new CacheArgs<>("capacity of one", Integer.class, String.class, 1),
                 new CacheArgs<>("capacity of " + CAPACITY, Integer.class, String.class, CAPACITY)),
                 "computeIfAbsent() puts back in cache old removed values if asked again",
@@ -104,16 +112,23 @@ class CacheTest implements TestFramework<Object> {
         final Class<K> keyType;
         final Class<V> valueType;
         final int capacity;
+        final boolean gcCompatible;
         
-        CacheArgs(String testCase, Class<K> keyType, Class<V> valueType, int capacity){
+        CacheArgs(String testCase, Class<K> keyType, Class<V> valueType, int capacity, 
+                boolean gcCompatible){
             super(testCase);
             this.keyType = keyType;
             this.valueType = valueType;
             this.capacity = capacity;
+            this.gcCompatible = gcCompatible;
+        }
+        
+        CacheArgs(String testCase, Class<K> keyType, Class<V> valueType, int capacity){
+            this(testCase, keyType, valueType, capacity, false);
         }
         
         Cache<K,V> convert(){
-            return Cache.buildCache(keyType, valueType, capacity);
+            return Cache.buildCache(keyType, valueType, capacity, gcCompatible);
         }
     }
 }
