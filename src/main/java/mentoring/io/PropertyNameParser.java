@@ -3,11 +3,11 @@ package mentoring.io;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import mentoring.datastructure.IndexedPropertyName;
 import mentoring.datastructure.MultiplePropertyName;
+import mentoring.datastructure.MultiplePropertyNameBuilder;
 import mentoring.datastructure.PropertyName;
+import mentoring.datastructure.PropertyNameBuilder;
 import mentoring.datastructure.PropertyType;
-import mentoring.datastructure.SetPropertyName;
 
 /**
  * Parser used to build {@link PropertyName} and {@link MultiplePropertyName} objects from 
@@ -60,7 +60,7 @@ abstract class PropertyNameParser<E extends PropertyName<?>> {
 }
 
 class SimplePropertyNameParser extends PropertyNameParser<PropertyName<?>>{
-
+    final PropertyNameBuilder builder = new PropertyNameBuilder();
     final static Set<String> EXPECTED_PROPERTY_ATTRIBUTES = Set.of("name", "headerName", 
             "type");
     
@@ -76,12 +76,15 @@ class SimplePropertyNameParser extends PropertyNameParser<PropertyName<?>>{
 
     @Override
     protected PropertyName<?> parseSinglePropertyName(Map<String, String> toParse) {
-        return new PropertyName<>(toParse.get("name"), toParse.get("headerName"), 
-                PropertyType.valueOf(toParse.get("type")));
+        PropertyType<?> type = PropertyType.valueOf(toParse.get("type"));
+        return builder.prepare(toParse.get("name"), type)
+                .withHeaderName(toParse.get("headerName"))
+                .build();
     }
 }
 
 class MultiplePropertyNameParser extends PropertyNameParser<MultiplePropertyName<?,?>>{
+    final MultiplePropertyNameBuilder builder = new MultiplePropertyNameBuilder();
     //TODO: this feels desperately clumsy
     private final static Set<String> EXPECTED_PROPERTY_ATTRIBUTES = new HashSet<>(
             SimplePropertyNameParser.EXPECTED_PROPERTY_ATTRIBUTES);
@@ -100,16 +103,12 @@ class MultiplePropertyNameParser extends PropertyNameParser<MultiplePropertyName
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected MultiplePropertyName<?,?> parseSinglePropertyName(Map<String, String> toParse) {
-        String name = toParse.get("name");
-        String headerName = toParse.get("headerName");
         PropertyType<?> type = PropertyType.valueOf(toParse.get("type"));
-        return switch(toParse.get("aggregation").toLowerCase()){
-            case "set" -> new SetPropertyName(name, headerName, type);
-            case "indexed" -> new IndexedPropertyName(name, headerName, type);
-            default -> throw new IllegalArgumentException("invalid aggregation");
-        };
-    }    
+        return builder.prepare(toParse.get("name"), type)
+                .setAggregation(toParse.get("aggregation"))
+                .withHeaderName(toParse.get("headerName"))
+                .build();
+    }
     
 }

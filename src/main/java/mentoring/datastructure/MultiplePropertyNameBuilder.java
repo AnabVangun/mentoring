@@ -46,6 +46,12 @@ public class MultiplePropertyNameBuilder extends PropertyNameBuilder {
     }
     
     @Override
+    public MultiplePropertyNameBuilder withHeaderName(String headerName){
+        super.withHeaderName(headerName);
+        return this;
+    }
+    
+    @Override
     protected void reset(){
         super.reset();
         aggregationSet = false;

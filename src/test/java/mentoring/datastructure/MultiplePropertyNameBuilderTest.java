@@ -42,7 +42,7 @@ class MultiplePropertyNameBuilderTest extends
                     builder.prepare(args.name + "_1", PropertyType.YEAR)
                             .setAggregation("set")
                             .withHeaderName(args.headerName + "_5");
-                    PropertyName<?> property = builder.build();
+                    MultiplePropertyName<?,?> property = builder.build();
                     //TODO use PropertyName.equals() here when implemented
                     Assertions.assertAll(
                             () -> Assertions.assertEquals(args.name + "_1", property.getName()),
