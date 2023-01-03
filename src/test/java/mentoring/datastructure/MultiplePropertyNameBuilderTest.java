@@ -40,7 +40,7 @@ class MultiplePropertyNameBuilderTest extends
                     MultiplePropertyNameBuilder builder = args.readyToBuild();
                     builder.build();
                     builder.prepare(args.name + "_1", PropertyType.YEAR)
-                            .setAggregation("set")
+                            .setAggregation(AggregationType.SET)
                             .withHeaderName(args.headerName + "_5");
                     MultiplePropertyName<?,?> property = builder.build();
                     //TODO use PropertyName.equals() here when implemented
@@ -61,22 +61,12 @@ class MultiplePropertyNameBuilderTest extends
         });
     }
     
-    @TestFactory
-    Stream<DynamicNode> setAggregation_failOnInvalidInput(){
-        return test(Stream.of(
-                new MultiplePropertyNameBuilderArgs("specific error case", "foo", "bar", 
-                        PropertyType.YEAR, "invalidAggregation"){}), 
-                "setAggregation() throws an exception on an invalid input", args -> 
-                        Assertions.assertThrows(IllegalArgumentException.class, 
-                                () -> args.prepared().setAggregation("foo")));
-    }
-    
     abstract static class MultiplePropertyNameBuilderArgs extends 
             AbstractPropertyNameBuilderArgs<MultiplePropertyNameBuilder>{
-        final String aggregation;
+        final AggregationType aggregation;
 
         public MultiplePropertyNameBuilderArgs(String testCase, String name, String headerName, 
-                PropertyType<?> type, String aggregation) {
+                PropertyType<?> type, AggregationType aggregation) {
             super(testCase, name, headerName, type);
             this.aggregation = aggregation;
         }
@@ -101,7 +91,7 @@ class MultiplePropertyNameBuilderTest extends
         //TODO: this class becomes obsolete as soon as PropertyName.equals() has been implemented
         public IndexedPropertyNameBuilderArgs(String testCase, String name, String headerName, 
                 PropertyType<?> type) {
-            super(testCase, name, headerName, type, "indexed");
+            super(testCase, name, headerName, type, AggregationType.INDEXED);
         }
         
         @Override 
@@ -117,7 +107,7 @@ class MultiplePropertyNameBuilderTest extends
         //TODO: this class becomes obsolete as soon as PropertyName.equals() has been implemented
         public SetPropertyNameBuilderArgs(String testCase, String name, String headerName, 
                 PropertyType<?> type) {
-            super(testCase, name, headerName, type, "set");
+            super(testCase, name, headerName, type, AggregationType.SET);
         }
         
         @Override 

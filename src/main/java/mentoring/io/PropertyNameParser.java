@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import mentoring.datastructure.AggregationType;
 import mentoring.datastructure.MultiplePropertyName;
 import mentoring.datastructure.MultiplePropertyNameBuilder;
 import mentoring.datastructure.PropertyName;
@@ -156,8 +157,9 @@ class MultiplePropertyNameParser extends PropertyNameParser<MultiplePropertyName
     @Override
     protected MultiplePropertyName<?,?> parseSinglePropertyName(Map<String, String> toParse) {
         PropertyType<?> type = PropertyType.valueOf(toParse.get("type"));
+        AggregationType aggregation = AggregationType.getValueOf(toParse.get("aggregation"));
         return builder.prepare(toParse.get("name"), type)
-                .setAggregation(toParse.get("aggregation"))
+                .setAggregation(aggregation)
                 .withHeaderName(toParse.get("headerName"))
                 .build();
     }
