@@ -15,6 +15,7 @@ import mentoring.configuration.PojoPersonConfiguration;
 import mentoring.configuration.PojoResultConfiguration;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.datastructure.PersonBuilder;
+import mentoring.io.PersonConfigurationParser;
 import mentoring.io.PersonFileParser;
 import mentoring.io.ResultWriter;
 import mentoring.match.Matches;
@@ -35,16 +36,20 @@ public class Main {
         String menteeFilePath;
         String mentorFilePath;
         String destinationFilePath;
-        Data data = Data.REAL2023;
+        Data data = Data.TEST_CONFIGURATION_FILE;
         boolean writeToFile = false;
-        PersonConfiguration menteeConfiguration;
-        PersonConfiguration mentorConfiguration;
-        CriteriaConfiguration<Person, Person> criteriaConfiguration;
+        PersonConfiguration menteeConfiguration = null;
+        PersonConfiguration mentorConfiguration = null;
+        String menteeConfigurationFilePath = "";
+        String mentorConfigurationFilePath = "";
+        String criteriaConfigurationFilePath = "";
+        CriteriaConfiguration<Person, Person> criteriaConfiguration = null;
         ResultConfiguration<Person, Person> resultConfiguration;
         Person defaultMentor = new PersonBuilder().withProperty("Email", "")
                 .withFullName("PAS DE MENTOR").build();
         Person defaultMentee = new PersonBuilder().withProperty("Email", "")
                 .withFullName("PAS DE MENTORÉ").build();
+        PersonConfigurationParser personConfParser = new PersonConfigurationParser();
         switch(data){
             case TEST:
                 menteeFilePath = "resources\\main\\Filleul_Trivial.csv";
@@ -52,19 +57,17 @@ public class Main {
                 mentorFilePath = "resources\\main\\Mentor_Trivial.csv";
                 mentorConfiguration = PojoPersonConfiguration.TEST_CONFIGURATION.getConfiguration();
                 criteriaConfiguration = PojoCriteriaConfiguration.CRITERIA_CONFIGURATION;
-                destinationFilePath = "resources\\\\main\\\\Results_Trivial.csv";
+                destinationFilePath = "resources\\main\\Results_Trivial.csv";
                 resultConfiguration = PojoResultConfiguration.NAMES_AND_SCORE;
                 break;
-            case REAL:
-                menteeFilePath = "..\\..\\..\\AX\\2022_Mentoring\\palmares metiers X_V2_simplifie.csv";
-                menteeConfiguration = PojoPersonConfiguration.MENTEE_CONFIGURATION_REAL_DATA
-                        .getConfiguration();
-                mentorFilePath = "..\\..\\..\\AX\\2022_Mentoring\\mentors eleves travail_tlm.csv";
-                mentorConfiguration = PojoPersonConfiguration.MENTOR_CONFIGURATION_REAL_DATA
-                        .getConfiguration();
-                criteriaConfiguration = PojoCriteriaConfiguration.CRITERIA_CONFIGURATION_REAL_DATA;
-                destinationFilePath = "..\\..\\..\\AX\\2022_Mentoring\\result.csv";
-                resultConfiguration = PojoResultConfiguration.NAMES_EMAILS_AND_SCORE;
+            case TEST_CONFIGURATION_FILE:
+                menteeFilePath = "resources\\main\\Filleul_Trivial.csv";
+                menteeConfigurationFilePath = "resources\\main\\testPersonConfiguration.yaml";
+                mentorFilePath = "resources\\main\\Mentor_Trivial.csv";
+                mentorConfigurationFilePath = "resources\\main\\testPersonConfiguration.yaml";
+                criteriaConfiguration = PojoCriteriaConfiguration.CRITERIA_CONFIGURATION;
+                destinationFilePath = "resources\\main\\Results_Trivial.csv";
+                resultConfiguration = PojoResultConfiguration.NAMES_AND_SCORE;
                 break;
             case REAL2023:
                 menteeFilePath = "..\\..\\..\\AX\\2023_Mentoring\\Adapter\\20221016_new_eleves.csv";
@@ -86,7 +89,21 @@ public class Main {
                 Writer resultDestination = new PrintWriter(
                         (writeToFile ? new FileOutputStream(destinationFilePath) : System.out),
                         true, Charset.forName("utf-8"));
+                FileReader menteeConfigurationFile = 
+                        menteeConfiguration == null 
+                        ? new FileReader(menteeConfigurationFilePath, Charset.forName("utf-8"))
+                        : menteesFile;
+                FileReader mentorConfigurationFile =
+                        mentorConfiguration == null
+                        ? new FileReader(mentorConfigurationFilePath, Charset.forName("utf-8"))
+                        : mentorsFile;
                 ){
+            if (menteeConfiguration == null){
+                menteeConfiguration = personConfParser.parse(menteeConfigurationFile);
+            }
+            if (mentorConfiguration == null){
+                mentorConfiguration = personConfParser.parse(mentorConfigurationFile);
+            }
             List<Person> mentees = new PersonFileParser(menteeConfiguration).parse(menteesFile);
             List<Person> mentors = new PersonFileParser(mentorConfiguration).parse(mentorsFile);
             MatchesBuilder<Person, Person> solver = new MatchesBuilder<>(mentees, mentors,
@@ -103,5 +120,5 @@ public class Main {
         }
     }
     
-    static enum Data {TEST, REAL, REAL2023}
+    static enum Data {TEST, TEST_CONFIGURATION_FILE, REAL2023}
 }

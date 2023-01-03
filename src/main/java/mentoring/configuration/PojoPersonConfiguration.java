@@ -18,6 +18,7 @@ public enum PojoPersonConfiguration{
             Set.of(new SetPropertyName<>("Métiers","Activités et métiers", PropertyType.STRING), 
                     new SetPropertyName<>("Motivation", "Motivation", PropertyType.STRING)), 
             ";", "%s %s (X%s)", List.of("Prénom","Nom","Promotion"))),
+    @Deprecated
     /** Configuration used for real mentee data in the 2021 data set. */
     MENTEE_CONFIGURATION_REAL_DATA(new PersonConfiguration("Mentee configuration for 2022 data",
             Set.of(new PropertyName<>("Promotion","Promotion, cycle", PropertyType.INTEGER),
@@ -27,6 +28,7 @@ public enum PojoPersonConfiguration{
                     new SetPropertyName<>("Langue","Option : langue préférentielle", 
                             PropertyType.STRING)),
             ",", "%s %s (X%s)", List.of("Prénom", "NOM", "Promotion, cycle"))),
+    @Deprecated
     /** Configuration used for real mentor data in the 2021 data set. */
     MENTOR_CONFIGURATION_REAL_DATA(new PersonConfiguration("Mentor configuration for 2022 data",
             Set.of(new PropertyName<>("Anglophone","anglophone", PropertyType.BOOLEAN),
