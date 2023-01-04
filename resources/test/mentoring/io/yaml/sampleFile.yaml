@@ -1,0 +1,8 @@
+#simple YAML file for tests
+first: value
+list:
+    - string
+    - map: second value
+    - object:
+        firstProperty: third value
+        second property: fourth_value

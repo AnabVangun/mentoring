@@ -63,9 +63,7 @@ class PersonConfigurationParserTest implements
                 new PersonConfigurationParserArgs(
                         "missingPropertyTypeTestConfiguration.yaml", "missing property type"),
                 new PersonConfigurationParserArgs(
-                        "missingSeparatorTestConfiguration.yaml", "missing separator"),
-                new PersonConfigurationParserArgs(
-                        "poorlyIndentedTestConfiguration.yaml", "poorly indented file"));
+                        "missingSeparatorTestConfiguration.yaml", "missing separator"));
     }
     
     @TestFactory

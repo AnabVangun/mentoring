@@ -9,16 +9,14 @@ import java.util.Set;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.MultiplePropertyName;
 import mentoring.datastructure.PropertyName;
-import org.snakeyaml.engine.v2.api.Load;
-import org.snakeyaml.engine.v2.api.LoadSettings;
-import org.snakeyaml.engine.v2.exceptions.YamlEngineException;
+import mentoring.io.yaml.YamlParser;
 
 /**
  * Parser used to build {@link PersonConfiguration} objects from configuration files.
  * <p>Instances of this class can be reused but are not thread-safe.
  */
 public final class PersonConfigurationParser {
-    private final Load yamlReader = new Load(LoadSettings.builder().build());
+    private final YamlParser yamlReader = new YamlParser();
     private Map<String, Object> yamlData;
     /**
      * Use a {@link Reader} to build a {@link PersonConfiguration}.
@@ -29,7 +27,7 @@ public final class PersonConfigurationParser {
      */
     public PersonConfiguration parse(Reader reader) throws IllegalArgumentException {
         Objects.requireNonNull(reader);
-        yamlData = readYaml(reader);
+        yamlData = yamlReader.parse(reader);
         String configurationName = (String) extractAttribute("configurationName");
         Set<PropertyName<?>> properties = extractProperties("properties");
         Set<MultiplePropertyName<?,?>> multipleProperties = 
@@ -44,15 +42,6 @@ public final class PersonConfigurationParser {
                 Collections.unmodifiableSet(multipleProperties), 
                 separator, nameFormat, 
                 Collections.unmodifiableList(nameProperties));
-    }
-    
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> readYaml(Reader reader){
-        try {
-            return (Map<String, Object>) yamlReader.loadFromReader(reader);
-        } catch (YamlEngineException e){
-            throw new IllegalArgumentException("Could not parse YAML content from reader", e);
-        }
     }
     
     private Object extractAttribute(String propertyKey){
