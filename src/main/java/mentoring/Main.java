@@ -18,6 +18,7 @@ import mentoring.datastructure.PersonBuilder;
 import mentoring.io.PersonConfigurationParser;
 import mentoring.io.PersonFileParser;
 import mentoring.io.ResultWriter;
+import mentoring.io.datareader.YamlReader;
 import mentoring.match.Matches;
 import mentoring.match.MatchesBuilder;
 
@@ -49,7 +50,7 @@ public class Main {
                 .withFullName("PAS DE MENTOR").build();
         Person defaultMentee = new PersonBuilder().withProperty("Email", "")
                 .withFullName("PAS DE MENTORÉ").build();
-        PersonConfigurationParser personConfParser = new PersonConfigurationParser();
+        PersonConfigurationParser personConfParser = new PersonConfigurationParser(new YamlReader());
         switch(data){
             case TEST:
                 menteeFilePath = "resources\\main\\Filleul_Trivial.csv";

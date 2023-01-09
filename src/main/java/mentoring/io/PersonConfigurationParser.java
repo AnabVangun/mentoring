@@ -1,41 +1,36 @@
 package mentoring.io;
 
-import java.io.Reader;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.MultiplePropertyName;
 import mentoring.datastructure.PropertyName;
-import mentoring.io.yaml.YamlParser;
+import mentoring.io.datareader.DataReader;
 
 /**
  * Parser used to build {@link PersonConfiguration} objects from configuration files.
  * <p>Instances of this class can be reused but are not thread-safe.
  */
-public final class PersonConfigurationParser {
-    private final YamlParser yamlReader = new YamlParser();
-    private Map<String, Object> yamlData;
-    /**
-     * Use a {@link Reader} to build a {@link PersonConfiguration}.
-     * @param reader data source representing in textual format the configuration
-     * @return a person configuration to be used to parse persons from a file
-     * @throws IllegalArgumentException if the content provided by the reader does not have the 
-     * appropriate format.
-     */
-    public PersonConfiguration parse(Reader reader) throws IllegalArgumentException {
-        Objects.requireNonNull(reader);
-        yamlData = yamlReader.parse(reader);
-        String configurationName = (String) extractAttribute("configurationName");
-        Set<PropertyName<?>> properties = extractProperties("properties");
+public final class PersonConfigurationParser extends Parser<PersonConfiguration> {
+    
+    public PersonConfigurationParser(DataReader reader){
+        super(reader);
+    }
+    
+    @Override
+    protected PersonConfiguration buildObject(Map<String, Object> data) 
+            throws IllegalArgumentException {
+        String configurationName = extractAttribute(data, "configurationName", String.class);
+        Set<PropertyName<?>> properties = extractProperties(data, "properties");
         Set<MultiplePropertyName<?,?>> multipleProperties = 
-                extractMultipleProperties("multipleProperties");
-        String separator = (String) extractAttribute("separator");
-        String nameFormat = (String) extractAttribute("nameFormat");
+                extractMultipleProperties(data, "multipleProperties");
+        String separator = extractAttribute(data, "separator", String.class);
+        String nameFormat = extractAttribute(data, "nameFormat", String.class);
         @SuppressWarnings("unchecked")
-        List<String> nameProperties = (List<String>) extractAttribute("nameProperties");
+        List<String> nameProperties = (List<String>) extractAttribute(data, "nameProperties", 
+                Object.class);
         assertValidNameDefinition(nameFormat, nameProperties);
         return new PersonConfiguration(configurationName, 
                 Collections.unmodifiableSet(properties), 
@@ -44,26 +39,19 @@ public final class PersonConfigurationParser {
                 Collections.unmodifiableList(nameProperties));
     }
     
-    private Object extractAttribute(String propertyKey){
-        if(yamlData.containsKey(propertyKey)){
-            return yamlData.get(propertyKey);
-        } else {
-            throw new IllegalArgumentException("Property %s is missing.".formatted(propertyKey));
-        }
-    }
-    
     @SuppressWarnings("unchecked")
-    private Set<PropertyName<?>> extractProperties(String propertyKey){
+    private Set<PropertyName<?>> extractProperties(Map<String, Object> data, String propertyKey){
         SimplePropertyNameParser parser = new SimplePropertyNameParser();
         return parser.parsePropertyNames(
-                (Iterable<Map<String, String>>) extractAttribute(propertyKey));
+                (Iterable<Map<String, String>>) extractAttribute(data, propertyKey));
     }
     
     @SuppressWarnings("unchecked")
-    private Set<MultiplePropertyName<?,?>> extractMultipleProperties(String propertyKey){
+    private Set<MultiplePropertyName<?,?>> extractMultipleProperties(Map<String, Object> data, 
+            String propertyKey){
         MultiplePropertyNameParser parser = new MultiplePropertyNameParser();
         return parser.parsePropertyNames(
-                (Iterable<Map<String, String>>) extractAttribute(propertyKey));
+                (Iterable<Map<String, String>>) extractAttribute(data, propertyKey));
     }
     
     private static void assertValidNameDefinition(String nameFormat, List<String> nameProperties){

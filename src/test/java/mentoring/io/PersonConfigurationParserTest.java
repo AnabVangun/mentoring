@@ -2,6 +2,7 @@ package mentoring.io;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -15,23 +16,37 @@ import mentoring.datastructure.PropertyName;
 import mentoring.datastructure.IndexedPropertyName;
 import mentoring.datastructure.PropertyType;
 import mentoring.datastructure.SetPropertyName;
+import mentoring.io.ParserTest.ParserArgs;
 import mentoring.io.PersonConfigurationParserTest.PersonConfigurationParserArgs;
+import mentoring.io.datareader.DataReader;
+import mentoring.io.datareader.YamlReader;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 
 class PersonConfigurationParserTest implements 
-        ExtendedPersonConfigurationTest<PersonConfigurationParserArgs>{
+        ExtendedPersonConfigurationTest<PersonConfigurationParserArgs>, 
+        ParserTest<PersonConfiguration, PersonConfigurationParser, PersonConfigurationParserArgs> {
 
     @Override
     public Stream<PersonConfigurationParserArgs> argumentsSupplier() {
-        return Stream.of(new PersonConfigurationParserArgs("validTestConfiguration.yaml", 
-                "standard valid test",
-                Set.of(new PropertyName<>("Anglais", "Anglais", PropertyType.BOOLEAN), 
-                        new PropertyName<>("Promotion", "Promotion", PropertyType.INTEGER)),
-                Set.of(new SetPropertyName<>("Métiers", "Activités et métiers", PropertyType.STRING),
-                        new IndexedPropertyName<>("Motivation", "Motivation", PropertyType.STRING)),
-                ",", "%s %s (X%s)", List.of("Prénom", "Nom", "Promotion")));
+        return Stream.of(
+                new PersonConfigurationParserArgs("validTestConfiguration.yaml", 
+                        "standard valid test",
+                        Set.of(new PropertyName<>("Anglais", "Anglais", PropertyType.BOOLEAN), 
+                                new PropertyName<>("Promotion", "Promotion", PropertyType.INTEGER)),
+                        Set.of(
+                                new SetPropertyName<>("Métiers", "Activités et métiers", 
+                                        PropertyType.STRING),
+                                new IndexedPropertyName<>("Motivation", "Motivation", 
+                                        PropertyType.STRING)),
+                        ",", "%s %s (X%s)", List.of("Prénom", "Nom", "Promotion"), new YamlReader()),
+                new PersonConfigurationParserArgs("validSecondTestConfiguration.yaml", 
+                        "standard second valid test",
+                        Set.of(new PropertyName<>("Anglais", "Anglais", PropertyType.YEAR)),
+                        Set.of(new SetPropertyName<>("Métiers", "Métiers", 
+                                PropertyType.SIMPLIFIED_LOWER_STRING)),
+                        ",", "%s", List.of("Prénom"), new YamlReader()));
     }
     
     @Override
@@ -39,6 +54,7 @@ class PersonConfigurationParserTest implements
         return "parse()";
     }
     
+    @Override
     public Stream<PersonConfigurationParserArgs> invalidArgumentsSupplier() {
         return Stream.of(
                 new PersonConfigurationParserArgs(
@@ -66,8 +82,14 @@ class PersonConfigurationParserTest implements
                         "missingSeparatorTestConfiguration.yaml", "missing separator"));
     }
     
+    @Override
+    public PersonConfigurationParser prepareParser(){
+        return new PersonConfigurationParser(new YamlReader());
+    }
+    
     @TestFactory
-    Stream<DynamicNode> parse_invalidInput(){
+    @Override
+    public Stream<DynamicNode> parse_invalidInput(){
         return test(invalidArgumentsSupplier(), "parse() on invalid input", args -> 
                 Assertions.assertThrows(IllegalArgumentException.class, 
                         () -> args.convertWithException()));
@@ -77,11 +99,12 @@ class PersonConfigurationParserTest implements
         String configurationName,
         Set<PropertyName<?>> propertiesNames, 
         Set<MultiplePropertyName<?,?>> multiplePropertiesNames, 
-        String separator, String nameFormat, List<String> namePropertiesHeader)
-    implements ExtendedPersonConfigurationArgs{
+        String separator, String nameFormat, List<String> namePropertiesHeader, DataReader reader)
+            implements ExtendedPersonConfigurationArgs, 
+                    ParserArgs<PersonConfiguration, PersonConfigurationParser>{
         
         PersonConfigurationParserArgs(String filePath, String configurationName){
-            this(filePath, configurationName, null, null, null, null, null);
+            this(filePath, configurationName, null, null, null, null, null, new YamlReader());
         }
 
         @Override
@@ -93,10 +116,10 @@ class PersonConfigurationParserTest implements
             }
         }
         
+        @Override
         public PersonConfiguration convertWithException() throws IOException {
-            return new PersonConfigurationParser()
-                    .parse(new FileReader(getClass().getResource(filePath).getFile(),
-                            Charset.forName("utf-8")));
+            return getParserUnderTest()
+                    .parse(getDataSource());
         }
         
         @Override
@@ -132,6 +155,22 @@ class PersonConfigurationParserTest implements
         @Override
         public List<String> getExpectedNameProperties() {
             return namePropertiesHeader;
+        }
+
+        @Override
+        public PersonConfigurationParser getParserUnderTest() {
+            return new PersonConfigurationParser(reader);
+        }
+
+        @Override
+        public void assertResultAsExpected(PersonConfiguration actual) {
+            ExtendedPersonConfigurationArgs.assertResultAsExpected(this, actual);
+        }
+
+        @Override
+        public Reader getDataSource() throws IOException {
+            return new FileReader(getClass().getResource(filePath).getFile(),
+                    Charset.forName("utf-8"));
         }
     }
 }
