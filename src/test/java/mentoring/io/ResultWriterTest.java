@@ -2,17 +2,19 @@ package mentoring.io;
 
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.io.ResultWriterTest.ResultWriterArgs;
+import mentoring.match.Match;
 import mentoring.match.Matches;
 import mentoring.match.MatchesTest.MatchesArgs;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
-import org.mockito.Mockito;
 import test.tools.TestArgs;
 import test.tools.TestFramework;
 
@@ -34,7 +36,8 @@ class ResultWriterTest implements TestFramework<ResultWriterArgs> {
     
     @TestFactory
     Stream<DynamicNode> constructor(){
-        return test(Stream.of(ResultWriterArgs.ONE), "ResultWriter() succeeds on valid input", 
+        ResultWriterArgs arg = ResultWriterArgs.ONE;
+        return test(Stream.of(arg), "ResultWriter() succeeds on valid input", 
                 args -> new ResultWriter<>(args.getConfiguration()));
     }
     
@@ -61,7 +64,7 @@ class ResultWriterTest implements TestFramework<ResultWriterArgs> {
     }
     
     static class ResultWriterArgs extends TestArgs {
-        private final ResultConfiguration<String, String> mock;
+        private final ResultConfiguration<String, String> configuration;
         private final String expectedResult;
         private final Matches<String, String> input;
         private final Writer destination;
@@ -75,10 +78,11 @@ class ResultWriterTest implements TestFramework<ResultWriterArgs> {
         private ResultWriterArgs(String testCase, String expectedResult,
                 Matches<String, String> input, Writer destination){
             super(testCase);
-            mock = Mockito.mock(ResultConfiguration.class);
-            Mockito.when(mock.getResultHeader()).thenReturn(new String[]{"1","2"});
-            Mockito.when(mock.getResultLine(Mockito.any())).thenReturn(new String[]{"3","4"},
-                    new String[]{"5","6"}, new String[]{"7","8"});
+            Iterator<String[]> results = List.of(new String[]{"3","4"}, new String[]{"5","6"}, 
+                    new String[]{"7","8"}).iterator();
+            Function<Match<String, String>, String[]> lineFormatter = match -> results.next();
+            configuration = new ResultConfiguration<>("ResultWriterArgs configuration", 
+                    List.of("1","2"), lineFormatter);
             this.expectedResult = expectedResult;
             this.input = input;
             this.destination = destination;
@@ -96,7 +100,7 @@ class ResultWriterTest implements TestFramework<ResultWriterArgs> {
                         .convert());
         
         ResultConfiguration<String, String> getConfiguration(){
-            return mock;
+            return configuration;
         }
     }
 }

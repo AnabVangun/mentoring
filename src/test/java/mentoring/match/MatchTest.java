@@ -6,7 +6,7 @@ import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import test.tools.TestFramework;
 
-final class MatchTest implements TestFramework<MatchTest.MatchArgs>{
+public final class MatchTest implements TestFramework<MatchTest.MatchArgs>{
 
     @Override
     public Stream<MatchArgs> argumentsSupplier() {
@@ -77,9 +77,14 @@ final class MatchTest implements TestFramework<MatchTest.MatchArgs>{
                         args.second.convert().hashCode()));
     }
     
-    static record MatchArgs(String testCase, Object mentee, Object mentor, int cost) {
-        Match<Object, Object> convert(){
+    public static record MatchArgs(String testCase, Object mentee, Object mentor, int cost) {
+        public Match<Object, Object> convert(){
             return new Match<>(mentee, mentor, cost);
+        }
+        
+        @SuppressWarnings("unchecked")
+        public <T,U> Match<T, U> convertAs(Class<T> first, Class<U> second){
+            return new Match<>((T) mentee, (U) mentor, cost);
         }
         
         @Override
@@ -89,5 +94,9 @@ final class MatchTest implements TestFramework<MatchTest.MatchArgs>{
     }
     
     static record MatchPairOfArgs(String testCase, MatchArgs first, MatchArgs second) {
+        @Override
+        public String toString(){
+            return testCase;
+        }
     }
 }

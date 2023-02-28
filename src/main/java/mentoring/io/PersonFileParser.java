@@ -18,6 +18,7 @@ import mentoring.configuration.PersonConfiguration;
  */
 public final class PersonFileParser {
     private final PersonConfiguration configuration;
+    //TODO: consider switching to a common abstract class for all specific file parsers
     
     /**
      * Initialises a parser.

@@ -41,7 +41,8 @@ abstract class Parser<T> {
     
     //TODO: this fails when type is List<String> or any other parameterized type
     @SuppressWarnings("unchecked")
-    protected <T> T extractAttribute(Map<String, Object> data, String propertyKey, Class<T> type){
+    protected static <T> T extractAttribute(Map<String, Object> data, String propertyKey, 
+            Class<T> type){
         if(data.containsKey(propertyKey)){
             return (T) data.get(propertyKey);
         } else {
@@ -49,7 +50,7 @@ abstract class Parser<T> {
         }
     }
     
-    protected Object extractAttribute(Map<String, Object> data, String propertyKey){
+    protected static Object extractAttribute(Map<String, Object> data, String propertyKey){
         return extractAttribute(data, propertyKey, Object.class);
     }
 }

@@ -87,14 +87,6 @@ class PersonConfigurationParserTest implements
         return new PersonConfigurationParser(new YamlReader());
     }
     
-    @TestFactory
-    @Override
-    public Stream<DynamicNode> parse_invalidInput(){
-        return test(invalidArgumentsSupplier(), "parse() on invalid input", args -> 
-                Assertions.assertThrows(IllegalArgumentException.class, 
-                        () -> args.convertWithException()));
-    }
-    
     static record PersonConfigurationParserArgs(String filePath, 
         String configurationName,
         Set<PropertyName<?>> propertiesNames, 
@@ -118,8 +110,7 @@ class PersonConfigurationParserTest implements
         
         @Override
         public PersonConfiguration convertWithException() throws IOException {
-            return getParserUnderTest()
-                    .parse(getDataSource());
+            return getParserUnderTest().parse(getDataSource());
         }
         
         @Override
