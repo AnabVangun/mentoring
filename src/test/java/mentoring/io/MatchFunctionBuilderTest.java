@@ -25,17 +25,25 @@ class MatchFunctionBuilderTest implements TestFramework<MatchFunctionBuilderArgs
     @TestFactory
     Stream<DynamicNode> buildMatchFunction_validInput() {
         PersonBuilder builder = new PersonBuilder();
-        return test(Stream.of(new MatchFunctionBuilderArgs("Simple string property", 
-                "§§Mentor§_§Ville",
-                Map.of(
-                        new MatchTest.MatchArgs("", builder.withProperty("Ville","Londres").build(),
-                                builder.withProperty("Ville", "Paris").build(),
-                                5).convertAs(Person.class, Person.class),
-                        "Paris",
-                        new MatchTest.MatchArgs("", builder.build(),
-                                builder.withFullName("foo").withProperty("Ville", "Reims").build(),
-                                12).convertAs(Person.class, Person.class),
-                        "Reims"))),
+        return test(Stream.of(
+                new MatchFunctionBuilderArgs("simple string property", 
+                        "§§Mentor§_§Ville",
+                        Map.of(
+                                new MatchTest.MatchArgs("", 
+                                        builder.withProperty("Ville","Londres").build(),
+                                        builder.withProperty("Ville", "Paris").build(),
+                                        5).convertAs(Person.class, Person.class),
+                                "Paris",
+                                new MatchTest.MatchArgs("", builder.build(),
+                                        builder.withFullName("foo").withProperty("Ville", "Reims").build(),
+                                        12).convertAs(Person.class, Person.class),
+                                "Reims")),
+                new MatchFunctionBuilderArgs("cost property", 
+                        MatchFunctionBuilder.COST_TOKEN,
+                        Map.of(
+                                new MatchTest.MatchArgs("", builder.build(), builder.build(), 
+                                        12).convertAs(Person.class, Person.class),
+                                "12"))),
                 "buildMatchFunction() returns the correct function on valid input",
                 MatchFunctionBuilderArgs::assertFunctionIsCorrect);
     }

@@ -11,6 +11,7 @@ class MatchFunctionBuilder {
     private static final String FIRST_LEVEL_TOKEN = "§§";
     private static final String SECOND_LEVEL_TOKEN = "§_§";
     static final String NAME_PROPERTY_TOKEN = FIRST_LEVEL_TOKEN + "Name";
+    static final String COST_TOKEN = FIRST_LEVEL_TOKEN + "Cost";
     
     /**
      * Build a function to apply on a match between two persons.
@@ -26,6 +27,8 @@ class MatchFunctionBuilder {
         } else if (input.startsWith(FIRST_LEVEL_TOKEN + "Mentee")){
             personAccessor = Match::getMentee;
             prefixLength = FIRST_LEVEL_TOKEN.length() + "Mentee".length();
+        } else if (input.equals(COST_TOKEN)){
+            return match -> Integer.toString(match.getCost());
         } else {
             throw new IllegalArgumentException(
                     "Input string \"" + input + "\" could not be parsed as a match function");
@@ -68,6 +71,7 @@ class MatchFunctionBuilder {
         2. Property tokens (§_§Ville) that retrieve a property of a base token
         3. Binary tokens (+, *) that combine previous and next operations
         4. Functions (SET_DISTANCE) that combine a number of following operations
+        5. scalars (at least constant number for math operations)
     Difficulties: 
         1. precedence between token evaluation (+ vs * vs SET_DISTANCE)
         2. Word order in a sentence: some tokens come before, others after the tokens they combine.
