@@ -1,0 +1,13 @@
+configurationName: standard configuration
+header:
+    - Mentoré
+    - Mentoré anglophone
+    - Mentor
+    - Motivation mentor
+    - Coût
+lineDescription:
+    - §§Mentee§§Name
+    - §§Mentee§_§Anglais
+    - §§Mentor§§Name
+    - §§Mentor§_M§Motivation
+    - §§Cost

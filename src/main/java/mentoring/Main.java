@@ -17,6 +17,7 @@ import mentoring.configuration.ResultConfiguration;
 import mentoring.datastructure.PersonBuilder;
 import mentoring.io.PersonConfigurationParser;
 import mentoring.io.PersonFileParser;
+import mentoring.io.ResultConfigurationParser;
 import mentoring.io.ResultWriter;
 import mentoring.io.datareader.YamlReader;
 import mentoring.match.Matches;
@@ -44,14 +45,15 @@ public class Main {
         PersonConfiguration mentorConfiguration = null;
         String menteeConfigurationFilePath = "";
         String mentorConfigurationFilePath = "";
-        String criteriaConfigurationFilePath = "";
+        String resultConfigurationFilePath = "";
         CriteriaConfiguration<Person, Person> criteriaConfiguration = null;
-        ResultConfiguration<Person, Person> resultConfiguration;
+        ResultConfiguration<Person, Person> resultConfiguration = null;
         Person defaultMentor = new PersonBuilder().withProperty("Email", "")
                 .withFullName("PAS DE MENTOR").build();
         Person defaultMentee = new PersonBuilder().withProperty("Email", "")
                 .withFullName("PAS DE MENTORÉ").build();
         PersonConfigurationParser personConfParser = new PersonConfigurationParser(new YamlReader());
+        ResultConfigurationParser resultConfParser = new ResultConfigurationParser(new YamlReader());
         switch(data){
             case TEST:
                 menteeFilePath = "resources\\main\\Filleul_Trivial.csv";
@@ -69,7 +71,7 @@ public class Main {
                 mentorConfigurationFilePath = "resources\\main\\testPersonConfiguration.yaml";
                 criteriaConfiguration = PojoCriteriaConfiguration.CRITERIA_CONFIGURATION;
                 destinationFilePath = "resources\\main\\Results_Trivial.csv";
-                resultConfiguration = PojoResultConfiguration.NAMES_AND_SCORE.getConfiguration();
+                resultConfigurationFilePath = "resources\\main\\testResultConfiguration.yaml";
                 break;
             case REAL2023:
                 menteeFilePath = "..\\..\\..\\AX\\2023_Mentoring\\Adapter\\20221016_new_eleves.csv";
@@ -99,12 +101,22 @@ public class Main {
                         mentorConfiguration == null
                         ? new FileReader(mentorConfigurationFilePath, Charset.forName("utf-8"))
                         : mentorsFile;
+                FileReader resultConfigurationFile =
+                        resultConfiguration == null
+                        ? new FileReader(resultConfigurationFilePath, Charset.forName("utf-8"))
+                        : null
                 ){
             if (menteeConfiguration == null){
                 menteeConfiguration = personConfParser.parse(menteeConfigurationFile);
             }
             if (mentorConfiguration == null){
                 mentorConfiguration = personConfParser.parse(mentorConfigurationFile);
+            }
+            if (resultConfiguration == null){
+                resultConfiguration = resultConfParser.parse(resultConfigurationFile);
+            }
+            if (criteriaConfiguration == null){
+                throw new NullPointerException("Forgot to read criteria configuration from file");
             }
             List<Person> mentees = new PersonFileParser(menteeConfiguration).parse(menteesFile);
             List<Person> mentors = new PersonFileParser(mentorConfiguration).parse(mentorsFile);

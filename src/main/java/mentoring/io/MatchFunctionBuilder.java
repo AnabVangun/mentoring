@@ -8,10 +8,11 @@ import mentoring.match.Match;
  * Parser used to build functions from strings.
  */
 class MatchFunctionBuilder {
-    private static final String FIRST_LEVEL_TOKEN = "§§";
-    private static final String SECOND_LEVEL_TOKEN = "§_§";
-    static final String NAME_PROPERTY_TOKEN = FIRST_LEVEL_TOKEN + "Name";
-    static final String COST_TOKEN = FIRST_LEVEL_TOKEN + "Cost";
+    private static final String STANDARD_TOKEN = "§§";
+    private static final String CUSTOM_PROPERTY_TOKEN = "§_§";
+    private static final String CUSTOM_MULTIPLE_PROPERTY_TOKEN = "§_M§";
+    static final String NAME_PROPERTY_TOKEN = STANDARD_TOKEN + "Name";
+    static final String COST_TOKEN = STANDARD_TOKEN + "Cost";
     
     /**
      * Build a function to apply on a match between two persons.
@@ -21,12 +22,12 @@ class MatchFunctionBuilder {
     public static Function<Match<Person, Person>, String> buildMatchFunction(String input){
         Function<Match<Person, Person>, Person> personAccessor;
         int prefixLength;
-        if (input.startsWith(FIRST_LEVEL_TOKEN + "Mentor")){
+        if (input.startsWith(STANDARD_TOKEN + "Mentor")){
             personAccessor = Match::getMentor;
-            prefixLength = FIRST_LEVEL_TOKEN.length() + "Mentor".length();
-        } else if (input.startsWith(FIRST_LEVEL_TOKEN + "Mentee")){
+            prefixLength = STANDARD_TOKEN.length() + "Mentor".length();
+        } else if (input.startsWith(STANDARD_TOKEN + "Mentee")){
             personAccessor = Match::getMentee;
-            prefixLength = FIRST_LEVEL_TOKEN.length() + "Mentee".length();
+            prefixLength = STANDARD_TOKEN.length() + "Mentee".length();
         } else if (input.equals(COST_TOKEN)){
             return match -> Integer.toString(match.getCost());
         } else {
@@ -46,8 +47,11 @@ class MatchFunctionBuilder {
     public static Function<Person, Object> buildPersonPropertyGetter(String input){
         if (input.startsWith(NAME_PROPERTY_TOKEN)){
             return person -> person.getFullName();
-        }else if(input.startsWith(SECOND_LEVEL_TOKEN)){
-            return buildPersonGenericPropertyGetter(input.substring(SECOND_LEVEL_TOKEN.length()));
+        } else if (input.startsWith(CUSTOM_PROPERTY_TOKEN)){
+            return buildPersonGenericPropertyGetter(input.substring(CUSTOM_PROPERTY_TOKEN.length()));
+        } else if (input.startsWith(CUSTOM_MULTIPLE_PROPERTY_TOKEN)){
+            return buildPersonGenericMultiplePropertyGetter(
+                    input.substring(CUSTOM_MULTIPLE_PROPERTY_TOKEN.length()));
         } else {
             throw new IllegalArgumentException("Could not parse command " + input);
         }
@@ -55,6 +59,10 @@ class MatchFunctionBuilder {
     
     private static Function<Person, Object> buildPersonGenericPropertyGetter(String input){
         return person -> person.getPropertyAs(input, Object.class);
+    }
+    
+    private static Function<Person, Object> buildPersonGenericMultiplePropertyGetter(String input){
+        return person -> person.getPropertyAsMapOf(input, Object.class, Object.class);
     }
     /*
     TODO: implement

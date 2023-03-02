@@ -1,0 +1,10 @@
+configurationName: less columns than column descriptions in header
+header:
+    - Mentoré
+    - Mentor
+    - Coût
+    - Propriété
+lineDescription:
+    - §§Mentee§§Name
+    - §§Mentor§§Name
+    - §§Cost

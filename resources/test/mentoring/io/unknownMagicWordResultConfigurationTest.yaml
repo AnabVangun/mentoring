@@ -1,0 +1,11 @@
+configurationName: unknown magic word in column description
+header:
+    - Mentoré
+    - Mentor
+    - Coût
+    - Propriété
+lineDescription:
+    - §§foo§§Name
+    - §§Mentor§§Name
+    - §§Cost
+    - §§Mentor§_§Ville

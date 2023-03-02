@@ -1,0 +1,13 @@
+configurationName: configuration with complex persons
+header:
+    - Mentoré
+    - Première propriété
+    - Mentor
+    - Coût
+    - Deuxième propriété
+lineDescription:
+    - §§Mentee§§Name
+    - §§Mentee§_M§Goûts
+    - §§Mentor§§Name
+    - §§Cost
+    - §§Mentor§_§Taille

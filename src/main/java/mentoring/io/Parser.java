@@ -6,7 +6,7 @@ import java.util.Objects;
 import mentoring.io.datareader.DataReader;
 
 /**
- * Parser used to build objects from files. 
+ * Parser used to build objects from readers. 
  * <p>Subclasses SHOULD be safe for reuse and for multi-threading.
  */
 abstract class Parser<T> {
@@ -32,11 +32,17 @@ abstract class Parser<T> {
     public T parse(Reader reader) throws IllegalArgumentException {
         Objects.requireNonNull(reader);
         Map<String, Object> data = dataReader.read(reader);
-        //TODO: missing the "validity check" step.
         //TODO: get behaviour from PropertyNameParser
         return buildObject(data);
     }
     
+    /**
+     * Convert the raw data extracted from the reader into the expected Java object.
+     * Implementations of this method SHOULD raise exceptions deriving from IllegalArgumentException
+     * if the object cannot be built.
+     * @param data extracted from the data source using a {@link DataReader}.
+     * @return an object of the class this parser is tailored to parse.
+     */
     protected abstract T buildObject(Map<String, Object> data);
     
     //TODO: this fails when type is List<String> or any other parameterized type

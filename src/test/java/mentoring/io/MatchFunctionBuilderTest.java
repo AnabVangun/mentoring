@@ -43,7 +43,15 @@ class MatchFunctionBuilderTest implements TestFramework<MatchFunctionBuilderArgs
                         Map.of(
                                 new MatchTest.MatchArgs("", builder.build(), builder.build(), 
                                         12).convertAs(Person.class, Person.class),
-                                "12"))),
+                                "12")),
+                new MatchFunctionBuilderArgs("multiple property",
+                        "§§Mentee§_M§Sports",
+                        Map.of(
+                                new MatchTest.MatchArgs("", 
+                                        builder.withPropertyMap("Sports", Map.of(true, false))
+                                                .build(),
+                                        builder.build(), 761).convertAs(Person.class, Person.class),
+                                Map.of(true, false).toString()))),
                 "buildMatchFunction() returns the correct function on valid input",
                 MatchFunctionBuilderArgs::assertFunctionIsCorrect);
     }
@@ -65,7 +73,11 @@ class MatchFunctionBuilderTest implements TestFramework<MatchFunctionBuilderArgs
                                 builder.withFullName("foo").withProperty("Ville", 3).build(), 3)),
                 new PropertyGetterBuilderArgs("name property", 
                         MatchFunctionBuilder.NAME_PROPERTY_TOKEN,
-                        Map.of(builder.withFullName("foo").build(), "foo"))),
+                        Map.of(builder.withFullName("foo").build(), "foo")),
+                new PropertyGetterBuilderArgs("multiple property", "§_M§Sports",
+                        Map.of(builder
+                                .withPropertyMap("Sports", Map.of("Escrime", true, "Volley", 7))
+                                .build(), Map.of("Escrime", true, "Volley", 7)))),
                 "buildMatchFunction() returns the correct function on valid input",
                 PropertyGetterBuilderArgs::assertFunctionIsCorrect);
     }
@@ -113,10 +125,6 @@ class MatchFunctionBuilderTest implements TestFramework<MatchFunctionBuilderArgs
         PropertyGetterBuilderArgs(String testCase, String input, 
                 Map<Person, Object> verificationData){
             super(testCase, input, verificationData);
-        }
-        
-        PropertyGetterBuilderArgs(String testCase, String input){
-            this(testCase, input, null);
         }
         
         @Override

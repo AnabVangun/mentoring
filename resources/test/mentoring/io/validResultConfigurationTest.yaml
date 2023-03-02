@@ -1,0 +1,11 @@
+configurationName: standard configuration
+header:
+    - Mentoré
+    - Mentor
+    - Coût
+    - Propriété
+lineDescription:
+    - §§Mentee§§Name
+    - §§Mentor§§Name
+    - §§Cost
+    - §§Mentor§_§Ville

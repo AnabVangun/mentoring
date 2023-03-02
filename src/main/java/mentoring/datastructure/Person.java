@@ -39,10 +39,10 @@ public final class Person {
     public <T> T getPropertyAs(String property, Class<T> type) {
         if (!properties.containsKey(property)){
             throw new IllegalArgumentException(String.format(
-                    "Person %s has no %s property", this, property));
+                    "%s has no %s property", this, property));
         } else if (!type.isInstance(properties.get(property))){
             throw new ClassCastException(String.format(
-                    "Property %s of person %s (%s) is not of required type, %s", property, this,
+                    "Property %s of %s (%s) is not of required type, %s", property, this,
                     properties.get(property), type));
         }
         return type.cast(properties.get(property));
