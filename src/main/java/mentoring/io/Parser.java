@@ -12,7 +12,6 @@ import mentoring.io.datareader.DataReader;
 abstract class Parser<T> {
     //Reader used to extract POJO data from a textual data source.
     protected final DataReader dataReader;
-    //TODO add tests for default methods
     
     /**
      * Create a Parser.
@@ -47,8 +46,8 @@ abstract class Parser<T> {
     
     //TODO: this fails when type is List<String> or any other parameterized type
     @SuppressWarnings("unchecked")
-    protected static <T> T extractAttribute(Map<String, Object> data, String propertyKey, 
-            Class<T> type){
+    protected static <T> T extractAttribute(Map<? extends String, ? extends Object> data, 
+            String propertyKey, Class<T> type){
         if(data.containsKey(propertyKey)){
             return (T) data.get(propertyKey);
         } else {
@@ -56,7 +55,8 @@ abstract class Parser<T> {
         }
     }
     
-    protected static Object extractAttribute(Map<String, Object> data, String propertyKey){
+    protected static Object extractAttribute(Map<? extends String, ? extends Object> data, 
+            String propertyKey){
         return extractAttribute(data, propertyKey, Object.class);
     }
 }

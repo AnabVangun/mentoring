@@ -11,6 +11,8 @@ import mentoring.io.ParserTestImplementation.DummyParser;
 import mentoring.io.ParserTestImplementation.DummyParserArgs;
 import mentoring.io.datareader.YamlReader;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DynamicNode;
+import org.junit.jupiter.api.TestFactory;
 
 class ParserTestImplementation implements ParserTest<String, DummyParser, DummyParserArgs>{
     
@@ -28,6 +30,37 @@ class ParserTestImplementation implements ParserTest<String, DummyParser, DummyP
     @Override
     public DummyParser prepareParser() {
         return new DummyParser(false, List.of("foo", "bar"));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> extractAttribute_fullForm_expectedValue(){
+        return test(Stream.of(Map.of("key", 2)), 
+                "extractAttribute() (full form) returns the expected value", 
+                args -> Assertions.assertEquals(Integer.valueOf(2), 
+                        Parser.extractAttribute(args, "key", Integer.class)));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> extractAttribute_fullForm_missingProperty(){
+        return test(Stream.of(Map.of("key", 3)), 
+                "extractAttribute() (full form) throws an exception when the property is missing", 
+                args -> Assertions.assertThrows(IllegalArgumentException.class,
+                        () -> Parser.extractAttribute(args, "missing", Integer.class)));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> extractAttribute_partialForm_expectedValue(){
+        return test(Stream.of(Map.of("key", "foo")), 
+                "extractAttribute() (partial form) returns the expected value",
+                args -> Assertions.assertEquals("foo", Parser.extractAttribute(args, "key")));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> extractAttribute_partialForm_missingProperty(){
+        return test(Stream.of(Map.of("key", "bar")), 
+                "extractAttribute() (partial form) throws an exception when the property is missing",
+                args -> Assertions.assertThrows(IllegalArgumentException.class,
+                        () -> Parser.extractAttribute(args, "missing")));
     }
 
     static class DummyParser extends Parser<String>{
