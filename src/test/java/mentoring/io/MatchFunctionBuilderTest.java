@@ -15,11 +15,10 @@ import test.tools.TestArgs;
 import test.tools.TestFramework;
 
 class MatchFunctionBuilderTest implements TestFramework<MatchFunctionBuilderArgs>{
-    //TODO: use tokens from MatchFunctionBuilder to generate test strings.
 
     @Override
     public Stream<MatchFunctionBuilderArgs> argumentsSupplier() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     @TestFactory
@@ -27,7 +26,8 @@ class MatchFunctionBuilderTest implements TestFramework<MatchFunctionBuilderArgs
         PersonBuilder builder = new PersonBuilder();
         return test(Stream.of(
                 new MatchFunctionBuilderArgs("simple string property", 
-                        "§§Mentor§_§Ville",
+                        MatchFunctionBuilder.MENTOR_TOKEN 
+                                + MatchFunctionBuilder.CUSTOM_PROPERTY_TOKEN + "Ville",
                         Map.of(
                                 new MatchTest.MatchArgs("", 
                                         builder.withProperty("Ville","Londres").build(),
@@ -45,7 +45,8 @@ class MatchFunctionBuilderTest implements TestFramework<MatchFunctionBuilderArgs
                                         12).convertAs(Person.class, Person.class),
                                 "12")),
                 new MatchFunctionBuilderArgs("multiple property",
-                        "§§Mentee§_M§Sports",
+                        MatchFunctionBuilder.MENTEE_TOKEN 
+                                + MatchFunctionBuilder.CUSTOM_MULTIPLE_PROPERTY_TOKEN + "Sports",
                         Map.of(
                                 new MatchTest.MatchArgs("", 
                                         builder.withPropertyMap("Sports", Map.of(true, false))
@@ -58,7 +59,9 @@ class MatchFunctionBuilderTest implements TestFramework<MatchFunctionBuilderArgs
  
     @TestFactory
     Stream<DynamicNode> buildMatchFunction_invalidInput() {
-        return test(Stream.of(new MatchFunctionBuilderArgs("invalid object accessor", "§§foo§_§bar")),
+        return test(Stream.of(new MatchFunctionBuilderArgs("invalid object accessor", 
+                MatchFunctionBuilder.STANDARD_TOKEN + "foo" 
+                        + MatchFunctionBuilder.CUSTOM_PROPERTY_TOKEN + "bar")),
                 "buildMatchFunction() throws the expected exception on invalid input",
                 args -> Assertions.assertThrows(IllegalArgumentException.class,
                         () -> args.convert()));
@@ -68,13 +71,15 @@ class MatchFunctionBuilderTest implements TestFramework<MatchFunctionBuilderArgs
     Stream<DynamicNode> buildPersonPropertyGetter_validInput() {
         PersonBuilder builder = new PersonBuilder();
         return test(Stream.of(
-                new PropertyGetterBuilderArgs("simple property", "§_§Ville",
+                new PropertyGetterBuilderArgs("simple property", 
+                        MatchFunctionBuilder.CUSTOM_PROPERTY_TOKEN + "Ville",
                         Map.of(builder.withProperty("Ville","Londres").build(), "Londres",
                                 builder.withFullName("foo").withProperty("Ville", 3).build(), 3)),
                 new PropertyGetterBuilderArgs("name property", 
                         MatchFunctionBuilder.NAME_PROPERTY_TOKEN,
                         Map.of(builder.withFullName("foo").build(), "foo")),
-                new PropertyGetterBuilderArgs("multiple property", "§_M§Sports",
+                new PropertyGetterBuilderArgs("multiple property", 
+                        MatchFunctionBuilder.CUSTOM_MULTIPLE_PROPERTY_TOKEN + "Sports",
                         Map.of(builder
                                 .withPropertyMap("Sports", Map.of("Escrime", true, "Volley", 7))
                                 .build(), Map.of("Escrime", true, "Volley", 7)))),
