@@ -14,33 +14,34 @@ import mentoring.datastructure.PropertyNameBuilder;
 import mentoring.datastructure.PropertyType;
 
 /**
- * Parser used to build {@link PropertyName} and {@link MultiplePropertyName} objects from 
+ * Decoder used to build {@link PropertyName} and {@link MultiplePropertyName} objects from 
  * configuration files.
  * <p>This class should be subclassed for each type of {@link PropertyName} object that need 
  * specific parsing.
- * @param T type contained by the PropertyName parsed.
  * @param E specific type of PropertyName parsed.
  */
-abstract class PropertyNameParser<E extends PropertyName<?>> {
+abstract class PropertyNameDecoder<E extends PropertyName<?>> {
+    //TODO test class and subclasses.
     
-    Set<E> parsePropertyNames(Iterable<Map<String, String>> toParse){
-        Set<E> properties = new HashSet<>();
-        for (Map<String, String> property : toParse){
+    Set<E> decodePropertyNames(
+            Iterable<? extends Map<? extends String, ? extends String>> properties){
+        Set<E> result = new HashSet<>();
+        for (Map<? extends String, ? extends String> property : properties){
             validateProperty(property);
-            properties.add(parseSinglePropertyName(property));
+            result.add(decodeSinglePropertyName(property));
         }
-        return properties;
+        return result;
     }
     
-    private void validateProperty(Map<String, String> toValidate){
+    private void validateProperty(Map<? extends String, ? extends String> toValidate){
         List<String> errorsFound = new ArrayList<>();
-        registerMissingCommonAttributeErrors(toValidate, errorsFound);
+        registerMissingAttributeErrors(toValidate, errorsFound);
         registerSpecificErrors(toValidate, errorsFound);
         raiseExceptionIfAppropriate(errorsFound);
     }
     
-    private void registerMissingCommonAttributeErrors(Map<String, String> toValidate,
-            List<String> errorsFound){
+    private void registerMissingAttributeErrors(
+            Map<? extends String, ? extends String> toValidate, List<String> errorsFound){
         for (String expectedAttribute : getExpectedAttributeNames()){
             if (! toValidate.containsKey(expectedAttribute)){
                 errorsFound.add("Attribute %s expected but missing from %s"
@@ -50,25 +51,25 @@ abstract class PropertyNameParser<E extends PropertyName<?>> {
     }
     
     /**
-     * Perform the validity checks specific to the type of PropertyName of the parser.
-     * @param toValidate map representing the property to parse.
+     * Perform the validity checks specific to the type of PropertyName of the decoder.
+     * @param toValidate map representing the property to decode.
      * @param errorsFound the specific errors found must be registered in this list so that a global
      * exception can be raised at the end of the validation.
      */
-    protected abstract void registerSpecificErrors(Map<String, String> toValidate,
-            List<String> errorsFound);
+    protected abstract void registerSpecificErrors(
+            Map<? extends String, ? extends String> toValidate, List<String> errorsFound);
     
     /**
      * Register errors if the input map contains any unexpected attribute. This method is not called 
      * by default by {@link #validateProperty(java.util.Map)}: it is a convenience method provided
      * for use in {@link #registerSpecificErrors(java.util.Map, java.util.List) } by subclasses 
      * whenever appropriate.
-     * @param toValidate map representing the property to parse.
+     * @param toValidate map representing the property to decode.
      * @param errorsFound error messages for the unexpected attributes found are registered 
      * in this list so that a global exception can be raised at the end of the validation.
      */
-    protected final void registerUnexpectedAttributeError(Map<String, String> toValidate,
-            List<String> errorsFound){
+    protected final void registerUnexpectedAttributeError(
+            Map<? extends String, ? extends String> toValidate, List<String> errorsFound){
         for (String key : toValidate.keySet()){
             if (! getExpectedAttributeNames().contains(key)){
                 errorsFound.add("Attribute %s found in %s but not expected, valid attributes are %s"
@@ -78,7 +79,7 @@ abstract class PropertyNameParser<E extends PropertyName<?>> {
     }
     
     /**
-     * Return the set of attributes that are mandatory to parse a property name.
+     * Return the set of attributes that are mandatory to decode a property name.
      */
     protected abstract Set<String> getExpectedAttributeNames();
     
@@ -91,7 +92,7 @@ abstract class PropertyNameParser<E extends PropertyName<?>> {
     }
     
     private String forgeComplexErrorMessage(List<String> errorsFound){
-        String baseMessage = "Several errors found when parsing property:";
+        String baseMessage = "Several errors found when decoding property:";
         StringBuilder builder = new StringBuilder(baseMessage.length() + errorsFound.size()*250);
         builder.append(baseMessage);
         for(String error: errorsFound){
@@ -101,15 +102,15 @@ abstract class PropertyNameParser<E extends PropertyName<?>> {
     }
     
     /**
-     * Parse a single valid PropertyName.
-     * @param toParse map representing the property to parse.
+     * Decode a single valid PropertyName.
+     * @param toDecode map representing the property to decode.
      * @return a valid PropertyName.
      */
-    protected abstract E parseSinglePropertyName(Map<String, String> toParse);
+    protected abstract E decodeSinglePropertyName(Map<? extends String, ? extends String> toDecode);
     
 }
 
-class SimplePropertyNameParser extends PropertyNameParser<PropertyName<?>>{
+class SimplePropertyNameDecoder extends PropertyNameDecoder<PropertyName<?>>{
     final PropertyNameBuilder builder = new PropertyNameBuilder();
     final static Set<String> EXPECTED_PROPERTY_ATTRIBUTES = Set.of("name", "headerName", 
             "type");
@@ -120,26 +121,28 @@ class SimplePropertyNameParser extends PropertyNameParser<PropertyName<?>>{
     }
     
     @Override
-    protected void registerSpecificErrors(Map<String, String> toValidate, List<String> errorsFound){
+    protected void registerSpecificErrors(Map<? extends String, ? extends String> toValidate, 
+            List<String> errorsFound){
         registerUnexpectedAttributeError(toValidate, errorsFound);
     }
 
     @Override
-    protected PropertyName<?> parseSinglePropertyName(Map<String, String> toParse) {
-        PropertyType<?> type = PropertyType.valueOf(toParse.get("type"));
-        return builder.prepare(toParse.get("name"), type)
-                .withHeaderName(toParse.get("headerName"))
+    protected PropertyName<?> decodeSinglePropertyName(
+            Map<? extends String, ? extends String> toDecode) {
+        PropertyType<?> type = PropertyType.valueOf(toDecode.get("type"));
+        return builder.prepare(toDecode.get("name"), type)
+                .withHeaderName(toDecode.get("headerName"))
                 .build();
     }
 }
 
-class MultiplePropertyNameParser extends PropertyNameParser<MultiplePropertyName<?,?>>{
+class MultiplePropertyNameDecoder extends PropertyNameDecoder<MultiplePropertyName<?,?>>{
     final MultiplePropertyNameBuilder builder = new MultiplePropertyNameBuilder();
     
     private final static Set<String> EXPECTED_PROPERTY_ATTRIBUTES;
     static {
         Set<String> properties = new HashSet<>(
-            SimplePropertyNameParser.EXPECTED_PROPERTY_ATTRIBUTES);
+            SimplePropertyNameDecoder.EXPECTED_PROPERTY_ATTRIBUTES);
         properties.add("aggregation");
         EXPECTED_PROPERTY_ATTRIBUTES = Collections.unmodifiableSet(properties);
     }
@@ -150,17 +153,19 @@ class MultiplePropertyNameParser extends PropertyNameParser<MultiplePropertyName
     }
     
     @Override
-    protected void registerSpecificErrors(Map<String, String> toValidate, List<String> errorsFound){
+    protected void registerSpecificErrors(
+            Map<? extends String, ? extends String> toValidate, List<String> errorsFound){
         registerUnexpectedAttributeError(toValidate, errorsFound);
     }
 
     @Override
-    protected MultiplePropertyName<?,?> parseSinglePropertyName(Map<String, String> toParse) {
-        PropertyType<?> type = PropertyType.valueOf(toParse.get("type"));
-        AggregationType aggregation = AggregationType.getValueOf(toParse.get("aggregation"));
-        return builder.prepare(toParse.get("name"), type)
+    protected MultiplePropertyName<?,?> decodeSinglePropertyName(
+            Map<? extends String, ? extends String> toDecode) {
+        PropertyType<?> type = PropertyType.valueOf(toDecode.get("type"));
+        AggregationType aggregation = AggregationType.getValueOf(toDecode.get("aggregation"));
+        return builder.prepare(toDecode.get("name"), type)
                 .setAggregation(aggregation)
-                .withHeaderName(toParse.get("headerName"))
+                .withHeaderName(toDecode.get("headerName"))
                 .build();
     }
 }

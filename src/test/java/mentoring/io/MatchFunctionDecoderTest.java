@@ -5,7 +5,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import mentoring.datastructure.Person;
 import mentoring.datastructure.PersonBuilder;
-import mentoring.io.MatchFunctionBuilderTest.MatchFunctionBuilderArgs;
+import mentoring.io.MatchFunctionDecoderTest.MatchFunctionDecoderArgs;
 import mentoring.match.Match;
 import mentoring.match.MatchTest;
 import org.junit.jupiter.api.Assertions;
@@ -14,20 +14,20 @@ import org.junit.jupiter.api.TestFactory;
 import test.tools.TestArgs;
 import test.tools.TestFramework;
 
-class MatchFunctionBuilderTest implements TestFramework<MatchFunctionBuilderArgs>{
+class MatchFunctionDecoderTest implements TestFramework<MatchFunctionDecoderArgs>{
 
     @Override
-    public Stream<MatchFunctionBuilderArgs> argumentsSupplier() {
+    public Stream<MatchFunctionDecoderArgs> argumentsSupplier() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
     @TestFactory
-    Stream<DynamicNode> buildMatchFunction_validInput() {
+    Stream<DynamicNode> decodeMatchFunction_validInput() {
         PersonBuilder builder = new PersonBuilder();
         return test(Stream.of(
-                new MatchFunctionBuilderArgs("simple string property", 
-                        MatchFunctionBuilder.MENTOR_TOKEN 
-                                + MatchFunctionBuilder.CUSTOM_PROPERTY_TOKEN + "Ville",
+                new MatchFunctionDecoderArgs("simple string property", 
+                        MatchFunctionDecoder.MENTOR_TOKEN 
+                                + MatchFunctionDecoder.CUSTOM_PROPERTY_TOKEN + "Ville",
                         Map.of(
                                 new MatchTest.MatchArgs("", 
                                         builder.withProperty("Ville","Londres").build(),
@@ -38,52 +38,52 @@ class MatchFunctionBuilderTest implements TestFramework<MatchFunctionBuilderArgs
                                         builder.withFullName("foo").withProperty("Ville", "Reims").build(),
                                         12).convertAs(Person.class, Person.class),
                                 "Reims")),
-                new MatchFunctionBuilderArgs("cost property", 
-                        MatchFunctionBuilder.COST_TOKEN,
+                new MatchFunctionDecoderArgs("cost property", 
+                        MatchFunctionDecoder.COST_TOKEN,
                         Map.of(
                                 new MatchTest.MatchArgs("", builder.build(), builder.build(), 
                                         12).convertAs(Person.class, Person.class),
                                 "12")),
-                new MatchFunctionBuilderArgs("multiple property",
-                        MatchFunctionBuilder.MENTEE_TOKEN 
-                                + MatchFunctionBuilder.CUSTOM_MULTIPLE_PROPERTY_TOKEN + "Sports",
+                new MatchFunctionDecoderArgs("multiple property",
+                        MatchFunctionDecoder.MENTEE_TOKEN 
+                                + MatchFunctionDecoder.CUSTOM_MULTIPLE_PROPERTY_TOKEN + "Sports",
                         Map.of(
                                 new MatchTest.MatchArgs("", 
                                         builder.withPropertyMap("Sports", Map.of(true, false))
                                                 .build(),
                                         builder.build(), 761).convertAs(Person.class, Person.class),
                                 Map.of(true, false).toString()))),
-                "buildMatchFunction() returns the correct function on valid input",
-                MatchFunctionBuilderArgs::assertFunctionIsCorrect);
+                "decodeMatchFunction() returns the correct function on valid input",
+                MatchFunctionDecoderArgs::assertFunctionIsCorrect);
     }
  
     @TestFactory
-    Stream<DynamicNode> buildMatchFunction_invalidInput() {
-        return test(Stream.of(new MatchFunctionBuilderArgs("invalid object accessor", 
-                MatchFunctionBuilder.STANDARD_TOKEN + "foo" 
-                        + MatchFunctionBuilder.CUSTOM_PROPERTY_TOKEN + "bar")),
-                "buildMatchFunction() throws the expected exception on invalid input",
+    Stream<DynamicNode> decodeMatchFunction_invalidInput() {
+        return test(Stream.of(new MatchFunctionDecoderArgs("invalid object accessor", 
+                MatchFunctionDecoder.STANDARD_TOKEN + "foo" 
+                        + MatchFunctionDecoder.CUSTOM_PROPERTY_TOKEN + "bar")),
+                "decodeMatchFunction() throws the expected exception on invalid input",
                 args -> Assertions.assertThrows(IllegalArgumentException.class,
                         () -> args.convert()));
     }
     
     @TestFactory
-    Stream<DynamicNode> buildPersonPropertyGetter_validInput() {
+    Stream<DynamicNode> decodePersonPropertyGetter_validInput() {
         PersonBuilder builder = new PersonBuilder();
         return test(Stream.of(
                 new PropertyGetterBuilderArgs("simple property", 
-                        MatchFunctionBuilder.CUSTOM_PROPERTY_TOKEN + "Ville",
+                        MatchFunctionDecoder.CUSTOM_PROPERTY_TOKEN + "Ville",
                         Map.of(builder.withProperty("Ville","Londres").build(), "Londres",
                                 builder.withFullName("foo").withProperty("Ville", 3).build(), 3)),
                 new PropertyGetterBuilderArgs("name property", 
-                        MatchFunctionBuilder.NAME_PROPERTY_TOKEN,
+                        MatchFunctionDecoder.NAME_PROPERTY_TOKEN,
                         Map.of(builder.withFullName("foo").build(), "foo")),
                 new PropertyGetterBuilderArgs("multiple property", 
-                        MatchFunctionBuilder.CUSTOM_MULTIPLE_PROPERTY_TOKEN + "Sports",
+                        MatchFunctionDecoder.CUSTOM_MULTIPLE_PROPERTY_TOKEN + "Sports",
                         Map.of(builder
                                 .withPropertyMap("Sports", Map.of("Escrime", true, "Volley", 7))
                                 .build(), Map.of("Escrime", true, "Volley", 7)))),
-                "buildMatchFunction() returns the correct function on valid input",
+                "decodeMatchFunction() returns the correct function on valid input",
                 PropertyGetterBuilderArgs::assertFunctionIsCorrect);
     }
     
@@ -107,21 +107,21 @@ class MatchFunctionBuilderTest implements TestFramework<MatchFunctionBuilderArgs
         
     }
     
-    static class MatchFunctionBuilderArgs extends 
+    static class MatchFunctionDecoderArgs extends 
             AbstractFunctionBuilderArgs<Match<Person, Person>, String>{
         
-        MatchFunctionBuilderArgs(String testCase, String input, 
+        MatchFunctionDecoderArgs(String testCase, String input, 
                 Map<Match<Person, Person>, String> verificationData){
             super(testCase, input, verificationData);
         }
         
-        MatchFunctionBuilderArgs(String testCase, String input){
+        MatchFunctionDecoderArgs(String testCase, String input){
             this(testCase, input, null);
         }
         
         @Override
         Function<Match<Person, Person>, String> convert(){
-            return MatchFunctionBuilder.buildMatchFunction(input);
+            return MatchFunctionDecoder.decodeMatchFunction(input);
         }
     }
     
@@ -134,7 +134,7 @@ class MatchFunctionBuilderTest implements TestFramework<MatchFunctionBuilderArgs
         
         @Override
         Function<Person, Object> convert(){
-            return MatchFunctionBuilder.buildPersonPropertyGetter(input);
+            return MatchFunctionDecoder.decodePersonPropertyGetter(input);
         }
     }
 }

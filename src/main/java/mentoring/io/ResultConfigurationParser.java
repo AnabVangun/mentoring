@@ -47,7 +47,7 @@ public class ResultConfigurationParser extends Parser<ResultConfiguration<Person
         List<Function<Match<Person, Person>, String>> functions = 
                 new ArrayList<>(lineDescription.size());
         lineDescription.forEach(column -> 
-                functions.add(MatchFunctionBuilder.buildMatchFunction(column)));
+                functions.add(MatchFunctionDecoder.decodeMatchFunction(column)));
         return args -> {
             String[] result = new String[lineDescription.size()];
             for (int index = 0; index < result.length; index++){

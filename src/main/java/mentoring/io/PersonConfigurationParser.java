@@ -24,9 +24,9 @@ public final class PersonConfigurationParser extends Parser<PersonConfiguration>
             throws IllegalArgumentException {
         String configurationName = extractAttribute(data, "configurationName", String.class);
         Set<PropertyName<?>> properties = extractProperties(data, "properties", 
-                new SimplePropertyNameParser());
+                new SimplePropertyNameDecoder());
         Set<MultiplePropertyName<?,?>> multipleProperties = 
-                extractProperties(data, "multipleProperties", new MultiplePropertyNameParser());
+                extractProperties(data, "multipleProperties", new MultiplePropertyNameDecoder());
         String separator = extractAttribute(data, "separator", String.class);
         String nameFormat = extractAttribute(data, "nameFormat", String.class);
         @SuppressWarnings("unchecked")
@@ -42,8 +42,8 @@ public final class PersonConfigurationParser extends Parser<PersonConfiguration>
     
     @SuppressWarnings("unchecked")
     private static <T extends PropertyName<?>> Set<T> extractProperties(Map<String, Object> data, 
-            String propertyKey, PropertyNameParser<T> parser){
-        return parser.parsePropertyNames(
+            String propertyKey, PropertyNameDecoder<T> parser){
+        return parser.decodePropertyNames(
                 (Iterable<Map<String, String>>) extractAttribute(data, propertyKey));
     }
     
