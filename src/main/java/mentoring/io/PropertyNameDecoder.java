@@ -21,10 +21,12 @@ import mentoring.datastructure.PropertyType;
  * @param E specific type of PropertyName parsed.
  */
 abstract class PropertyNameDecoder<E extends PropertyName<?>> {
-    //TODO test class and subclasses.
+    private final static int BASE_ERROR_LENGTH = 250;
+    //TODO test subclasses.
     
     Set<E> decodePropertyNames(
             Iterable<? extends Map<? extends String, ? extends String>> properties){
+        //TODO: consider parsing all valid properties and raising a global exception afterwards
         Set<E> result = new HashSet<>();
         for (Map<? extends String, ? extends String> property : properties){
             validateProperty(property);
@@ -34,9 +36,8 @@ abstract class PropertyNameDecoder<E extends PropertyName<?>> {
     }
     
     private void validateProperty(Map<? extends String, ? extends String> toValidate){
-        List<String> errorsFound = new ArrayList<>();
+        List<String> errorsFound = registerSpecificErrors(toValidate);
         registerMissingAttributeErrors(toValidate, errorsFound);
-        registerSpecificErrors(toValidate, errorsFound);
         raiseExceptionIfAppropriate(errorsFound);
     }
     
@@ -51,13 +52,14 @@ abstract class PropertyNameDecoder<E extends PropertyName<?>> {
     }
     
     /**
-     * Perform the validity checks specific to the type of PropertyName of the decoder.
+     * Perform the validity checks specific to the type of PropertyName of the decoder. Errors 
+     * related to missing attributes should not be registered in this method to avoid duplicates.
      * @param toValidate map representing the property to decode.
-     * @param errorsFound the specific errors found must be registered in this list so that a global
+     * @return a modifiable list containing the specific errors found so that a global
      * exception can be raised at the end of the validation.
      */
-    protected abstract void registerSpecificErrors(
-            Map<? extends String, ? extends String> toValidate, List<String> errorsFound);
+    protected abstract List<String> registerSpecificErrors(
+            Map<? extends String, ? extends String> toValidate);
     
     /**
      * Register errors if the input map contains any unexpected attribute. This method is not called 
@@ -93,7 +95,8 @@ abstract class PropertyNameDecoder<E extends PropertyName<?>> {
     
     private String forgeComplexErrorMessage(List<String> errorsFound){
         String baseMessage = "Several errors found when decoding property:";
-        StringBuilder builder = new StringBuilder(baseMessage.length() + errorsFound.size()*250);
+        StringBuilder builder = new StringBuilder(baseMessage.length() 
+                + errorsFound.size()*BASE_ERROR_LENGTH);
         builder.append(baseMessage);
         for(String error: errorsFound){
             builder.append(System.lineSeparator()).append(error);
@@ -121,9 +124,10 @@ class SimplePropertyNameDecoder extends PropertyNameDecoder<PropertyName<?>>{
     }
     
     @Override
-    protected void registerSpecificErrors(Map<? extends String, ? extends String> toValidate, 
-            List<String> errorsFound){
-        registerUnexpectedAttributeError(toValidate, errorsFound);
+    protected List<String> registerSpecificErrors(Map<? extends String, ? extends String> toValidate){
+        List<String> result = new ArrayList<>();
+        registerUnexpectedAttributeError(toValidate, result);
+        return result;
     }
 
     @Override
@@ -153,9 +157,11 @@ class MultiplePropertyNameDecoder extends PropertyNameDecoder<MultiplePropertyNa
     }
     
     @Override
-    protected void registerSpecificErrors(
-            Map<? extends String, ? extends String> toValidate, List<String> errorsFound){
-        registerUnexpectedAttributeError(toValidate, errorsFound);
+    protected List<String> registerSpecificErrors(
+            Map<? extends String, ? extends String> toValidate){
+        List<String> result = new ArrayList<>();
+        registerUnexpectedAttributeError(toValidate, result);
+        return result;
     }
 
     @Override
