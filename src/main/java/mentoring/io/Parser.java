@@ -31,7 +31,7 @@ abstract class Parser<T> {
     public T parse(Reader reader) throws IllegalArgumentException {
         Objects.requireNonNull(reader);
         Map<String, Object> data = dataReader.read(reader);
-        //TODO: get behaviour from PropertyNameParser
+        //TODO: get behaviour from PropertyNameDecoder
         return buildObject(data);
     }
     

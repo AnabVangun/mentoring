@@ -22,7 +22,6 @@ import mentoring.datastructure.PropertyType;
  */
 abstract class PropertyNameDecoder<E extends PropertyName<?>> {
     private final static int BASE_ERROR_LENGTH = 250;
-    //TODO test subclasses.
     
     Set<E> decodePropertyNames(
             Iterable<? extends Map<? extends String, ? extends String>> properties){
