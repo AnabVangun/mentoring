@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.Person;
@@ -73,7 +72,6 @@ class PersonParserTest implements TestFramework<PersonParserArgs>{
     }
     
     @TestFactory
-    @SuppressWarnings("deprecation")
     Stream<DynamicNode> parseLine(){
         return test(Stream.of(
                 new PersonParserArgs(DummyPersonConfiguration.SIMPLE_PROPERTIES, 
@@ -86,7 +84,7 @@ class PersonParserTest implements TestFramework<PersonParserArgs>{
                         new String[]{"first","third","fourth"},
                         Map.of(new String[]{"foo","vrai","-43|12"},
                                 new PersonBuilder().withFullName("")
-                                        .withPropertySet("fourth", Set.of(12,-43))
+                                        .withPropertyMap("fourth", Map.of(12,0,-43,0))
                                         .withPropertyMap("third", Map.of(true, 0)).build())),
                 new PersonParserArgs(DummyPersonConfiguration.NAME_PROPERTIES, 
                         new String[]{"fifth"}, 

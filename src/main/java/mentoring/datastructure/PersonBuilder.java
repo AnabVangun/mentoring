@@ -3,9 +3,6 @@ package mentoring.datastructure;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Class used to build {@link Person} objects. A single builder can build several unrelated objects:
@@ -31,13 +28,6 @@ public final class PersonBuilder {
     
     public <T> PersonBuilder withProperty(String property, T value){
         properties.put(Objects.requireNonNull(property), Objects.requireNonNull(value));
-        return this;
-    }
-    
-    @Deprecated
-    public <T> PersonBuilder withPropertySet(String property, Set<T> values){
-        multipleProperties.put(Objects.requireNonNull(property), 
-                values.stream().collect(Collectors.toMap(Function.identity(), x -> 0)));
         return this;
     }
     

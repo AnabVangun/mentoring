@@ -6,7 +6,6 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.Person;
@@ -22,7 +21,6 @@ class PersonFileParserTest implements TestFramework<PersonFileParserArgs>{
     static final String NEWLINE = System.getProperty("line.separator");
     
     @Override
-    @SuppressWarnings("deprecation")
     public Stream<PersonFileParserArgs> argumentsSupplier(){
         return Stream.of(
                 new PersonFileParserArgs("no person", 
@@ -32,7 +30,8 @@ class PersonFileParserTest implements TestFramework<PersonFileParserArgs>{
                         DummyPersonConfiguration.MULTIPLE_PROPERTIES.configuration, 
                         "third,fourth" + NEWLINE + "vrai|faux,0", List.of(
                                 new PersonBuilder().withPropertyMap("third", Map.of(true, 0, false, 1))
-                                        .withPropertySet("fourth", Set.of(0)).withFullName("").build())),
+                                        .withPropertyMap("fourth", Map.of(0,0))
+                                        .withFullName("").build())),
                 new PersonFileParserArgs("three persons", 
                         DummyPersonConfiguration.SIMPLE_PROPERTIES.configuration,
                         "first,second" + NEWLINE + "string,1" + NEWLINE + "foo,2" + NEWLINE + "bar,3", List.of(

@@ -18,24 +18,6 @@ public enum PojoPersonConfiguration{
             Set.of(new SetPropertyName<>("Métiers","Activités et métiers", PropertyType.STRING), 
                     new SetPropertyName<>("Motivation", "Motivation", PropertyType.STRING)), 
             ";", "%s %s (X%s)", List.of("Prénom","Nom","Promotion"))),
-    @Deprecated
-    /** Configuration used for real mentee data in the 2021 data set. */
-    MENTEE_CONFIGURATION_REAL_DATA(new PersonConfiguration("Mentee configuration for 2022 data",
-            Set.of(new PropertyName<>("Promotion","Promotion, cycle", PropertyType.INTEGER),
-                    new PropertyName<>("Maturité","maturité", PropertyType.INTEGER),
-                    new PropertyName<>("Email","E-mail", PropertyType.STRING)),
-            Set.of(new SetPropertyName<>("Métiers","résumé métier secteur", PropertyType.STRING), 
-                    new SetPropertyName<>("Langue","Option : langue préférentielle", 
-                            PropertyType.STRING)),
-            ",", "%s %s (X%s)", List.of("Prénom", "NOM", "Promotion, cycle"))),
-    @Deprecated
-    /** Configuration used for real mentor data in the 2021 data set. */
-    MENTOR_CONFIGURATION_REAL_DATA(new PersonConfiguration("Mentor configuration for 2022 data",
-            Set.of(new PropertyName<>("Anglophone","anglophone", PropertyType.BOOLEAN),
-                    new PropertyName<>("Promotion","Promotion (X09, ...)", PropertyType.STRING),
-                    new PropertyName<>("Email","Adresse email", PropertyType.STRING)),
-            Set.of(new SetPropertyName<>("Métiers","Résumé métier secteur", PropertyType.STRING)),
-            ",", "%s %s (%s)", List.of("Prénom", "Nom", "Promotion (X09, ...)"))),
     /**Configuration used for real mentee data in the preprocessed 2022 data set. */
     MENTEE_CONFIGURATION_2023_DATA(new PersonConfiguration("Mentee configuration for 2023 data",
             Set.of(new PropertyName<>("Email", "email", PropertyType.STRING),

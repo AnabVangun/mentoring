@@ -27,7 +27,6 @@ import mentoring.match.MatchesBuilder;
  * Proof of concept of the mentoring application.
  */
 public class Main {
-    //TODO: clean up deprecated methods and classes before finalising V2.0.
     /**
      * Parse an example file representing a mentoring problem and print the resulting assignment.
      * 
