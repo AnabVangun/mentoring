@@ -62,6 +62,22 @@ class ParserTestImplementation implements ParserTest<String, DummyParser, DummyP
                 args -> Assertions.assertThrows(IllegalArgumentException.class,
                         () -> Parser.extractAttribute(args, "missing")));
     }
+    
+    @TestFactory
+    Stream<DynamicNode> extractAttributeList_expectedValue(){
+        return test(Stream.of(Map.of("key", List.of("first", "second"))),
+                "extractAttributeList() returns the expected value",
+                args -> Assertions.assertEquals(List.of("first", "second"), 
+                        Parser.extractAttribute(args, "key")));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> extractAttributeList_missingProperty(){
+        return test(Stream.of(Map.of("key", 2)),
+                "extractAttributeList() throws an exception when the property is missing",
+                args -> Assertions.assertThrows(IllegalArgumentException.class,
+                        () -> Parser.extractAttributeList(args, "missing", Integer.class)));
+    }
 
     static class DummyParser extends Parser<String>{
         private final boolean fail;

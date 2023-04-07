@@ -13,7 +13,7 @@ import mentoring.match.Match;
  * Parser used to build {@link ResultConfiguration} objects from configuration files.
  * <p>Instances of this class can be reused and are thread-safe.
  */
-public class ResultConfigurationParser extends Parser<ResultConfiguration<Person, Person>>{
+public final class ResultConfigurationParser extends Parser<ResultConfiguration<Person, Person>>{
 
     public ResultConfigurationParser(DataReader dataReader) {
         super(dataReader);
@@ -23,15 +23,10 @@ public class ResultConfigurationParser extends Parser<ResultConfiguration<Person
     protected ResultConfiguration<Person, Person> buildObject(Map<String, Object> data) 
             throws IllegalArgumentException{
         String name = extractAttribute(data, "configurationName", String.class);
-        List<String> resultHeader = extractAttributeList(data, "header");
-        List<String> lineDescription = extractAttributeList(data, "lineDescription");
+        List<String> resultHeader = extractAttributeList(data, "header", String.class);
+        List<String> lineDescription = extractAttributeList(data, "lineDescription", String.class);
         assertValidResultHeader(resultHeader, lineDescription);
         return new ResultConfiguration<>(name, resultHeader, buildLineFormatter(lineDescription));
-    }
-    
-    @SuppressWarnings("unchecked")
-    private static List<String> extractAttributeList(Map<String, Object> data, String propertyKey){
-        return (List<String>) extractAttribute(data, propertyKey);
     }
     
     private static void assertValidResultHeader(List<String> resultHeader, 

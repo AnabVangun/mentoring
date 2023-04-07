@@ -29,9 +29,8 @@ public final class PersonConfigurationParser extends Parser<PersonConfiguration>
                 extractProperties(data, "multipleProperties", new MultiplePropertyNameDecoder());
         String separator = extractAttribute(data, "separator", String.class);
         String nameFormat = extractAttribute(data, "nameFormat", String.class);
-        @SuppressWarnings("unchecked")
-        List<String> nameProperties = (List<String>) extractAttribute(data, "nameProperties", 
-                Object.class);
+        List<String> nameProperties = (List<String>) extractAttributeList(data, "nameProperties", 
+                String.class);
         assertValidNameDefinition(nameFormat, nameProperties);
         return new PersonConfiguration(configurationName, 
                 Collections.unmodifiableSet(properties), 

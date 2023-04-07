@@ -1,6 +1,7 @@
 package mentoring.io;
 
 import java.io.Reader;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import mentoring.io.datareader.DataReader;
@@ -44,7 +45,6 @@ abstract class Parser<T> {
      */
     protected abstract T buildObject(Map<String, Object> data);
     
-    //TODO: this fails when type is List<String> or any other parameterized type
     @SuppressWarnings("unchecked")
     protected static <T> T extractAttribute(Map<? extends String, ? extends Object> data, 
             String propertyKey, Class<T> type){
@@ -58,5 +58,11 @@ abstract class Parser<T> {
     protected static Object extractAttribute(Map<? extends String, ? extends Object> data, 
             String propertyKey){
         return extractAttribute(data, propertyKey, Object.class);
+    }
+    
+    @SuppressWarnings("unchecked")
+    protected static <T> List<T> extractAttributeList(Map<? extends String, ? extends Object> data,
+            String propertyKey, Class<T> type){
+        return (List<T>) extractAttribute(data, propertyKey);
     }
 }
