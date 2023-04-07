@@ -16,7 +16,8 @@ abstract class PropertyNameDecoderTest<T extends PropertyName<?>, U extends Prop
         V extends PropertyNameDecoderArgs<T, U>> implements TestFramework<V>{
     
     /**
-     * Generate a stream of arguments that would generate specific errors in the decoder.
+     * Generate a stream of arguments that would generate specific errors in the decoder. 
+     * Only the first property in each {@code PropertyNameDecoderArgs} input is used.
      * @return arguments such that {@link PropertyNameDecoder#registerSpecificErrors(java.util.Map) }
      * returns a non-empty list.
      */

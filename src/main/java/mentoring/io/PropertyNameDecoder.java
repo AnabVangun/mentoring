@@ -2,6 +2,7 @@ package mentoring.io;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -25,19 +26,25 @@ abstract class PropertyNameDecoder<E extends PropertyName<?>> {
     
     Set<E> decodePropertyNames(
             Iterable<? extends Map<? extends String, ? extends String>> properties){
-        //TODO: consider parsing all valid properties and raising a global exception afterwards
         Set<E> result = new HashSet<>();
+        Map<Map<? extends String, ? extends String>, List<String>> errorsFoundByProperty 
+                = new HashMap<>();
         for (Map<? extends String, ? extends String> property : properties){
-            validateProperty(property);
-            result.add(decodeSinglePropertyName(property));
+            List<String> errors = getErrorsInProperty(property);
+            if(errors.isEmpty()){
+                result.add(decodeSinglePropertyName(property));
+            } else {
+                errorsFoundByProperty.put(property, errors);
+            }
         }
+        raiseExceptionIfAppropriate(errorsFoundByProperty);
         return result;
     }
     
-    private void validateProperty(Map<? extends String, ? extends String> toValidate){
+    private List<String> getErrorsInProperty(Map<? extends String, ? extends String> toValidate){
         List<String> errorsFound = registerSpecificErrors(toValidate);
         registerMissingAttributeErrors(toValidate, errorsFound);
-        raiseExceptionIfAppropriate(errorsFound);
+        return errorsFound;
     }
     
     private void registerMissingAttributeErrors(
@@ -62,7 +69,7 @@ abstract class PropertyNameDecoder<E extends PropertyName<?>> {
     
     /**
      * Register errors if the input map contains any unexpected attribute. This method is not called 
-     * by default by {@link #validateProperty(java.util.Map)}: it is a convenience method provided
+     * by default by {@link #getErrorsInProperty(java.util.Map)}: it is a convenience method provided
      * for use in {@link #registerSpecificErrors(java.util.Map, java.util.List) } by subclasses 
      * whenever appropriate.
      * @param toValidate map representing the property to decode.
@@ -84,16 +91,20 @@ abstract class PropertyNameDecoder<E extends PropertyName<?>> {
      */
     protected abstract Set<String> getExpectedAttributeNames();
     
-    private void raiseExceptionIfAppropriate(List<String> errorsFound){
-        if(errorsFound.size() == 1){
-            throw new IllegalArgumentException(errorsFound.get(0));
-        } else if (errorsFound.size() > 1){
-            throw new IllegalArgumentException(forgeComplexErrorMessage(errorsFound));
+    private void raiseExceptionIfAppropriate(
+            Map<Map<? extends String, ? extends String>, List<String>> errorsFoundByProperty){
+        if (! errorsFoundByProperty.isEmpty()){
+            StringBuilder concatenatedError = 
+                    new StringBuilder(errorsFoundByProperty.size()*BASE_ERROR_LENGTH);
+            errorsFoundByProperty.forEach((key, value) -> 
+                    concatenatedError.append(forgeComplexErrorMessage(key, value)));
+            throw new IllegalArgumentException(concatenatedError.toString());
         }
     }
     
-    private String forgeComplexErrorMessage(List<String> errorsFound){
-        String baseMessage = "Several errors found when decoding property:";
+    private String forgeComplexErrorMessage(Map<? extends String, ? extends String> property, 
+            List<String> errorsFound){
+        String baseMessage = "Several errors found when decoding property %s:".formatted(property);
         StringBuilder builder = new StringBuilder(baseMessage.length() 
                 + errorsFound.size()*BASE_ERROR_LENGTH);
         builder.append(baseMessage);

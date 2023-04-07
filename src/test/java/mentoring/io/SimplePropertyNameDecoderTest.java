@@ -24,7 +24,13 @@ class SimplePropertyNameDecoderTest extends PropertyNameDecoderTest<PropertyName
     protected Stream<SimplePropertyNameDecoderArgs> genericallyInvalidArgumentsSupplier() {
         return Stream.of(
                 new SimplePropertyNameDecoderArgs("missing attribute property", 
-                        List.of(Map.of("name", "name value", "type", "integer")), 0));
+                        List.of(Map.of("name", "name value", "type", "integer")), 0),
+                new SimplePropertyNameDecoderArgs(
+                        "multiple properties mixing valid and invalid properties",
+                        List.of(Map.of("name", "first name", "headerName", "first header", 
+                                "type", "integer"),
+                                Map.of("name", "second name", "type", "integer")), 
+                        0));
     }
 
     @Override
