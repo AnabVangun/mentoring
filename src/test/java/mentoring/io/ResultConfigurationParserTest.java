@@ -66,14 +66,19 @@ class ResultConfigurationParserTest implements ParserTest<ResultConfiguration<Pe
     }
     
     @Override
-    public Stream<ResultConfigurationParserArgs> invalidArgumentsSupplier(){
+    public Stream<ResultConfigurationParserArgs> specificallyInvalidArgumentsSupplier(){
         return Stream.of(
                 new ResultConfigurationParserArgs("more columns than column descriptions in header", 
-                        "missingHeaderColumnsResultConfigurationTest.yaml"),
+                        "missingHeaderColumnsResultConfigurationTest.yaml", 1),
                 new ResultConfigurationParserArgs("less columns than column descriptions in header",
-                        "tooManyHeaderColumnsResultConfigurationTest.yaml"),
+                        "tooManyHeaderColumnsResultConfigurationTest.yaml", 1));
+    }
+    
+    @Override
+    public Stream<ResultConfigurationParserArgs> genericallyInvalidArgumentsSupplier(){
+        return Stream.of(
                 new ResultConfigurationParserArgs("unknown magic word in column description",
-                        "unknownMagicWordResultConfigurationTest.yaml"));
+                        "unknownMagicWordResultConfigurationTest.yaml", 0));
     }
     
     @Override
@@ -84,25 +89,24 @@ class ResultConfigurationParserTest implements ParserTest<ResultConfiguration<Pe
     static record ResultConfigurationParserArgs(String testCase, String filePath, 
             String[] expectedResultHeader, Object[][] expectedResultLines, 
             List<Match<Person, Person>> matchToPrint, DataReader reader, 
-            Map<Integer, Function<String, Object>> mapperFunctions) 
+            Map<Integer, Function<String, Object>> mapperFunctions, int specificErrorsCount) 
             implements ParserArgs<ResultConfiguration<Person, Person>, ResultConfigurationParser>{
         
-        ResultConfigurationParserArgs(String testCase, String filePath){
-            this(testCase, filePath, null, null, null, new YamlReader(), null);
+        ResultConfigurationParserArgs(String testCase, String filePath, 
+                String[] expectedResultHeader, Object[][] expectedResultLines, 
+                List<Match<Person, Person>> matchToPrint, DataReader reader, 
+                Map<Integer, Function<String, Object>> mapperFunctions){
+            this(testCase, filePath, expectedResultHeader, expectedResultLines, matchToPrint, 
+                    reader, mapperFunctions, 0);
+        }
+                
+        ResultConfigurationParserArgs(String testCase, String filePath, int specificErrorsCount){
+            this(testCase, filePath, null, null, null, new YamlReader(), null, specificErrorsCount);
         }
         
         @Override
         public String toString(){
             return testCase;
-        }
-        
-        @Override
-        public ResultConfiguration<Person, Person> convert(){
-            try {
-                return convertWithException();
-            } catch (IOException e){
-                throw new UncheckedIOException(e);
-            }
         }
         
         @Override
@@ -136,6 +140,20 @@ class ResultConfigurationParserTest implements ParserTest<ResultConfiguration<Pe
         public Reader getDataSource() throws IOException {
             return new FileReader(getClass().getResource(filePath).getFile(),
                             Charset.forName("utf-8"));
+        }
+        
+        @Override
+        public Map<String, Object> getData() {
+            try {
+                return reader.read(getDataSource());
+            } catch (IOException e){
+                throw new UncheckedIOException(e);
+            }
+        }
+        
+        @Override
+        public int getExpectedSpecificErrorsCount(){
+            return specificErrorsCount;
         }
     }
 }

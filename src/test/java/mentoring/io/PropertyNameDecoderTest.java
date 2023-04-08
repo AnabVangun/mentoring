@@ -78,7 +78,7 @@ abstract class PropertyNameDecoderTest<T extends PropertyName<?>, U extends Prop
     }
     
     @TestFactory
-    Stream<DynamicNode> registerSpecificErrors_emptyResultWhenValid(){
+    Stream<DynamicNode> registerSpecificErrors_asManyResultsAsExpected(){
         return test(allArgsSupplier(),
                 "registerSpecificErrors() returns a list containing exactly as many items as expected",
                 args -> {

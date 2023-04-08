@@ -6,6 +6,7 @@ import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import mentoring.configuration.ExtendedPersonConfigurationArgs;
@@ -20,9 +21,6 @@ import mentoring.io.ParserTest.ParserArgs;
 import mentoring.io.PersonConfigurationParserTest.PersonConfigurationParserArgs;
 import mentoring.io.datareader.DataReader;
 import mentoring.io.datareader.YamlReader;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DynamicNode;
-import org.junit.jupiter.api.TestFactory;
 
 class PersonConfigurationParserTest implements 
         ExtendedPersonConfigurationTest<PersonConfigurationParserArgs>, 
@@ -55,31 +53,36 @@ class PersonConfigurationParserTest implements
     }
     
     @Override
-    public Stream<PersonConfigurationParserArgs> invalidArgumentsSupplier() {
+    public Stream<PersonConfigurationParserArgs> specificallyInvalidArgumentsSupplier() {
+        return Stream.of(
+                new PersonConfigurationParserArgs(
+                        "invalidNameDefinitionTestConfiguration.yaml",
+                        "inconsistent name definition", 1));
+    }
+    
+    @Override
+    public Stream<PersonConfigurationParserArgs> genericallyInvalidArgumentsSupplier(){
         return Stream.of(
                 new PersonConfigurationParserArgs(
                         "invalidMultiplePropertyAggregationTypeTestConfiguration.yaml",
-                        "invalid multiple property aggregation type"),
+                        "invalid multiple property aggregation type", 0),
                 new PersonConfigurationParserArgs(
-                        "invalidNameDefinitionTestConfiguration.yaml",
-                        "inconsistent name definition"),
-                new PersonConfigurationParserArgs(
-                        "invalidPropertyTypeTestConfiguration.yaml", "invalid property type"),
+                        "invalidPropertyTypeTestConfiguration.yaml", "invalid property type", 0),
                 new PersonConfigurationParserArgs(
                         "missingMultiplePropertyAttributeTestConfiguration.yaml",
-                        "missing multiple property attribute"),
+                        "missing multiple property attribute", 0),
                 new PersonConfigurationParserArgs(
-                        "missingNameFormatTestConfiguration.yaml", "missing name format"),
+                        "missingNameFormatTestConfiguration.yaml", "missing name format", 0),
                 new PersonConfigurationParserArgs(
-                        "missingNamePropertiesTestConfiguration.yaml", "missing name properties"),
+                        "missingNamePropertiesTestConfiguration.yaml", "missing name properties", 0),
                 new PersonConfigurationParserArgs(
-                        "missingNameTestConfiguration.yaml", "missing configuration name"),
+                        "missingNameTestConfiguration.yaml", "missing configuration name", 0),
                 new PersonConfigurationParserArgs(
-                        "missingPersonTestConfiguration.yaml", "missing person configuration"),
+                        "missingPersonTestConfiguration.yaml", "missing person configuration", 0),
                 new PersonConfigurationParserArgs(
-                        "missingPropertyTypeTestConfiguration.yaml", "missing property type"),
+                        "missingPropertyTypeTestConfiguration.yaml", "missing property type", 0),
                 new PersonConfigurationParserArgs(
-                        "missingSeparatorTestConfiguration.yaml", "missing separator"));
+                        "missingSeparatorTestConfiguration.yaml", "missing separator", 0));
     }
     
     @Override
@@ -91,12 +94,24 @@ class PersonConfigurationParserTest implements
         String configurationName,
         Set<PropertyName<?>> propertiesNames, 
         Set<MultiplePropertyName<?,?>> multiplePropertiesNames, 
-        String separator, String nameFormat, List<String> namePropertiesHeader, DataReader reader)
+        String separator, String nameFormat, List<String> namePropertiesHeader, DataReader reader,
+        int specificErrorsCount)
             implements ExtendedPersonConfigurationArgs, 
                     ParserArgs<PersonConfiguration, PersonConfigurationParser>{
         
-        PersonConfigurationParserArgs(String filePath, String configurationName){
-            this(filePath, configurationName, null, null, null, null, null, new YamlReader());
+        PersonConfigurationParserArgs(String filePath, String configurationName, 
+                Set<PropertyName<?>> propertiesNames, 
+                Set<MultiplePropertyName<?,?>> multiplePropertiesNames, 
+                String separator, String nameFormat, List<String> namePropertiesHeader, 
+                DataReader reader){
+            this(filePath, configurationName, propertiesNames, multiplePropertiesNames, separator,
+                    nameFormat, namePropertiesHeader, reader, 0);
+        }
+                
+        PersonConfigurationParserArgs(String filePath, String configurationName, 
+                int specificErrorsCount){
+            this(filePath, configurationName, null, null, null, null, null, new YamlReader(),
+                    specificErrorsCount);
         }
 
         @Override
@@ -162,6 +177,20 @@ class PersonConfigurationParserTest implements
         public Reader getDataSource() throws IOException {
             return new FileReader(getClass().getResource(filePath).getFile(),
                     Charset.forName("utf-8"));
+        }
+        
+        @Override
+        public Map<String, Object> getData(){
+            try {
+                return reader.read(getDataSource());
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+        
+        @Override
+        public int getExpectedSpecificErrorsCount(){
+            return specificErrorsCount;
         }
     }
 }

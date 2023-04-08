@@ -2,10 +2,11 @@ package mentoring.io;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.UncheckedIOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 import mentoring.io.ParserTestImplementation.DummyParser;
 import mentoring.io.ParserTestImplementation.DummyParserArgs;
@@ -23,7 +24,12 @@ class ParserTestImplementation implements ParserTest<String, DummyParser, DummyP
     }
 
     @Override
-    public Stream<DummyParserArgs> invalidArgumentsSupplier() {
+    public Stream<DummyParserArgs> specificallyInvalidArgumentsSupplier() {
+        return Stream.of();
+    }
+    
+    @Override
+    public Stream<DummyParserArgs> genericallyInvalidArgumentsSupplier(){
         return Stream.of(new DummyParserArgs("invalid case", true, ""));
     }
 
@@ -100,21 +106,22 @@ class ParserTestImplementation implements ParserTest<String, DummyParser, DummyP
 
         @Override
         protected String buildObject(Map<String, Object> data) {
-            return null;
+            throw new UnsupportedOperationException("not needed");
+        }
+        
+        @Override
+        protected List<String> registerSpecificErrors(Map<String, Object> data){
+            return new ArrayList<>();
+        }
+
+        @Override
+        protected Set<String> getExpectedKeys(){
+            throw new UnsupportedOperationException("not needed");
         }
     }
     
     static record DummyParserArgs(String testCase, boolean fail, String result) 
             implements ParserTest.ParserArgs<String, DummyParser>{
-
-        @Override
-        public String convert() {
-            try {
-                return convertWithException();
-            } catch (IOException e){
-                throw new UncheckedIOException(e);
-            }
-        }
 
         @Override
         public String convertWithException() throws IOException {
@@ -136,5 +143,14 @@ class ParserTestImplementation implements ParserTest<String, DummyParser, DummyP
             return null;
         }
         
+        @Override
+        public Map<String, Object> getData() {
+            return Map.of();
+        }
+        
+        @Override
+        public int getExpectedSpecificErrorsCount(){
+            return 0;
+        }
     }
 }
