@@ -12,7 +12,6 @@ import mentoring.io.datareader.DataReader;
  * <p>Subclasses SHOULD be safe for reuse and for multi-threading.
  */
 abstract class Parser<T> {
-    //TODO: refactor to build a common abstract class for Parser and Decoder
     //Reader used to extract POJO data from a textual data source.
     protected final DataReader dataReader;
     
@@ -49,7 +48,7 @@ abstract class Parser<T> {
     /**
      * Perform the validity checks specific to the type of objects the parser handles. Errors 
      * related to missing attributes should not be registered in this method to avoid duplicates.
-     * @param data map representing the data to decode.
+     * @param data map representing the data to parse.
      * @return a modifiable list containing the specific errors found so that a global
      * exception can be raised at the end of the validation.
      */
@@ -77,7 +76,7 @@ abstract class Parser<T> {
     }
     
     private String forgeComplexErrorMessage(Map<String, Object> data, List<String> errorsFound){
-        String baseMessage = "Several errors found when decoding object %s:".formatted(data);
+        String baseMessage = "Several errors found when parsing object %s:".formatted(data);
         StringBuilder builder = new StringBuilder(baseMessage.length() 
                 + errorsFound.size()*BASE_ERROR_LENGTH);
         builder.append(baseMessage);

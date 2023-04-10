@@ -19,6 +19,9 @@ import mentoring.datastructure.PropertyType;
  * configuration files.
  * <p>This class should be subclassed for each type of {@link PropertyName} object that need 
  * specific parsing.
+ * <p>There are some similarities between this class and the {@link Parser} class as regards error
+ * handling but the whole structure and purpose are different enough not to create a common 
+ * interface.
  * @param E specific type of PropertyName parsed.
  */
 abstract class PropertyNameDecoder<E extends PropertyName<?>> {
