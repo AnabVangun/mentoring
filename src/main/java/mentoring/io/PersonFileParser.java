@@ -37,17 +37,17 @@ public final class PersonFileParser {
      */
     public List<Person> parse(Reader fileReader) throws IOException{
         CSVReader reader = new CSVReader(fileReader);
-        PersonParser parser = initialiseParser(reader);
+        PersonDecoder decoder = initialiseParser(reader);
         List<Person> result = new ArrayList<>();
         for (String[] line: reader){
-            result.add(parser.parseLine(line));
+            result.add(decoder.decodeLine(line));
         }
         return result;
     }
     
-    private PersonParser initialiseParser(CSVReader reader) throws IOException{
+    private PersonDecoder initialiseParser(CSVReader reader) throws IOException{
         try {
-            return new PersonParser(configuration, reader.readNext());
+            return new PersonDecoder(configuration, reader.readNext());
         } catch (CsvValidationException e){
             throw new IOException("Something went wrong in the CSV Parser", e);
         }

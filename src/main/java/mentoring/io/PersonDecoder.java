@@ -10,17 +10,17 @@ import java.util.Map;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.PersonBuilder;
 
-final class PersonParser {
+final class PersonDecoder {
     private final Map<String, Integer> propertyNameIndices = new HashMap<>();
     private final PersonConfiguration configuration;
     
-    PersonParser(PersonConfiguration configuration, String[] personFileHeader) 
+    PersonDecoder(PersonConfiguration configuration, String[] personFileHeader) 
             throws IOException{
         this.configuration = configuration;
-        parseHeader(personFileHeader);
+        decodeHeader(personFileHeader);
     }
     
-    private void parseHeader(String[] header) throws IOException{
+    private void decodeHeader(String[] header) throws IOException{
         Collection<String> neededProperties = 
                 new HashSet<>(configuration.getAllPropertiesHeaderNames());
         for (int i = 0; i < header.length; i++){
@@ -57,7 +57,7 @@ final class PersonParser {
         }
     }
     
-    Person parseLine(String[] line){
+    Person decodeLine(String[] line){
         PersonBuilder builder = new PersonBuilder();
         configuration.getPropertiesNames().forEach(property ->
             builder.withProperty(property.getName(), property.getType().parse(
