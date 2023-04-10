@@ -15,10 +15,11 @@ import mentoring.configuration.PersonConfiguration;
  * 
  * <p>This class is thread-safe and is safe for reuse: if two files use the same configuration, 
  * the same instance can parse them both.
+ * <p>This class is not a subclass of {@link Parser} because it is made to read independent rows of
+ * data in a file rather than a unique complex object.
  */
 public final class PersonFileParser {
     private final PersonConfiguration configuration;
-    //TODO: consider switching to a common abstract class for all specific file parsers
     
     /**
      * Initialises a parser.
