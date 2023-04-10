@@ -59,18 +59,32 @@ final class PersonDecoder {
     
     Person decodeLine(String[] line){
         PersonBuilder builder = new PersonBuilder();
-        configuration.getPropertiesNames().forEach(property ->
-            builder.withProperty(property.getName(), property.getType().parse(
-                    line[propertyNameIndices.get(property.getHeaderName())])));
+        addPropertiesToBuilder(builder, line);
+        addMultiplePropertiesToBuilder(builder, line);
+        addFullNameToBuilder(builder, line);
+        return builder.build();
+    }
+    
+    private void addPropertiesToBuilder(PersonBuilder builder, String[] personData){
+        configuration.getPropertiesNames().forEach(property -> {
+            String stringValue = personData[propertyNameIndices.get(property.getHeaderName())];
+            builder.withProperty(property.getName(), 
+                    property.getType().parse(stringValue));
+        });
+    }
+    
+    private void addMultiplePropertiesToBuilder(PersonBuilder builder, String[] personData){
         configuration.getMultiplePropertiesNames().forEach(property -> {
-            String[] splitValue = line[propertyNameIndices.get(property.getHeaderName())]
+            String[] splitValue = personData[propertyNameIndices.get(property.getHeaderName())]
                     .split(configuration.getSeparator());
             builder.withPropertyMap(property.getName(), 
                     property.buildMap(splitValue));
         });
+    }
+    
+    private void addFullNameToBuilder(PersonBuilder builder, String[] personData){
         Object[] nameValues = configuration.getNamePropertiesHeaderNames().stream()
-                .map(property -> line[propertyNameIndices.get(property)]).toArray();
+                .map(property -> personData[propertyNameIndices.get(property)]).toArray();
         builder.withFullName(String.format(configuration.getNameFormat(), nameValues));
-        return builder.build();
     }
 }
