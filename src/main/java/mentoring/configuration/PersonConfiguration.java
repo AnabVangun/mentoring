@@ -47,7 +47,11 @@ public final class PersonConfiguration {
             this.multipleProperties = multipleProperties;
             this.multipleProperties.forEach(p -> tmpAllProperties.add(p.getHeaderName()));
             this.separator = separator;
-            //TODO consider throwing an exception if nameFormat is invalid.
+            if(! isValidNameDefinition(nameFormat, namePropertiesHeaderNames)){
+                throw new IllegalArgumentException("""
+                        Tried to build a PersonConfiguration object with invalid name definition: 
+                        %s as and %s""".formatted(nameFormat, namePropertiesHeaderNames));
+            }
             this.nameFormat = nameFormat;
             this.nameProperties = namePropertiesHeaderNames;
             tmpAllProperties.addAll(namePropertiesHeaderNames);
