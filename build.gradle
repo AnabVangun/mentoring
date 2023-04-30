@@ -1,11 +1,12 @@
-version '2.0.0-alpha'
-
+plugins {
+    id 'org.openjfx.javafxplugin' version '0.0.13'
+}
 apply plugin: 'java'
 apply plugin: 'jacoco'
 apply plugin: 'application'
 
-
 mainClassName = 'mentoring.Main'
+version '2.0.0-alpha'
 
 repositories {
     mavenCentral()
@@ -21,6 +22,10 @@ compileTestJava {
     options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }
 
+javafx {
+    version = '17.0.7'
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
+}
 dependencies {
     implementation files('libs/AssignmentProblem-2.0.1.jar')
     implementation 'com.opencsv:opencsv:5.7.1'
@@ -32,14 +37,14 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:4.11.0'
 }
 sourceSets {
+    main {
+        resources {
+            srcDir "resources/main"
+        }
+    }
     test {
         resources {
             srcDir "resources/test"
-        }
-    }
-    compile {
-        resources {
-            srcDir "resources/main"
         }
     }
 }

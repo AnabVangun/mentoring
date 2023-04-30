@@ -1,9 +1,12 @@
 package mentoring;
 
+import java.io.FileNotFoundException;
 import mentoring.datastructure.Person;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
@@ -27,19 +30,54 @@ import mentoring.match.MatchesBuilder;
  * Proof of concept of the mentoring application.
  */
 public class Main {
+    public static void main(String[] args) {
+        Mode mode = Mode.CONSOLE;
+        switch(mode){
+            case CONSOLE -> runInConsole(args);
+            case GUI -> runGui(args);
+        }
+    }
+    
     /**
      * Parse an example file representing a mentoring problem and print the resulting assignment.
      * 
      * @param args the command line arguments, ignored for now.
      */
-    @SuppressWarnings("CallToPrintStackTrace")
-    public static void main(String[] args) {
-        System.out.println("Build and solve cost matrix");
-        String menteeFilePath;
-        String mentorFilePath;
+    public static void runInConsole(String[] args){
         String destinationFilePath;
         Data data = Data.TEST_CONFIGURATION_FILE;
+        switch(data) {
+            case TEST:
+                destinationFilePath = "resources\\main\\Results_Trivial.csv";
+                break;
+            case TEST_CONFIGURATION_FILE:
+                destinationFilePath = "resources\\main\\Results_Trivial.csv";
+                break;
+            case REAL2023:
+                destinationFilePath = "..\\..\\..\\AX\\2023_Mentoring\\Adapter\\20221016_result.csv";
+                break;
+            default:
+                throw new RuntimeException("Invalid value for parameter");
+        }
         boolean writeToFile = false;
+        try {
+            OutputStream outputStream = chooseOutputStream(writeToFile, destinationFilePath);
+            run(System.out, outputStream);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static void runGui(String[] args){
+        MainFxGui.main(args);
+    }
+    
+    @SuppressWarnings("CallToPrintStackTrace")
+    public static void run(PrintStream stateStream, OutputStream outputStream){
+        stateStream.println("Build and solve cost matrix");
+        String menteeFilePath;
+        String mentorFilePath;
+        Data data = Data.TEST_CONFIGURATION_FILE;
         PersonConfiguration menteeConfiguration = null;
         PersonConfiguration mentorConfiguration = null;
         String menteeConfigurationFilePath = "";
@@ -60,7 +98,6 @@ public class Main {
                 mentorFilePath = "resources\\main\\Mentor_Trivial.csv";
                 mentorConfiguration = PojoPersonConfiguration.TEST_CONFIGURATION.getConfiguration();
                 criteriaConfiguration = PojoCriteriaConfiguration.CRITERIA_CONFIGURATION;
-                destinationFilePath = "resources\\main\\Results_Trivial.csv";
                 resultConfiguration = PojoResultConfiguration.NAMES_AND_SCORE.getConfiguration();
                 break;
             case TEST_CONFIGURATION_FILE:
@@ -69,7 +106,6 @@ public class Main {
                 mentorFilePath = "resources\\main\\Mentor_Trivial.csv";
                 mentorConfigurationFilePath = "resources\\main\\testPersonConfiguration.yaml";
                 criteriaConfiguration = PojoCriteriaConfiguration.CRITERIA_CONFIGURATION;
-                destinationFilePath = "resources\\main\\Results_Trivial.csv";
                 resultConfigurationFilePath = "resources\\main\\testResultConfiguration.yaml";
                 break;
             case REAL2023:
@@ -80,7 +116,6 @@ public class Main {
                 mentorConfiguration = PojoPersonConfiguration.MENTOR_CONFIGURATION_2023_DATA
                         .getConfiguration();
                 criteriaConfiguration = PojoCriteriaConfiguration.CRITERIA_CONFIGURATION_2023_DATA;
-                destinationFilePath = "..\\..\\..\\AX\\2023_Mentoring\\Adapter\\20221016_result.csv";
                 resultConfiguration = PojoResultConfiguration.NAMES_EMAILS_AND_SCORE.getConfiguration();
                 break;
             default:
@@ -89,8 +124,7 @@ public class Main {
         try(
                 FileReader menteesFile = new FileReader(menteeFilePath, Charset.forName("utf-8"));
                 FileReader mentorsFile = new FileReader(mentorFilePath, Charset.forName("utf-8"));
-                Writer resultDestination = new PrintWriter(
-                        (writeToFile ? new FileOutputStream(destinationFilePath) : System.out),
+                Writer resultDestination = new PrintWriter(outputStream,
                         true, Charset.forName("utf-8"));
                 FileReader menteeConfigurationFile = 
                         menteeConfiguration == null 
@@ -117,13 +151,10 @@ public class Main {
             if (criteriaConfiguration == null){
                 throw new NullPointerException("Forgot to read criteria configuration from file");
             }
-            List<Person> mentees = new PersonFileParser(menteeConfiguration).parse(menteesFile);
-            List<Person> mentors = new PersonFileParser(mentorConfiguration).parse(mentorsFile);
-            MatchesBuilder<Person, Person> solver = new MatchesBuilder<>(mentees, mentors,
-                    criteriaConfiguration.getProgressiveCriteria());
-            solver.withNecessaryCriteria(criteriaConfiguration.getNecessaryCriteria())
-                    .withPlaceholderPersons(defaultMentee, defaultMentor);
-            Matches<Person, Person> results = solver.build();
+            List<Person> mentees = parsePersonList(menteeConfiguration, menteesFile);
+            List<Person> mentors = parsePersonList(mentorConfiguration, mentorsFile);
+            Matches<Person, Person> results = matchMenteesAndMentors(mentees, mentors, 
+                    criteriaConfiguration, defaultMentee, defaultMentor);
             
             ResultWriter<Person,Person> writer = new ResultWriter<>(resultConfiguration);
             writer.writeMatches(results, resultDestination);
@@ -133,5 +164,26 @@ public class Main {
         }
     }
     
+    private static List<Person> parsePersonList(PersonConfiguration personConfiguration, 
+            FileReader dataFile) throws IOException {
+        return new PersonFileParser(personConfiguration).parse(dataFile);
+    }
+    
+    private static Matches<Person, Person> matchMenteesAndMentors(List<Person> mentees,
+            List<Person> mentors, CriteriaConfiguration<Person, Person> criteriaConfiguration, 
+            Person defaultMentee, Person defaultMentor) {
+        MatchesBuilder<Person, Person> solver = new MatchesBuilder<>(mentees, mentors,
+                    criteriaConfiguration.getProgressiveCriteria());
+        solver.withNecessaryCriteria(criteriaConfiguration.getNecessaryCriteria())
+                .withPlaceholderPersons(defaultMentee, defaultMentor);
+        return solver.build();
+    }
+    
     static enum Data {TEST, TEST_CONFIGURATION_FILE, REAL2023}
+    static enum Mode {GUI, CONSOLE}
+    
+    private static OutputStream chooseOutputStream(boolean writeToFile, String destinationFilePath)
+            throws FileNotFoundException {
+        return (writeToFile ? new FileOutputStream(destinationFilePath) : System.out);
+    }
 }
