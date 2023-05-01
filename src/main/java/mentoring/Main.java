@@ -18,6 +18,7 @@ import mentoring.configuration.PojoPersonConfiguration;
 import mentoring.configuration.PojoResultConfiguration;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.datastructure.PersonBuilder;
+import mentoring.io.Parser;
 import mentoring.io.PersonConfigurationParser;
 import mentoring.io.PersonFileParser;
 import mentoring.io.ResultConfigurationParser;
@@ -30,9 +31,17 @@ import mentoring.match.MatchesBuilder;
  * Proof of concept of the mentoring application.
  */
 public class Main {
+    /**
+     * TODO: add structure and tests for the program's sequence
+	1. Get the mentees
+	2. Get the mentors (same thing but with different params)
+	3. Build matches
+	4. Provide the matches
+     */
+    private final static Data DATA = Data.TEST_CONFIGURATION_FILE;
+    private final static Mode MODE = Mode.CONSOLE;
     public static void main(String[] args) {
-        Mode mode = Mode.CONSOLE;
-        switch(mode){
+        switch(MODE){
             case CONSOLE -> runInConsole(args);
             case GUI -> runGui(args);
         }
@@ -45,8 +54,7 @@ public class Main {
      */
     public static void runInConsole(String[] args){
         String destinationFilePath;
-        Data data = Data.TEST_CONFIGURATION_FILE;
-        switch(data) {
+        switch(DATA) {
             case TEST:
                 destinationFilePath = "resources\\main\\Results_Trivial.csv";
                 break;
@@ -63,110 +71,87 @@ public class Main {
         try {
             OutputStream outputStream = chooseOutputStream(writeToFile, destinationFilePath);
             run(System.out, outputStream);
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
+            System.exit(1);
         }
     }
     
     public static void runGui(String[] args){
-        MainFxGui.main(args);
+        MainFxGui.launch(args);
     }
     
-    @SuppressWarnings("CallToPrintStackTrace")
-    public static void run(PrintStream stateStream, OutputStream outputStream){
+    public static void run(PrintStream stateStream, OutputStream outputStream) throws IOException{
         stateStream.println("Build and solve cost matrix");
-        String menteeFilePath;
-        String mentorFilePath;
-        Data data = Data.TEST_CONFIGURATION_FILE;
-        PersonConfiguration menteeConfiguration = null;
-        PersonConfiguration mentorConfiguration = null;
-        String menteeConfigurationFilePath = "";
-        String mentorConfigurationFilePath = "";
-        String resultConfigurationFilePath = "";
-        CriteriaConfiguration<Person, Person> criteriaConfiguration = null;
-        ResultConfiguration<Person, Person> resultConfiguration = null;
-        Person defaultMentor = new PersonBuilder().withProperty("Email", "")
-                .withFullName("PAS DE MENTOR").build();
+        PersonConfigurationParser personConfParser = new PersonConfigurationParser(new YamlReader());
+        //Parse mentees
+        String menteeFilePath = switch(DATA){
+            case TEST -> "resources\\main\\Filleul_Trivial.csv";
+            case TEST_CONFIGURATION_FILE -> "resources\\main\\Filleul_Trivial.csv";
+            case REAL2023 -> "..\\..\\..\\AX\\2023_Mentoring\\Adapter\\20221016_new_eleves.csv";
+        };
+        PersonConfiguration menteeConfiguration = switch(DATA){
+            case TEST -> PojoPersonConfiguration.TEST_CONFIGURATION.getConfiguration();
+            case TEST_CONFIGURATION_FILE -> parseConfigurationFile(personConfParser, 
+                        "resources\\main\\testPersonConfiguration.yaml");
+            case REAL2023 -> PojoPersonConfiguration.MENTEE_CONFIGURATION_2023_DATA
+                        .getConfiguration();
+        };
+        List<Person> mentees = parsePersonList(menteeConfiguration, menteeFilePath);
         Person defaultMentee = new PersonBuilder().withProperty("Email", "")
                 .withFullName("PAS DE MENTORÉ").build();
-        PersonConfigurationParser personConfParser = new PersonConfigurationParser(new YamlReader());
-        ResultConfigurationParser resultConfParser = new ResultConfigurationParser(new YamlReader());
-        switch(data){
-            case TEST:
-                menteeFilePath = "resources\\main\\Filleul_Trivial.csv";
-                menteeConfiguration = PojoPersonConfiguration.TEST_CONFIGURATION.getConfiguration();
-                mentorFilePath = "resources\\main\\Mentor_Trivial.csv";
-                mentorConfiguration = PojoPersonConfiguration.TEST_CONFIGURATION.getConfiguration();
-                criteriaConfiguration = PojoCriteriaConfiguration.CRITERIA_CONFIGURATION;
-                resultConfiguration = PojoResultConfiguration.NAMES_AND_SCORE.getConfiguration();
-                break;
-            case TEST_CONFIGURATION_FILE:
-                menteeFilePath = "resources\\main\\Filleul_Trivial.csv";
-                menteeConfigurationFilePath = "resources\\main\\testPersonConfiguration.yaml";
-                mentorFilePath = "resources\\main\\Mentor_Trivial.csv";
-                mentorConfigurationFilePath = "resources\\main\\testPersonConfiguration.yaml";
-                criteriaConfiguration = PojoCriteriaConfiguration.CRITERIA_CONFIGURATION;
-                resultConfigurationFilePath = "resources\\main\\testResultConfiguration.yaml";
-                break;
-            case REAL2023:
-                menteeFilePath = "..\\..\\..\\AX\\2023_Mentoring\\Adapter\\20221016_new_eleves.csv";
-                menteeConfiguration = PojoPersonConfiguration.MENTEE_CONFIGURATION_2023_DATA
+        //Parse mentors
+        String mentorFilePath = switch(DATA){
+            case TEST -> "resources\\main\\Mentor_Trivial.csv";
+            case TEST_CONFIGURATION_FILE -> "resources\\main\\Mentor_Trivial.csv";
+            case REAL2023 -> "..\\..\\..\\AX\\2023_Mentoring\\Adapter\\20221016_new_mentors.csv";
+        };
+        PersonConfiguration mentorConfiguration = switch(DATA){
+            case TEST -> PojoPersonConfiguration.TEST_CONFIGURATION.getConfiguration();
+            case TEST_CONFIGURATION_FILE -> parseConfigurationFile(personConfParser, 
+                        "resources\\main\\testPersonConfiguration.yaml");
+            case REAL2023 -> PojoPersonConfiguration.MENTOR_CONFIGURATION_2023_DATA
                         .getConfiguration();
-                mentorFilePath = "..\\..\\..\\AX\\2023_Mentoring\\Adapter\\20221016_new_mentors.csv";
-                mentorConfiguration = PojoPersonConfiguration.MENTOR_CONFIGURATION_2023_DATA
-                        .getConfiguration();
-                criteriaConfiguration = PojoCriteriaConfiguration.CRITERIA_CONFIGURATION_2023_DATA;
-                resultConfiguration = PojoResultConfiguration.NAMES_EMAILS_AND_SCORE.getConfiguration();
-                break;
-            default:
-                throw new RuntimeException("Invalid value for parameter");
-        }
-        try(
-                FileReader menteesFile = new FileReader(menteeFilePath, Charset.forName("utf-8"));
-                FileReader mentorsFile = new FileReader(mentorFilePath, Charset.forName("utf-8"));
-                Writer resultDestination = new PrintWriter(outputStream,
-                        true, Charset.forName("utf-8"));
-                FileReader menteeConfigurationFile = 
-                        menteeConfiguration == null 
-                        ? new FileReader(menteeConfigurationFilePath, Charset.forName("utf-8"))
-                        : menteesFile;
-                FileReader mentorConfigurationFile =
-                        mentorConfiguration == null
-                        ? new FileReader(mentorConfigurationFilePath, Charset.forName("utf-8"))
-                        : mentorsFile;
-                FileReader resultConfigurationFile =
-                        resultConfiguration == null
-                        ? new FileReader(resultConfigurationFilePath, Charset.forName("utf-8"))
-                        : null
-                ){
-            if (menteeConfiguration == null){
-                menteeConfiguration = personConfParser.parse(menteeConfigurationFile);
-            }
-            if (mentorConfiguration == null){
-                mentorConfiguration = personConfParser.parse(mentorConfigurationFile);
-            }
-            if (resultConfiguration == null){
-                resultConfiguration = resultConfParser.parse(resultConfigurationFile);
-            }
-            if (criteriaConfiguration == null){
-                throw new NullPointerException("Forgot to read criteria configuration from file");
-            }
-            List<Person> mentees = parsePersonList(menteeConfiguration, menteesFile);
-            List<Person> mentors = parsePersonList(mentorConfiguration, mentorsFile);
-            Matches<Person, Person> results = matchMenteesAndMentors(mentees, mentors, 
-                    criteriaConfiguration, defaultMentee, defaultMentor);
-            
+        };
+        List<Person> mentors = parsePersonList(mentorConfiguration, mentorFilePath);
+        Person defaultMentor = new PersonBuilder().withProperty("Email", "")
+                .withFullName("PAS DE MENTOR").build();
+        //Get criteria configuration
+        CriteriaConfiguration<Person, Person> criteriaConfiguration = switch(DATA){
+            case TEST -> PojoCriteriaConfiguration.CRITERIA_CONFIGURATION;
+            case TEST_CONFIGURATION_FILE -> PojoCriteriaConfiguration.CRITERIA_CONFIGURATION;
+            case REAL2023 -> PojoCriteriaConfiguration.CRITERIA_CONFIGURATION_2023_DATA;
+        };
+        //Build matches
+        Matches<Person, Person> results = matchMenteesAndMentors(mentees, mentors, 
+                criteriaConfiguration, defaultMentee, defaultMentor);
+        //Get result configuration
+        ResultConfiguration<Person, Person> resultConfiguration = switch(DATA){
+            case TEST -> PojoResultConfiguration.NAMES_AND_SCORE.getConfiguration();
+            case TEST_CONFIGURATION_FILE -> parseConfigurationFile(
+                    new ResultConfigurationParser(new YamlReader()), 
+                        "resources\\main\\testResultConfiguration.yaml");
+            case REAL2023 -> PojoResultConfiguration.NAMES_EMAILS_AND_SCORE.getConfiguration();
+        };
+        try(Writer resultDestination = new PrintWriter(outputStream, 
+                true, Charset.forName("utf-8"))){
             ResultWriter<Person,Person> writer = new ResultWriter<>(resultConfiguration);
             writer.writeMatches(results, resultDestination);
             resultDestination.flush();
-        } catch (IOException e){
-            e.printStackTrace();
+        }
+    }
+    
+    private static <T> T parseConfigurationFile(Parser<T> parser, String filePath) throws IOException{
+        try (FileReader configurationFile = new FileReader(filePath, Charset.forName("utf-8"))){
+            return parser.parse(configurationFile);
         }
     }
     
     private static List<Person> parsePersonList(PersonConfiguration personConfiguration, 
-            FileReader dataFile) throws IOException {
-        return new PersonFileParser(personConfiguration).parse(dataFile);
+            String personFilePath) throws IOException {
+        try (FileReader personFile = new FileReader(personFilePath, Charset.forName("utf-8"))){
+            return new PersonFileParser(personConfiguration).parse(personFile);
+        }
     }
     
     private static Matches<Person, Person> matchMenteesAndMentors(List<Person> mentees,

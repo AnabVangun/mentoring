@@ -11,7 +11,7 @@ import mentoring.io.datareader.DataReader;
  * Parser used to build objects from readers. 
  * <p>Subclasses SHOULD be safe for reuse and for multi-threading.
  */
-abstract class Parser<T> {
+public abstract class Parser<T> {
     //Reader used to extract POJO data from a textual data source.
     protected final DataReader dataReader;
     
