@@ -1,29 +1,25 @@
-package mentoring;
+package mentoring.viewmodel;
 
-import java.io.FileNotFoundException;
-import mentoring.datastructure.Person;
-import java.io.FileOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
-import mentoring.concurrency.Utilities;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.ReadOnlyStringWrapper;
+import mentoring.Main;
 import mentoring.configuration.CriteriaConfiguration;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.configuration.PojoCriteriaConfiguration;
 import mentoring.configuration.PojoPersonConfiguration;
 import mentoring.configuration.PojoResultConfiguration;
 import mentoring.configuration.ResultConfiguration;
+import mentoring.datastructure.Person;
 import mentoring.datastructure.PersonBuilder;
 import mentoring.io.Parser;
 import mentoring.io.PersonConfigurationParser;
@@ -35,79 +31,39 @@ import mentoring.match.Matches;
 import mentoring.match.MatchesBuilder;
 
 /**
- * Proof of concept of the mentoring application.
+ * ViewModel responsible for handling the main window of the application.
  */
-public class Main {
-    /**
-     * TODO: link GUI to code
-     * 1. Make thread pool for long computations --> see mentoring.concurrency.Utilities
-     * 1a. Extract Data to its own file and add methods to get everything that depends on it.
-     * 1b. Handle dependency injection in ViewModel
-     * 2. Print results in tableview
-     * 2b. Internationalize
-     * 3. Add export button to save results in file
-     * 4. Choose mentees file
-     * 5. Choose mentees configuration (file or POJO)
-     * 6. Choose mentors file
-     * 7. Choose mentors configuration (file or POJO)
-     * 8. Choose criteria configuration (POJO)
-     * 9. Choose result configuration (file or POJO)
-     * 10. Make some manual amendments to matches and recompute the rest
-     * 11. Alert if configuration is not consistent with data file:
-     * for person conf, missing columns in file header
-     * 12. Alert if criteria configuration is not consistent with person configuration
-     * 13. Choose criteria configuration (file)
-     * 14. Modify assignmentproblem to handle cancellation and offer progress status
-     */
-    private static final Data DATA = Data.TEST_CONFIGURATION_FILE;
-    private final static Mode MODE = Mode.CONSOLE;
-    public static void main(String[] args) {
-        switch(MODE){
-            case CONSOLE -> runInConsole(args);
-            case GUI -> MainApplication.launch(MainApplication.class, args);
-        }
-        shutdown();
-    }
+public class MainViewModel {
+    private final ReadOnlyStringWrapper privateStatus = new ReadOnlyStringWrapper();
+    public final ReadOnlyStringProperty status = privateStatus.getReadOnlyProperty();
     
     /**
-     * Parse an example file representing a mentoring problem and print the resulting assignment.
-     * 
-     * @param args the command line arguments, ignored for now.
+     * Run the application: get the relevant data, make matches and update the {@code status} 
+     * property.
+     * @param executor Executor service that will receive the task to perform.
+     * @return a Future object that can be used to control the execution and completion of the task.
      */
-    public static void runInConsole(String[] args){
-        String destinationFilePath;
-        switch(DATA) {
-            case TEST:
-                destinationFilePath = "resources\\main\\Results_Trivial.csv";
-                break;
-            case TEST_CONFIGURATION_FILE:
-                destinationFilePath = "resources\\main\\Results_Trivial.csv";
-                break;
-            case REAL2023:
-                destinationFilePath = "..\\..\\..\\AX\\2023_Mentoring\\Adapter\\20221016_result.csv";
-                break;
-            default:
-                throw new RuntimeException("Invalid value for parameter");
-        }
-        boolean writeToFile = false;
-        try (OutputStream outputStream = chooseOutputStream(writeToFile, destinationFilePath)){
-            run(System.out, outputStream);
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
+    public Future<?> makeMatches(ExecutorService executor){
+        return executor.submit(() -> {
+            try{
+                makeMatchesWithException();
+            } catch (IOException e){
+                privateStatus.setValue(Arrays.toString(e.getStackTrace()));
+            }
+        });
     }
     
-    public static void run(PrintStream stateStream, OutputStream outputStream) throws IOException{
-        stateStream.println("Build and solve cost matrix");
+    private void makeMatchesWithException() throws IOException{
+        Main.Data data = Main.Data.TEST;
+        privateStatus.setValue("Fetching data...");
         PersonConfigurationParser personConfParser = new PersonConfigurationParser(new YamlReader());
         //Parse mentees
-        String menteeFilePath = switch(DATA){
+        String menteeFilePath = switch(data){
             case TEST -> "resources\\main\\Filleul_Trivial.csv";
             case TEST_CONFIGURATION_FILE -> "resources\\main\\Filleul_Trivial.csv";
             case REAL2023 -> "..\\..\\..\\AX\\2023_Mentoring\\Adapter\\20221016_new_eleves.csv";
         };
-        PersonConfiguration menteeConfiguration = switch(DATA){
+        PersonConfiguration menteeConfiguration = switch(data){
             case TEST -> PojoPersonConfiguration.TEST_CONFIGURATION.getConfiguration();
             case TEST_CONFIGURATION_FILE -> parseConfigurationFile(personConfParser, 
                         "resources\\main\\testPersonConfiguration.yaml");
@@ -117,13 +73,14 @@ public class Main {
         List<Person> mentees = parsePersonList(menteeConfiguration, menteeFilePath);
         Person defaultMentee = new PersonBuilder().withProperty("Email", "")
                 .withFullName("PAS DE MENTORÉ").build();
+        privateStatus.setValue(privateStatus.get() + "\nMentees OK");
         //Parse mentors
-        String mentorFilePath = switch(DATA){
+        String mentorFilePath = switch(data){
             case TEST -> "resources\\main\\Mentor_Trivial.csv";
             case TEST_CONFIGURATION_FILE -> "resources\\main\\Mentor_Trivial.csv";
             case REAL2023 -> "..\\..\\..\\AX\\2023_Mentoring\\Adapter\\20221016_new_mentors.csv";
         };
-        PersonConfiguration mentorConfiguration = switch(DATA){
+        PersonConfiguration mentorConfiguration = switch(data){
             case TEST -> PojoPersonConfiguration.TEST_CONFIGURATION.getConfiguration();
             case TEST_CONFIGURATION_FILE -> parseConfigurationFile(personConfParser, 
                         "resources\\main\\testPersonConfiguration.yaml");
@@ -133,29 +90,34 @@ public class Main {
         List<Person> mentors = parsePersonList(mentorConfiguration, mentorFilePath);
         Person defaultMentor = new PersonBuilder().withProperty("Email", "")
                 .withFullName("PAS DE MENTOR").build();
+        privateStatus.setValue(privateStatus.get() + "\nMentors OK");
         //Get criteria configuration
-        CriteriaConfiguration<Person, Person> criteriaConfiguration = switch(DATA){
+        CriteriaConfiguration<Person, Person> criteriaConfiguration = switch(data){
             case TEST -> PojoCriteriaConfiguration.CRITERIA_CONFIGURATION;
             case TEST_CONFIGURATION_FILE -> PojoCriteriaConfiguration.CRITERIA_CONFIGURATION;
             case REAL2023 -> PojoCriteriaConfiguration.CRITERIA_CONFIGURATION_2023_DATA;
         };
+        privateStatus.setValue(privateStatus.get() + "\nCriteria OK\nSolving matrix...");
         //Build matches
         Matches<Person, Person> results = matchMenteesAndMentors(mentees, mentors, 
                 criteriaConfiguration, defaultMentee, defaultMentor);
+        privateStatus.setValue(privateStatus.get() + "\nMatrix solved.");
         //Get result configuration
-        ResultConfiguration<Person, Person> resultConfiguration = switch(DATA){
+        ResultConfiguration<Person, Person> resultConfiguration = switch(data){
             case TEST -> PojoResultConfiguration.NAMES_AND_SCORE.getConfiguration();
             case TEST_CONFIGURATION_FILE -> parseConfigurationFile(
                     new ResultConfigurationParser(new YamlReader()), 
                         "resources\\main\\testResultConfiguration.yaml");
             case REAL2023 -> PojoResultConfiguration.NAMES_EMAILS_AND_SCORE.getConfiguration();
         };
-        try(Writer resultDestination = new PrintWriter(outputStream, 
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try(Writer resultDestination = new PrintWriter(out, 
                 true, Charset.forName("utf-8"))){
             ResultWriter<Person,Person> writer = new ResultWriter<>(resultConfiguration);
             writer.writeMatches(results, resultDestination);
             resultDestination.flush();
         }
+        privateStatus.setValue(out.toString(Charset.forName("utf-8")));
     }
     
     private static <T> T parseConfigurationFile(Parser<T> parser, String filePath) throws IOException{
@@ -179,23 +141,5 @@ public class Main {
         solver.withNecessaryCriteria(criteriaConfiguration.getNecessaryCriteria())
                 .withPlaceholderPersons(defaultMentee, defaultMentor);
         return solver.build();
-    }
-    
-    public static enum Data {TEST, TEST_CONFIGURATION_FILE, REAL2023}
-    static enum Mode {GUI, CONSOLE}
-    
-    private static OutputStream chooseOutputStream(boolean writeToFile, String destinationFilePath)
-            throws FileNotFoundException {
-        return (writeToFile ? new FileOutputStream(destinationFilePath) : System.out);
-    }
-    
-    private static void shutdown() {
-        Utilities.getExecutorService().shutdownNow();
-        try {
-            while (! Utilities.getExecutorService().awaitTermination(200, TimeUnit.MILLISECONDS)){}
-        } catch (InterruptedException e){
-            e.printStackTrace();
-            System.exit(1);
-        }
     }
 }
