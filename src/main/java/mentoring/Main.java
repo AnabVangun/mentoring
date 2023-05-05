@@ -11,13 +11,6 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
-import mentoring.concurrency.Utilities;
 import mentoring.configuration.CriteriaConfiguration;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.configuration.PojoCriteriaConfiguration;
@@ -39,9 +32,8 @@ import mentoring.match.MatchesBuilder;
  */
 public class Main {
     /**
-     * TODO: link GUI to code
-     * 1. Make thread pool for long computations --> see mentoring.concurrency.Utilities
-     * 1a. Extract Data to its own file and add methods to get everything that depends on it.
+     * TODO: link GUI to code.
+     * 1. Extract Data to its own file and add methods to get everything that depends on it.
      * 1b. Handle dependency injection in ViewModel
      * 2. Print results in tableview
      * 2b. Internationalize
@@ -66,7 +58,6 @@ public class Main {
             case CONSOLE -> runInConsole(args);
             case GUI -> MainApplication.launch(MainApplication.class, args);
         }
-        shutdown();
     }
     
     /**
@@ -187,15 +178,5 @@ public class Main {
     private static OutputStream chooseOutputStream(boolean writeToFile, String destinationFilePath)
             throws FileNotFoundException {
         return (writeToFile ? new FileOutputStream(destinationFilePath) : System.out);
-    }
-    
-    private static void shutdown() {
-        Utilities.getExecutorService().shutdownNow();
-        try {
-            while (! Utilities.getExecutorService().awaitTermination(200, TimeUnit.MILLISECONDS)){}
-        } catch (InterruptedException e){
-            e.printStackTrace();
-            System.exit(1);
-        }
     }
 }

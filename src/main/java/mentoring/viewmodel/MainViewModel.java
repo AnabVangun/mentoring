@@ -8,11 +8,11 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import mentoring.Main;
+import mentoring.concurrency.ConcurrencyHandler;
 import mentoring.configuration.CriteriaConfiguration;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.configuration.PojoCriteriaConfiguration;
@@ -43,7 +43,7 @@ public class MainViewModel {
      * @param executor Executor service that will receive the task to perform.
      * @return a Future object that can be used to control the execution and completion of the task.
      */
-    public Future<?> makeMatches(ExecutorService executor){
+    public Future<?> makeMatches(ConcurrencyHandler executor){
         return executor.submit(() -> {
             try{
                 makeMatchesWithException();

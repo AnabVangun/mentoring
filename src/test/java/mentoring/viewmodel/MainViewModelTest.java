@@ -1,13 +1,12 @@
 package mentoring.viewmodel;
 
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 import javafx.beans.InvalidationListener;
+import mentoring.concurrency.ConcurrencyHandler;
 import mentoring.viewmodel.MainViewModelTest.MainViewModelArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
@@ -25,7 +24,7 @@ class MainViewModelTest implements TestFramework<MainViewModelArgs>{
     @TestFactory
     Stream<DynamicNode> makeMatches_updateStatus(){
         return test("makeMatches() updates the view model properties", args -> {
-            ExecutorService executor = Executors.newFixedThreadPool(1);
+            ConcurrencyHandler executor = new ConcurrencyHandler();
             InvalidationListener listener = Mockito.mock(InvalidationListener.class);
             MainViewModel vm = new MainViewModel();
             vm.status.addListener(listener);
@@ -46,6 +45,7 @@ class MainViewModelTest implements TestFramework<MainViewModelArgs>{
                                     "Paul Pierre (X2020)","Elsa Margaux (X1999)","210"
                                     """,
                     vm.status.get());
+            executor.awaitTermination(0);
         });
     }
     
