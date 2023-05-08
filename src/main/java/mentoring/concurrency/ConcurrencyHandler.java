@@ -10,16 +10,23 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import javax.inject.Singleton;
 
+/**
+ * Utility class handling providing concurrency services.
+ * A singleton SHOULD be shared throughout the application, and properly shutdown by the main thread
+ * at application shutdown.
+ */
+@Singleton
 public final class ConcurrencyHandler {
-    /*
-    FIXME: document class
-    */
     private ExecutorService privateExecutor = null;
     
-    //TODO: delete when dependency-injection in VM has been implemented.
-    public final static ConcurrencyHandler globalHandler = new ConcurrencyHandler();
-    
+    /**
+     * Submit a task to the workers pool for a background execution.
+     * @param runnable the task to perform in the background.
+     * @return an object representing the execution state.
+     * @throws RejectedExecutionException if the workers pool rejected the task.
+     */
     public Future<?> submit(Runnable runnable) throws RejectedExecutionException{
         if(privateExecutor == null){
             initialise(true);
@@ -27,13 +34,23 @@ public final class ConcurrencyHandler {
         return privateExecutor.submit(runnable);
     }
     
-    public void awaitTermination(int milliseconds){
+    /**
+     * Shutdown the service. After the service has been shutdown, it will reject any future incoming
+     * tasks. The call will block until all ongoing tasks have stopped or timeout has been reached.
+     * @param timeout the maximum time to wait (in milliseconds)
+     * @throws IllegalArgumentException if timeout is strictly negative
+     */
+    public void shutdown(int timeout) throws IllegalArgumentException {
+        if (timeout < 0){
+            throw new IllegalArgumentException(
+                    "Tried to call method with timeout %s, should be positive".formatted(timeout));
+        }
         if(privateExecutor == null){
             initialise(false);
         } else {
             privateExecutor.shutdownNow();
             try {
-                privateExecutor.awaitTermination(milliseconds, TimeUnit.MILLISECONDS);
+                privateExecutor.awaitTermination(timeout, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e){
                 Thread.currentThread().interrupt();
             }

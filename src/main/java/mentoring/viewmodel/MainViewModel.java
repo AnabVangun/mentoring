@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javax.inject.Inject;
 import mentoring.Main;
 import mentoring.concurrency.ConcurrencyHandler;
 import mentoring.configuration.CriteriaConfiguration;
@@ -34,16 +35,25 @@ import mentoring.match.MatchesBuilder;
  * ViewModel responsible for handling the main window of the application.
  */
 public class MainViewModel {
+    private final ConcurrencyHandler executor;
     private final ReadOnlyStringWrapper privateStatus = new ReadOnlyStringWrapper();
     public final ReadOnlyStringProperty status = privateStatus.getReadOnlyProperty();
+    
+    @Inject
+    /**
+     * Create a new {@code MainViewModel}.
+     * @param executor Executor service that will receive the task to run the application.
+     */
+    MainViewModel(ConcurrencyHandler executor){
+        this.executor = executor;
+    }
     
     /**
      * Run the application: get the relevant data, make matches and update the {@code status} 
      * property.
-     * @param executor Executor service that will receive the task to perform.
      * @return a Future object that can be used to control the execution and completion of the task.
      */
-    public Future<?> makeMatches(ConcurrencyHandler executor){
+    public Future<?> makeMatches(){
         return executor.submit(() -> {
             try{
                 makeMatchesWithException();

@@ -5,19 +5,24 @@ import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextArea;
-import mentoring.concurrency.ConcurrencyHandler;
+import javax.inject.Inject;
 import mentoring.viewmodel.MainViewModel;
 
 public class MainView implements Initializable {
     
+    private final MainViewModel vm;
+    
     @FXML
     private TextArea textarea;
     
-    private final MainViewModel vm = new MainViewModel();
+    @Inject
+    MainView(MainViewModel vm){
+        this.vm = vm;
+    }
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         textarea.textProperty().bind(vm.status);
-        vm.makeMatches(ConcurrencyHandler.globalHandler);
+        vm.makeMatches();
     }    
 }

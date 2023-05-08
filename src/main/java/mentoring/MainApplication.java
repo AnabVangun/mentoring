@@ -1,17 +1,25 @@
 package mentoring;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import mentoring.concurrency.ConcurrencyHandler;
+import mentoring.concurrency.ConcurrencyModule;
 
 public class MainApplication extends Application {
     
+    private final Injector injector = Guice.createInjector(new ConcurrencyModule());
+    private final ConcurrencyHandler handler = injector.getInstance(ConcurrencyHandler.class);
+    
     @Override
     public void start(Stage stage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("scene.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("scene.fxml"));
+        loader.setControllerFactory(injector::getInstance);
+        Parent root = loader.load();
 
         Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
@@ -24,8 +32,8 @@ public class MainApplication extends Application {
     @Override
     public void stop(){
         //TODO put magic number in parameters
-        ConcurrencyHandler.globalHandler.awaitTermination(5000);
-        if (! ConcurrencyHandler.globalHandler.isShutDown()){
+        handler.shutdown(5000);
+        if (! handler.isShutDown()){
             throw new RuntimeException("Can't shutdown concurrency handler");
         }
     }

@@ -26,9 +26,9 @@ class MainViewModelTest implements TestFramework<MainViewModelArgs>{
         return test("makeMatches() updates the view model properties", args -> {
             ConcurrencyHandler executor = new ConcurrencyHandler();
             InvalidationListener listener = Mockito.mock(InvalidationListener.class);
-            MainViewModel vm = new MainViewModel();
+            MainViewModel vm = new MainViewModel(executor);
             vm.status.addListener(listener);
-            Future<?> taskStatus = vm.makeMatches(executor);
+            Future<?> taskStatus = vm.makeMatches();
             try{
                 taskStatus.get(500, TimeUnit.MILLISECONDS);
             } catch (ExecutionException|InterruptedException|TimeoutException e){
@@ -45,7 +45,7 @@ class MainViewModelTest implements TestFramework<MainViewModelArgs>{
                                     "Paul Pierre (X2020)","Elsa Margaux (X1999)","210"
                                     """,
                     vm.status.get());
-            executor.awaitTermination(0);
+            executor.shutdown(0);
         });
     }
     

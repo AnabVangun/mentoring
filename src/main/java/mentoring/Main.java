@@ -34,10 +34,11 @@ public class Main {
     /**
      * TODO: link GUI to code.
      * 1. Extract Data to its own file and add methods to get everything that depends on it.
-     * 1b. Handle dependency injection in ViewModel
      * 2. Print results in tableview
-     * 2b. Internationalize
+     * 2b. Internationalize GUI
      * 3. Add export button to save results in file
+     * 3b. Add view to choose global configuration through Data enum.
+     * 3c. Modify assignmentproblem to handle cancellation and offer progress status
      * 4. Choose mentees file
      * 5. Choose mentees configuration (file or POJO)
      * 6. Choose mentors file
@@ -49,10 +50,9 @@ public class Main {
      * for person conf, missing columns in file header
      * 12. Alert if criteria configuration is not consistent with person configuration
      * 13. Choose criteria configuration (file)
-     * 14. Modify assignmentproblem to handle cancellation and offer progress status
      */
     private static final Data DATA = Data.TEST_CONFIGURATION_FILE;
-    private final static Mode MODE = Mode.CONSOLE;
+    private final static Mode MODE = Mode.GUI;
     public static void main(String[] args) {
         switch(MODE){
             case CONSOLE -> runInConsole(args);
