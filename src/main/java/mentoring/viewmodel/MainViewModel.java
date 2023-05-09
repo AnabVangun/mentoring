@@ -12,22 +12,13 @@ import java.util.concurrent.Future;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javax.inject.Inject;
-import mentoring.Main;
 import mentoring.concurrency.ConcurrencyHandler;
 import mentoring.configuration.CriteriaConfiguration;
 import mentoring.configuration.PersonConfiguration;
-import mentoring.configuration.PojoCriteriaConfiguration;
-import mentoring.configuration.PojoPersonConfiguration;
-import mentoring.configuration.PojoResultConfiguration;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.datastructure.Person;
-import mentoring.datastructure.PersonBuilder;
-import mentoring.io.Parser;
-import mentoring.io.PersonConfigurationParser;
 import mentoring.io.PersonFileParser;
-import mentoring.io.ResultConfigurationParser;
 import mentoring.io.ResultWriter;
-import mentoring.io.datareader.YamlReader;
 import mentoring.match.Matches;
 import mentoring.match.MatchesBuilder;
 
@@ -64,62 +55,29 @@ public class MainViewModel {
     }
     
     private void makeMatchesWithException() throws IOException{
-        Main.Data data = Main.Data.TEST;
+        RunConfiguration data = RunConfiguration.TEST;
         privateStatus.setValue("Fetching data...");
-        PersonConfigurationParser personConfParser = new PersonConfigurationParser(new YamlReader());
         //Parse mentees
-        String menteeFilePath = switch(data){
-            case TEST -> "resources\\main\\Filleul_Trivial.csv";
-            case TEST_CONFIGURATION_FILE -> "resources\\main\\Filleul_Trivial.csv";
-            case REAL2023 -> "..\\..\\..\\AX\\2023_Mentoring\\Adapter\\20221016_new_eleves.csv";
-        };
-        PersonConfiguration menteeConfiguration = switch(data){
-            case TEST -> PojoPersonConfiguration.TEST_CONFIGURATION.getConfiguration();
-            case TEST_CONFIGURATION_FILE -> parseConfigurationFile(personConfParser, 
-                        "resources\\main\\testPersonConfiguration.yaml");
-            case REAL2023 -> PojoPersonConfiguration.MENTEE_CONFIGURATION_2023_DATA
-                        .getConfiguration();
-        };
-        List<Person> mentees = parsePersonList(menteeConfiguration, menteeFilePath);
-        Person defaultMentee = new PersonBuilder().withProperty("Email", "")
-                .withFullName("PAS DE MENTORÉ").build();
+        List<Person> mentees = parsePersonList(data.getMenteeConfiguration(), 
+                data.getMenteeFilePath());
+        Person defaultMentee = data.getDefaultMentee();
         privateStatus.setValue(privateStatus.get() + "\nMentees OK");
         //Parse mentors
-        String mentorFilePath = switch(data){
-            case TEST -> "resources\\main\\Mentor_Trivial.csv";
-            case TEST_CONFIGURATION_FILE -> "resources\\main\\Mentor_Trivial.csv";
-            case REAL2023 -> "..\\..\\..\\AX\\2023_Mentoring\\Adapter\\20221016_new_mentors.csv";
-        };
-        PersonConfiguration mentorConfiguration = switch(data){
-            case TEST -> PojoPersonConfiguration.TEST_CONFIGURATION.getConfiguration();
-            case TEST_CONFIGURATION_FILE -> parseConfigurationFile(personConfParser, 
-                        "resources\\main\\testPersonConfiguration.yaml");
-            case REAL2023 -> PojoPersonConfiguration.MENTOR_CONFIGURATION_2023_DATA
-                        .getConfiguration();
-        };
+        String mentorFilePath = data.getMentorFilePath();
+        PersonConfiguration mentorConfiguration = data.getMentorConfiguration();
         List<Person> mentors = parsePersonList(mentorConfiguration, mentorFilePath);
-        Person defaultMentor = new PersonBuilder().withProperty("Email", "")
-                .withFullName("PAS DE MENTOR").build();
+        Person defaultMentor = data.getDefaultMentor();
         privateStatus.setValue(privateStatus.get() + "\nMentors OK");
         //Get criteria configuration
-        CriteriaConfiguration<Person, Person> criteriaConfiguration = switch(data){
-            case TEST -> PojoCriteriaConfiguration.CRITERIA_CONFIGURATION;
-            case TEST_CONFIGURATION_FILE -> PojoCriteriaConfiguration.CRITERIA_CONFIGURATION;
-            case REAL2023 -> PojoCriteriaConfiguration.CRITERIA_CONFIGURATION_2023_DATA;
-        };
+        CriteriaConfiguration<Person, Person> criteriaConfiguration = 
+                data.getCriteriaConfiguration();
         privateStatus.setValue(privateStatus.get() + "\nCriteria OK\nSolving matrix...");
         //Build matches
         Matches<Person, Person> results = matchMenteesAndMentors(mentees, mentors, 
                 criteriaConfiguration, defaultMentee, defaultMentor);
         privateStatus.setValue(privateStatus.get() + "\nMatrix solved.");
         //Get result configuration
-        ResultConfiguration<Person, Person> resultConfiguration = switch(data){
-            case TEST -> PojoResultConfiguration.NAMES_AND_SCORE.getConfiguration();
-            case TEST_CONFIGURATION_FILE -> parseConfigurationFile(
-                    new ResultConfigurationParser(new YamlReader()), 
-                        "resources\\main\\testResultConfiguration.yaml");
-            case REAL2023 -> PojoResultConfiguration.NAMES_EMAILS_AND_SCORE.getConfiguration();
-        };
+        ResultConfiguration<Person, Person> resultConfiguration = data.getResultConfiguration();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try(Writer resultDestination = new PrintWriter(out, 
                 true, Charset.forName("utf-8"))){
@@ -128,12 +86,6 @@ public class MainViewModel {
             resultDestination.flush();
         }
         privateStatus.setValue(out.toString(Charset.forName("utf-8")));
-    }
-    
-    private static <T> T parseConfigurationFile(Parser<T> parser, String filePath) throws IOException{
-        try (FileReader configurationFile = new FileReader(filePath, Charset.forName("utf-8"))){
-            return parser.parse(configurationFile);
-        }
     }
     
     private static List<Person> parsePersonList(PersonConfiguration personConfiguration, 
