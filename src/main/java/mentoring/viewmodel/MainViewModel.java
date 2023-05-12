@@ -30,11 +30,11 @@ public class MainViewModel {
     private final ReadOnlyStringWrapper privateStatus = new ReadOnlyStringWrapper();
     public final ReadOnlyStringProperty status = privateStatus.getReadOnlyProperty();
     
-    @Inject
     /**
      * Create a new {@code MainViewModel}.
      * @param executor Executor service that will receive the task to run the application.
      */
+    @Inject
     MainViewModel(ConcurrencyHandler executor){
         this.executor = executor;
     }

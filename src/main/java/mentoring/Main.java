@@ -27,10 +27,11 @@ public class Main {
     /**
      * TODO: link GUI to code.
      * 2. Print results in tableview
+     *      b. Insert MatchesTableView inside MainView
+     * 2a. Allow manual modification of matching results and reruns excluding the manual modifications.
      * 2b. Internationalize GUI
      * 3. Add export button to save results in file
      * 3b. Add view to choose global configuration through RunConfiguration enum.
-     * 3c. Allow manual modification of matching results and reruns excluding the manual modifications.
      * 3d. Add global configuration parameters for magic numbers.
      * 4. Choose mentees file
      * 5. Choose mentees configuration (file or POJO)
