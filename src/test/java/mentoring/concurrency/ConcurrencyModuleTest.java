@@ -3,7 +3,6 @@ package mentoring.concurrency;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import java.util.stream.Stream;
-import javax.inject.Inject;
 import mentoring.concurrency.ConcurrencyModuleTest.ConcurrencyModuleTestArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
@@ -28,7 +27,7 @@ class ConcurrencyModuleTest implements TestFramework<ConcurrencyModuleTestArgs> 
     
     @TestFactory
     Stream<DynamicNode> provideConcurrencyHandler_Singleton(){
-        return test("provideConcurrencyHandler() returns a non-null object", args -> {
+        return test("provideConcurrencyHandler() returns a singleton", args -> {
                     Injector injector = Guice.createInjector(args.module);
                     Assertions.assertSame(injector.getInstance(ConcurrencyHandler.class),
                             injector.getInstance(ConcurrencyHandler.class),
@@ -37,7 +36,6 @@ class ConcurrencyModuleTest implements TestFramework<ConcurrencyModuleTestArgs> 
     }
     
     static class ConcurrencyModuleTestArgs extends TestArgs {
-        @Inject
         final ConcurrencyModule module = new ConcurrencyModule();
         
         ConcurrencyModuleTestArgs(String testCase){

@@ -21,6 +21,7 @@ import mentoring.io.PersonFileParser;
 import mentoring.io.ResultWriter;
 import mentoring.match.Matches;
 import mentoring.match.MatchesBuilder;
+import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 
 /**
  * ViewModel responsible for handling the main window of the application.
@@ -42,19 +43,20 @@ public class MainViewModel {
     /**
      * Run the application: get the relevant data, make matches and update the {@code status} 
      * property.
+     * @param resultVM the ViewModel to update with the results
      * @return a Future object that can be used to control the execution and completion of the task.
      */
-    public Future<?> makeMatches(){
+    public Future<?> makeMatches(PersonMatchesViewModel resultVM){
         return executor.submit(() -> {
             try{
-                makeMatchesWithException();
+                makeMatchesWithException(resultVM);
             } catch (IOException e){
                 privateStatus.setValue(Arrays.toString(e.getStackTrace()));
             }
         });
     }
     
-    private void makeMatchesWithException() throws IOException{
+    private void makeMatchesWithException(PersonMatchesViewModel resultVM) throws IOException{
         RunConfiguration data = RunConfiguration.TEST;
         privateStatus.setValue("Fetching data...");
         //Parse mentees
@@ -86,6 +88,7 @@ public class MainViewModel {
             resultDestination.flush();
         }
         privateStatus.setValue(out.toString(Charset.forName("utf-8")));
+        resultVM.update(resultConfiguration, results);
     }
     
     private static List<Person> parsePersonList(PersonConfiguration personConfiguration, 

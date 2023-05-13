@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextArea;
 import javax.inject.Inject;
+import mentoring.view.datastructure.MatchesTableView;
 import mentoring.viewmodel.MainViewModel;
 
 public class MainView implements Initializable {
@@ -15,6 +16,9 @@ public class MainView implements Initializable {
     @FXML
     private TextArea textarea;
     
+    @FXML
+    private MatchesTableView tableViewController;
+    
     @Inject
     MainView(MainViewModel vm){
         this.vm = vm;
@@ -23,6 +27,6 @@ public class MainView implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         textarea.textProperty().bind(vm.status);
-        vm.makeMatches();
+        vm.makeMatches(tableViewController.getViewModel());
     }    
 }

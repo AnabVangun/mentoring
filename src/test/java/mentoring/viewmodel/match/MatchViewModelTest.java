@@ -1,10 +1,10 @@
-package mentoring.viewmodel.datastructure;
+package mentoring.viewmodel.match;
 
 import java.util.List;
 import java.util.stream.Stream;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.match.Match;
-import mentoring.viewmodel.datastructure.MatchViewModelTest.MatchViewModelTestArgs;
+import mentoring.viewmodel.match.MatchViewModelTest.MatchViewModelTestArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
@@ -25,7 +25,7 @@ class MatchViewModelTest implements TestFramework<MatchViewModelTestArgs>{
             ResultConfiguration<String, String> configuration = new ResultConfiguration<>("name",
                     List.of("first", "second"), line -> expectedResult);
             MatchViewModel<String, String> viewModel = new MatchViewModel<>(configuration, match);
-            Assertions.assertArrayEquals(expectedResult, viewModel.line.toArray());
+            Assertions.assertArrayEquals(expectedResult, viewModel.observableMatch().toArray());
         });
     }
     

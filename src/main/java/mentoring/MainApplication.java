@@ -9,10 +9,12 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import mentoring.concurrency.ConcurrencyHandler;
 import mentoring.concurrency.ConcurrencyModule;
+import mentoring.viewmodel.datastructure.PersonViewModelModule;
 
 public class MainApplication extends Application {
     
-    private final Injector injector = Guice.createInjector(new ConcurrencyModule());
+    private final Injector injector = Guice.createInjector(new ConcurrencyModule(), 
+            new PersonViewModelModule());
     private final ConcurrencyHandler handler = injector.getInstance(ConcurrencyHandler.class);
     
     @Override
