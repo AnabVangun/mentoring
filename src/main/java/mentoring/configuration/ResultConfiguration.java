@@ -11,7 +11,7 @@ import mentoring.match.Match;
  * @param <Mentor> type of the second element of a {@link Match}.
  */
 public final class ResultConfiguration<Mentee, Mentor> {
-    
+    //TODO: add capability to return a Map<String, String> instead of a list for each line
     private final String configurationName;
     private final List<String> resultHeader;
     private final Function<Match<Mentee, Mentor>, String[]> resultLineFormatter;

@@ -1,11 +1,12 @@
 package mentoring.viewmodel.match;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.BiFunction;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.ReadOnlyBooleanWrapper;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.control.TableColumn;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.match.Match;
 import mentoring.match.Matches;
@@ -19,20 +20,17 @@ import mentoring.match.Matches;
  * @param <Mentor> type of the second element of a {@link Match}.
  * @param <VM> type of the {@link MatchViewModel} used to represent each match.
  */
-public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, Mentor>> {
-    //FIXME: this potentially smells, TableColumn is more a View thing than a ViewModel...
-    private final ObservableList<TableColumn<VM, String>> 
-            modifiableHeaderContent = FXCollections.observableArrayList();
-    private final ObservableList<TableColumn<VM, String>> headerContent =
-            FXCollections.unmodifiableObservableList(modifiableHeaderContent);
-    private final ObservableList<VM> 
-            modifiableItems = FXCollections.observableArrayList();
-    private final ObservableList<VM> items =
-            FXCollections.unmodifiableObservableList(modifiableItems);
-    private final ReadOnlyBooleanWrapper modifiableReady = new ReadOnlyBooleanWrapper(false);
-    private final ReadOnlyBooleanProperty ready = modifiableReady.getReadOnlyProperty();
+public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, Mentor>> 
+        implements Observable {
+    /*
+    TODO Implement lazy evaluation
+     */
+    private final List<String> headerContent = new ArrayList<>();
+    private final List<VM> items = new ArrayList<>();
+    private boolean ready = false;
     private final BiFunction<ResultConfiguration<Mentee, Mentor>, Match<Mentee, Mentor>, 
             VM> vmFactory;
+    private final List<InvalidationListener> listeners = new ArrayList<>();
     
     /**
      * Builds a new {@code MatchesViewModel} object.
@@ -45,26 +43,26 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
     }
     
     /**
-     * Returns a property that is true when the object encompasses valid data.
+     * Returns true if the viewmodel represents valid data.
      */
-    public ReadOnlyBooleanProperty readyProperty(){
+    public boolean isValid(){
         return ready;
     }
     
     /**
-     * Returns a property that describes the header of the {@link Matches} object.
+     * Returns the header of the {@link Matches} object.
      * The header contains the attributes kept in the {@link ResultConfiguration} argument of the 
      * last call to 
      * {@link #update(mentoring.configuration.ResultConfiguration, mentoring.match.Matches) }.
      */
-    public ObservableList<TableColumn<VM, String>> headerContentProperty(){
+    public List<String> getHeaderContent(){
         return headerContent;
     }
     
     /**
      * Returns a property that describes the content of the {@link Matches} object.
      */
-    public ObservableList<VM> itemsProperty(){
+    public List<VM> getItems(){
         return items;
     }
     
@@ -77,21 +75,34 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
             Matches<Mentee, Mentor> matches){
         prepareHeader(configuration);
         prepareItems(configuration, matches);
-        modifiableReady.set(true);
+        ready = true;
+        for(InvalidationListener listener : listeners){
+            listener.invalidated(this);
+        }
     }
     
     private void prepareHeader(ResultConfiguration<Mentee, Mentor> configuration) {
-        modifiableHeaderContent.clear();
-        for (String headerItem : configuration.getResultHeader()){
-            modifiableHeaderContent.add(new TableColumn<>(headerItem));
-        }
+        headerContent.clear();
+        headerContent.addAll(Arrays.asList(configuration.getResultHeader()));
     }
             
     private void prepareItems(
             ResultConfiguration<Mentee, Mentor> configuration, Matches<Mentee, Mentor> matches) {
-        modifiableItems.clear();
+        items.clear();
         for (Match<Mentee, Mentor> match : matches){
-            modifiableItems.add(vmFactory.apply(configuration, match));
+            items.add(vmFactory.apply(configuration, match));
         }
+    }
+
+    @Override
+    public void addListener(InvalidationListener il) {
+        Objects.requireNonNull(il);
+        listeners.add(il);
+    }
+
+    @Override
+    public void removeListener(InvalidationListener il) {
+        Objects.requireNonNull(il);
+        listeners.remove(il);
     }
 }

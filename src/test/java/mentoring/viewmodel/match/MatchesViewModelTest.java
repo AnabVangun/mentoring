@@ -3,6 +3,8 @@ package mentoring.viewmodel.match;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.match.MatchesTest;
 import mentoring.viewmodel.match.MatchesViewModelTest.MatchesViewModelTestArgs;
@@ -28,7 +30,7 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
     Stream<DynamicNode> constructor(){
         return test("constructor initiales a not-ready-yet object", args -> {
             MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = args.convert();
-            Assertions.assertFalse(viewModel.readyProperty().get());
+            Assertions.assertFalse(viewModel.isValid());
         });
     }
     
@@ -37,7 +39,7 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
         return test("update() marks the object ready", args -> {
             MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
                     args.convertAndUpdate();
-            Assertions.assertTrue(viewModel.readyProperty().get());
+            Assertions.assertTrue(viewModel.isValid());
         });
     }
     
@@ -46,9 +48,7 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
         return test("update() properly sets the header", args -> {
             MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
                     args.convertAndUpdate();
-            List<String> actualHeaders = viewModel.headerContentProperty().stream()
-                    .map(tableColumn -> tableColumn.getText()).collect(Collectors.toList());
-            Assertions.assertEquals(args.expectedHeader, actualHeaders);
+            Assertions.assertEquals(args.expectedHeader, viewModel.getHeaderContent());
         });
     }
     
@@ -62,9 +62,7 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
                     expectedHeader, match -> new String[]{match.getMentee()});
             viewModel.update(newConf, 
                     new MatchesTest.MatchesArgs<>(List.of(Pair.of("foo", "bar"))).convert());
-            List<String> actualHeaders = viewModel.headerContentProperty().stream()
-                    .map(tableColumn -> tableColumn.getText()).collect(Collectors.toList());
-            Assertions.assertEquals(expectedHeader, actualHeaders);
+            Assertions.assertEquals(expectedHeader, viewModel.getHeaderContent());
         });
     }
     
@@ -73,7 +71,7 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
         return test("update() properly sets the content", args -> {
             MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
                     args.convertAndUpdate();
-            List<List<String>> actualContent = viewModel.itemsProperty().stream()
+            List<List<String>> actualContent = viewModel.getItems().stream()
                     .map(matchVM -> matchVM.observableMatch())
                     .collect(Collectors.toList());
             Assertions.assertEquals(args.expectedContent, actualContent);
@@ -90,10 +88,80 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
                     List.of("unique"), match -> new String[]{match.getMentee()});
             viewModel.update(newConf, 
                     new MatchesTest.MatchesArgs<>(List.of(Pair.of("foo", "bar"))).convert());
-            List<List<String>> actualContent = viewModel.itemsProperty().stream()
+            List<List<String>> actualContent = viewModel.getItems().stream()
                     .map(matchVM -> matchVM.observableMatch())
                     .collect(Collectors.toList());
             Assertions.assertEquals(expectedContent, actualContent);
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> update_invalidatedEvent(){
+        return test("update() fires an invalidated event to all registered listeners", args -> {
+            Observable[] notified = new Observable[2];
+            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
+                    args.convert();
+            viewModel.addListener(observable -> notified[0] = observable);
+            viewModel.addListener(observable -> notified[1] = observable);
+            args.update(viewModel);
+            Assertions.assertAll(
+                    () -> Assertions.assertSame(viewModel, notified[0]),
+                    () -> Assertions.assertSame(viewModel, notified[1])
+            );
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> addListener_NPE(){
+        return test("addListener() throws an NPE when adding a null object", args -> {
+            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
+                    args.convert();
+            Assertions.assertThrows(NullPointerException.class, () -> viewModel.addListener(null));
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> removeListener_nominal(){
+        return test("removeListener() removes exactly the input listener", args -> {
+            Observable[] notified = new Observable[2];
+            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
+                    args.convert();
+            InvalidationListener removed = observable -> notified[0] = observable;
+            viewModel.addListener(removed);
+            viewModel.addListener(observable -> notified[1] = observable);
+            viewModel.removeListener(removed);
+            args.update(viewModel);
+            Assertions.assertAll(
+                    () -> Assertions.assertNull(notified[0]),
+                    () -> Assertions.assertSame(viewModel, notified[1])
+            );
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> removeListener_NPE(){
+        return test("removeListener() throws an NPE when removing a null object", args -> {
+            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
+                    args.convert();
+            Assertions.assertThrows(NullPointerException.class, 
+                    () -> viewModel.removeListener(null));
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> removeListener_notPreviouslyRegistered(){
+        return test("removeListener() does not throw exception when removing absent listener", args -> {
+            Observable[] notified = new Observable[2];
+            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
+                    args.convert();
+            viewModel.addListener(observable -> notified[0] = observable);
+            viewModel.addListener(observable -> notified[1] = observable);
+            viewModel.removeListener(observable -> notified[-1] = observable);
+            args.update(viewModel);
+            Assertions.assertAll(
+                    () -> Assertions.assertSame(viewModel, notified[1]),
+                    () -> Assertions.assertSame(viewModel, notified[1])
+            );
         });
     }
     
@@ -111,10 +179,15 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
         
        MatchesViewModel<String, String, MatchViewModel<String, String>> convertAndUpdate(){
             MatchesViewModel<String, String, MatchViewModel<String, String>> vm = convert();
-            vm.update(new ResultConfiguration<>("name", expectedHeader,
-                            match -> new String[]{match.getMentee(), match.getMentor()}),
-                    new MatchesTest.MatchesArgs<>(input).convert());
+            update(vm);
             return vm;
         }
+       
+       void update(
+               MatchesViewModel<String, String, MatchViewModel<String, String>> vm){
+           vm.update(new ResultConfiguration<>("name", expectedHeader,
+                   match -> new String[]{match.getMentee(), match.getMentor()}),
+                   new MatchesTest.MatchesArgs<>(input).convert());
+       }
     }
 }
