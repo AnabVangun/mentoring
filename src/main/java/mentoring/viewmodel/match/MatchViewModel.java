@@ -1,7 +1,7 @@
 package mentoring.viewmodel.match;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javax.inject.Inject;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.match.Match;
@@ -13,17 +13,17 @@ import mentoring.match.Match;
  * @param <Mentor> type of the second element of a {@link Match}.
  */
 public class MatchViewModel<Mentee, Mentor> {
-    private final ObservableList<String> line;
-    private final ObservableList<String> modifiableLine;
+    private final ObservableMap<String, String> match;
+    private final ObservableMap<String, String> modifiableMatch;
     
     @Inject
     protected MatchViewModel(ResultConfiguration<Mentee, Mentor> configuration, 
             Match<Mentee, Mentor> match){
-        modifiableLine = FXCollections.observableArrayList(configuration.getResultLine(match));
-        line = FXCollections.unmodifiableObservableList(modifiableLine);
+        modifiableMatch = FXCollections.observableMap(configuration.getResultMap(match));
+        this.match = FXCollections.unmodifiableObservableMap(modifiableMatch);
     }
     
-    public ObservableList<String> observableMatch(){
-        return line;
+    public ObservableMap<String, String> observableMatch(){
+        return match;
     }
 }

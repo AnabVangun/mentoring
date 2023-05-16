@@ -1,6 +1,7 @@
 package mentoring.viewmodel.match;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javafx.beans.InvalidationListener;
@@ -22,8 +23,8 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
                 List.of("first", "second"), 
                 List.of(Pair.of("first mentee", "first mentor"),
                             Pair.of("second mentee", "second mentor")),
-                List.of(List.of("first mentee", "first mentor"), 
-                        List.of("second mentee", "second mentor"))));
+                List.of(Map.of("first", "first mentee", "second", "first mentor"), 
+                        Map.of("first", "second mentee", "second", "second mentor"))));
     }
     
     @TestFactory
@@ -58,7 +59,7 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
             MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
                     args.convertAndUpdate();
             List<String> expectedHeader = List.of("unique");
-            ResultConfiguration<String, String> newConf = new ResultConfiguration<>("name", 
+            ResultConfiguration<String, String> newConf = ResultConfiguration.create("name", 
                     expectedHeader, match -> new String[]{match.getMentee()});
             viewModel.update(newConf, 
                     new MatchesTest.MatchesArgs<>(List.of(Pair.of("foo", "bar"))).convert());
@@ -71,7 +72,7 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
         return test("update() properly sets the content", args -> {
             MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
                     args.convertAndUpdate();
-            List<List<String>> actualContent = viewModel.getItems().stream()
+            List<Map<String, String>> actualContent = viewModel.getItems().stream()
                     .map(matchVM -> matchVM.observableMatch())
                     .collect(Collectors.toList());
             Assertions.assertEquals(args.expectedContent, actualContent);
@@ -83,12 +84,12 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
         return test("repeated calls to update() properly set the content", args -> {
             MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
                     args.convertAndUpdate();
-            List<List<String>> expectedContent = List.of(List.of("foo"));
-            ResultConfiguration<String, String> newConf = new ResultConfiguration<>("name", 
+            List<Map<String, String>> expectedContent = List.of(Map.of("unique", "foo"));
+            ResultConfiguration<String, String> newConf = ResultConfiguration.create("name", 
                     List.of("unique"), match -> new String[]{match.getMentee()});
             viewModel.update(newConf, 
                     new MatchesTest.MatchesArgs<>(List.of(Pair.of("foo", "bar"))).convert());
-            List<List<String>> actualContent = viewModel.getItems().stream()
+            List<Map<String, String>> actualContent = viewModel.getItems().stream()
                     .map(matchVM -> matchVM.observableMatch())
                     .collect(Collectors.toList());
             Assertions.assertEquals(expectedContent, actualContent);
@@ -166,7 +167,8 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
     }
     
     static record MatchesViewModelTestArgs(String testCase, List<String> expectedHeader,
-            List<Pair<? extends String, ? extends String>> input, List<List<String>> expectedContent) {
+            List<Pair<? extends String, ? extends String>> input, 
+            List<Map<String, String>> expectedContent) {
         
         @Override
         public String toString(){
@@ -185,7 +187,7 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
        
        void update(
                MatchesViewModel<String, String, MatchViewModel<String, String>> vm){
-           vm.update(new ResultConfiguration<>("name", expectedHeader,
+           vm.update(ResultConfiguration.create("name", expectedHeader,
                    match -> new String[]{match.getMentee(), match.getMentor()}),
                    new MatchesTest.MatchesArgs<>(input).convert());
        }

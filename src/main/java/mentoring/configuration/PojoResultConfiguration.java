@@ -35,7 +35,7 @@ public enum PojoResultConfiguration{
     
     private PojoResultConfiguration(String name, List<String> header, 
         Function<Match<Person, Person>, String[]> lineFormater){
-        configuration = new ResultConfiguration<>(name, header, lineFormater);
+        configuration = ResultConfiguration.create(name, header, lineFormater);
     }
     
     public ResultConfiguration<Person, Person> getConfiguration(){

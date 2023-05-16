@@ -26,9 +26,8 @@ import mentoring.viewmodel.RunConfiguration;
 public class Main {
     /**
      * TODO: link GUI to code.
-     * 2. Print results in tableview
-     *      b. Insert MatchesTableView inside MainView
      * 2a. Allow manual modification of matching results and reruns excluding the manual modifications.
+     * 2aa. Clean up main view FXML and make window pretty
      * 2b. Internationalize GUI
      * 3. Add export button to save results in file
      * 3b. Add view to choose global configuration through RunConfiguration enum.

@@ -32,7 +32,7 @@ public final class ResultConfigurationParser extends Parser<ResultConfiguration<
         String name = extractAttribute(data, CONFIGURATION_NAME_KEY, String.class);
         List<String> resultHeader = extractAttributeList(data, HEADER_KEY, String.class);
         List<String> lineDescription = extractAttributeList(data, LINE_DESCRIPTION_KEY, String.class);
-        return new ResultConfiguration<>(name, resultHeader, buildLineFormatter(lineDescription));
+        return ResultConfiguration.create(name, resultHeader, buildLineFormatter(lineDescription));
     }
     
     private static Function<Match<Person, Person>, String[]> buildLineFormatter(

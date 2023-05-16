@@ -1,6 +1,7 @@
 package mentoring.viewmodel.match;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.match.Match;
@@ -20,12 +21,17 @@ class MatchViewModelTest implements TestFramework<MatchViewModelTestArgs>{
     @TestFactory
     Stream<DynamicNode> constructor(){
         return test("constructor properly initialises the observable property", args -> {
-            String[] expectedResult = new String[]{"first value", "second value"};
+            Map<String, String> expectedResult = 
+                    Map.of("first", "first value", "second", "second value");
             Match<String, String> match = null;
-            ResultConfiguration<String, String> configuration = new ResultConfiguration<>("name",
+            /* TODO once ResultConfiguration allow creation with Map, use expectedResult back
+            ResultConfiguration<String, String> configuration = ResultConfiguration.create("name",
                     List.of("first", "second"), line -> expectedResult);
+            */
+            ResultConfiguration<String, String> configuration = ResultConfiguration.create("name",
+                    List.of("first", "second"), line -> new String[]{"first value", "second value"});
             MatchViewModel<String, String> viewModel = new MatchViewModel<>(configuration, match);
-            Assertions.assertArrayEquals(expectedResult, viewModel.observableMatch().toArray());
+            Assertions.assertEquals(expectedResult, viewModel.observableMatch());
         });
     }
     

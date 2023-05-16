@@ -2,12 +2,16 @@ package mentoring.view.datastructure;
 
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.function.Function;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
+import javafx.util.Callback;
 import javax.inject.Inject;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
@@ -41,22 +45,22 @@ public class MatchesTableView implements Initializable {
     }
     
     private void update(){
-        /*
-        TODO : Once ResultConfiguration offers a Map<String, String> instead of a String[] for each 
-        line, modify MatchViewModel so that observableMatch is a Map<String, Observable<String>> and 
-        simplify code behind
-        */
         table.getColumns().clear();
         List<String> headers = vm.getHeaderContent();
-        for (int i = 0; i < headers.size(); i++){
-            TableColumn<PersonMatchViewModel, String> column = new TableColumn<>(headers.get(i));
-            int counter = i;
-            column.setCellValueFactory(p -> new SimpleStringProperty(
-                    p.getValue().observableMatch().get(counter)));
-            table.getColumns().add(column);
+        for (String header : headers){
+            addColumn(table, header, p -> p.getValue().observableMatch());
         }
         table.itemsProperty().get().setAll(vm.getItems());
         table.visibleProperty().set(vm.isValid());
+    }
+    
+    //TODO extract into utility class for TableView
+    private static <E> void addColumn(TableView<E> table, String header, 
+            Callback<CellDataFeatures<E, String>, Map<String, String>> propertiesGetter){
+        TableColumn<E, String> column = new TableColumn<>(header);
+        column.setCellValueFactory(p -> new SimpleStringProperty(
+                propertiesGetter.call(p).get(header)));
+        table.getColumns().add(column);
     }
     
 }
