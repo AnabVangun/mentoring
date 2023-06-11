@@ -28,6 +28,7 @@ public class Main {
      * TODO: link GUI to code.
      * 2a. Allow manual modification of matching results and reruns excluding the manual modifications.
      * 2aa. Clean up main view FXML and make window pretty
+     * 2ab. Handle refactoring TODOs
      * 2b. Internationalize GUI
      * 3. Add export button to save results in file
      * 3b. Add view to choose global configuration through RunConfiguration enum.
@@ -44,6 +45,9 @@ public class Main {
      * 12. Alert if criteria configuration is not consistent with person configuration
      * 13. Choose criteria configuration (file)
      * 14. Modify assignmentproblem to handle cancellation and offer progress status
+     * 15. Use new version of assignmentproblem to allow cancellation and display progress status
+     * 16. Check good practice for storing FXML files (resources vs in packages)
+     * 17. Add undo/redo option (see command design pattern)
      */
     private final static Mode MODE = Mode.GUI;
     public static void main(String[] args) {

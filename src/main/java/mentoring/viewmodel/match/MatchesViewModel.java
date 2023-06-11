@@ -22,15 +22,17 @@ import mentoring.match.Matches;
  */
 public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, Mentor>> 
         implements Observable {
-    /*
-    TODO Implement lazy evaluation
-     */
     private final List<String> headerContent = new ArrayList<>();
-    private final List<VM> items = new ArrayList<>();
+    private final List<VM> batchUpdateItems = new ArrayList<>();
+    private final List<VM> transferredItems = new ArrayList<>();
+    private ResultConfiguration<Mentee, Mentor> configuration = null;
+    private Matches<Mentee, Mentor> pendingMatches = null;
     private boolean ready = false;
     private final BiFunction<ResultConfiguration<Mentee, Mentor>, Match<Mentee, Mentor>, 
             VM> vmFactory;
     private final List<InvalidationListener> listeners = new ArrayList<>();
+    private boolean invalidated = false;
+    private boolean invalidatedHeader = false;
     
     /**
      * Builds a new {@code MatchesViewModel} object.
@@ -46,7 +48,7 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
      * Returns true if the viewmodel represents valid data.
      */
     public boolean isValid(){
-        return ready;
+        return ready || invalidated;
     }
     
     /**
@@ -56,14 +58,24 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
      * {@link #update(mentoring.configuration.ResultConfiguration, mentoring.match.Matches) }.
      */
     public List<String> getHeaderContent(){
+        updateIfNecessary();
         return headerContent;
     }
     
     /**
-     * Returns a property that describes the content of the {@link Matches} object.
+     * Returns the content of the represented {@link Matches} object.
      */
-    public List<VM> getItems(){
-        return items;
+    public List<VM> getBatchItems(){
+        updateIfNecessary();
+        return batchUpdateItems;
+    }
+    
+    /**
+     * Returns the representation of the {@link Match} objects that have been transferred.
+     */
+    public List<VM> getTransferredItems(){
+        updateIfNecessary();
+        return transferredItems;
     }
     
     /**
@@ -73,24 +85,56 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
      */
     public synchronized void update(ResultConfiguration<Mentee, Mentor> configuration,
             Matches<Mentee, Mentor> matches){
-        prepareHeader(configuration);
-        prepareItems(configuration, matches);
-        ready = true;
-        for(InvalidationListener listener : listeners){
-            listener.invalidated(this);
+        Objects.requireNonNull(configuration);
+        if(!configuration.equals(this.configuration)){
+            this.configuration = configuration;
+            invalidatedHeader = true;
+        }
+        this.pendingMatches = matches;
+        invalidated = true;
+        notifyListeners();
+    }
+    
+    private void updateIfNecessary(){
+        if(invalidated){
+            actuallyUpdate();
+        }
+    }
+    
+    private synchronized void actuallyUpdate(){
+        if(invalidated){
+            if(invalidatedHeader){
+                prepareHeader(configuration);
+                updateManualItems();
+                invalidatedHeader = false;
+            }
+            prepareItems(configuration, pendingMatches);
+            ready = true;
+            invalidated = false;
         }
     }
     
     private void prepareHeader(ResultConfiguration<Mentee, Mentor> configuration) {
+        this.configuration = configuration;
         headerContent.clear();
         headerContent.addAll(Arrays.asList(configuration.getResultHeader()));
+    }
+    
+    private void updateManualItems(){
+        transferredItems.replaceAll(vm -> vmFactory.apply(configuration, vm.getData()));
     }
             
     private void prepareItems(
             ResultConfiguration<Mentee, Mentor> configuration, Matches<Mentee, Mentor> matches) {
-        items.clear();
+        batchUpdateItems.clear();
         for (Match<Mentee, Mentor> match : matches){
-            items.add(vmFactory.apply(configuration, match));
+            batchUpdateItems.add(vmFactory.apply(configuration, match));
+        }
+    }
+    
+    private void notifyListeners(){
+        for(InvalidationListener listener : listeners){
+            listener.invalidated(this);
         }
     }
 
@@ -98,11 +142,25 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
     public void addListener(InvalidationListener il) {
         Objects.requireNonNull(il);
         listeners.add(il);
+        if(invalidated){
+            il.invalidated(this);
+        }
     }
 
     @Override
     public void removeListener(InvalidationListener il) {
         Objects.requireNonNull(il);
         listeners.remove(il);
+    }
+    
+    /**
+     * Transfer item from the batch list to the manual one.
+     * @param item to transfer between the two lists.
+     */
+    public void transferItem(VM item){
+        Objects.requireNonNull(item);
+        transferredItems.add(item);
+        batchUpdateItems.remove(item);
+        notifyListeners();
     }
 }

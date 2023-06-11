@@ -4,7 +4,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.Button;
 import javax.inject.Inject;
 import mentoring.view.datastructure.MatchesTableView;
 import mentoring.viewmodel.MainViewModel;
@@ -14,10 +14,10 @@ public class MainView implements Initializable {
     private final MainViewModel vm;
     
     @FXML
-    private TextArea textarea;
+    private MatchesTableView tableViewController;
     
     @FXML
-    private MatchesTableView tableViewController;
+    private Button runButton;
     
     @Inject
     MainView(MainViewModel vm){
@@ -26,7 +26,8 @@ public class MainView implements Initializable {
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        textarea.textProperty().bind(vm.status);
-        vm.makeMatches(tableViewController.getViewModel());
+        //TODO internationalize string
+        runButton.textProperty().set("Run");
+        runButton.setOnAction(event -> vm.makeMatches(tableViewController.getViewModel()));
     }    
 }
