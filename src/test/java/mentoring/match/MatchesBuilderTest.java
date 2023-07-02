@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import org.opentest4j.AssertionFailedError;
@@ -132,6 +133,51 @@ final class MatchesBuilderTest implements TestFramework<MatchesBuilderTest.Match
             Match<Mentee, Mentor> source){
         return "Matches " + actual + " differs from expected " + expected + 
                 ": could not find enough times match " + source;
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> buildSingleMatch_validInput(){
+        int prohibitiveCost = 2000;
+        int standardCost = 5;
+        Stream<PublicMatchesBuilderArgs> testCase = Stream.of(
+                new PublicMatchesBuilderArgs("minimal test case", null, 
+                        List.of(0,1,2), List.of(0,1,2), 
+                        List.of((mentee, mentor) -> 
+                                mentee.equals(mentor) ? prohibitiveCost : standardCost)
+                ));
+        return test(testCase, "buildSingleMatch() returns the expected match", args -> {
+            MatchesBuilder<Integer,Integer> builder = args.convert();
+            builder.withNecessaryCriteria(List.of((mentee, mentor) -> mentee.equals(mentor)));
+            Assertions.assertAll(
+                    () -> Assertions.assertEquals(new Match<>(0, 0, prohibitiveCost), 
+                            builder.buildSingleMatch(0, 0)),
+                    () -> Assertions.assertEquals(new Match<>(1, 2, MatchesBuilder.PROHIBITIVE_VALUE),
+                            builder.buildSingleMatch(1,2)));
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> buildSingleMatch_invalidInput(){
+        Stream<PublicMatchesBuilderArgs> testCase = Stream.of(
+                new PublicMatchesBuilderArgs("minimal test case", null, 
+                        List.of(0,1), List.of(0,1), 
+                        List.of((mentee, mentor) -> 
+                                mentee.equals(mentor) ? 1 : 1)
+                ));
+        Class<IllegalArgumentException> expectedException = IllegalArgumentException.class;
+        return test(testCase, "buildSingleMatch() fails on invalid input", args -> {
+            MatchesBuilder<Integer,Integer> builder = args.convert();
+            Assertions.assertAll(
+                    () -> Assertions.assertThrows(expectedException, 
+                            () -> builder.buildSingleMatch(0, 1235), 
+                            "failed to fail on invalid mentor"),
+                    () -> Assertions.assertThrows(expectedException, 
+                            () -> builder.buildSingleMatch(6291, 1), 
+                            "failed to fail on invalid mentee"),
+                    () -> Assertions.assertThrows(expectedException, 
+                            () -> builder.buildSingleMatch(987654, 1235), 
+                            "failed to fail on invalid mentor and mentee"));
+        });
     }
     
     static abstract class MatchesBuilderArgs extends TestArgs{

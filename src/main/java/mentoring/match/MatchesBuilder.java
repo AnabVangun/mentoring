@@ -185,4 +185,31 @@ public final class MatchesBuilder<Mentee, Mentor> {
     private Match<Mentee, Mentor> buildMatch(Mentee mentee, Mentor mentor, int cost){
         return new Match<>(mentee, mentor, cost);
     }
+    
+    /**
+     * Builds a single Match object between the mentee and the mentor.
+     * @param mentee to include in the match
+     * @param mentor to include in the match
+     * @return a Match object between the mentee and the mentor with the appropriate cost
+     * @throws IllegalArgumentException when the mentee and/or the mentor are unknown
+     */
+    public Match<Mentee, Mentor> buildSingleMatch(Mentee mentee, Mentor mentor) 
+            throws IllegalArgumentException{
+        int menteeIndex = mentees.indexOf(mentee);
+        int mentorIndex = mentors.indexOf(mentor);
+        if (menteeIndex == -1) {
+            if (mentorIndex == -1) {
+                throw new IllegalArgumentException("Mentee %s and mentor %s are invalid"
+                        .formatted(mentee, mentor));
+            } else {
+                throw new IllegalArgumentException("Mentee %s is invalid".formatted(mentee));
+            }
+        } else if (mentorIndex == -1) {
+            throw new IllegalArgumentException("Mentor %s are invalid".formatted(mentor));
+        }
+        //TODO : avoid calling buildCostMatrix each time.
+        costMatrixHandler.buildCostMatrix();
+        int cost = costMatrixHandler.getMatchScore(menteeIndex, mentorIndex);
+        return new Match<>(mentee, mentor, cost);
+    }
 }
