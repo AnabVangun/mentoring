@@ -1,76 +1,69 @@
 package mentoring.viewmodel;
 
+import mentoring.viewmodel.datastructure.PersonType;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import javafx.concurrent.Task;
-import mentoring.configuration.CriteriaConfiguration;
 import mentoring.configuration.PersonConfiguration;
-import mentoring.configuration.ResultConfiguration;
 import mentoring.datastructure.Person;
 import mentoring.io.PersonFileParser;
-import mentoring.match.Matches;
-import mentoring.match.MatchesBuilder;
-import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
+import mentoring.viewmodel.datastructure.PersonListViewModel;
 
 /**
- * Class used to make matches and update an input view model.
+ * Class used to get persons and update an input view model.
  */
-class MatchMaker extends Task<Void> {
-    
-    private final PersonMatchesViewModel resultVM;
-    private ResultConfiguration<Person, Person> resultConfiguration;
-    private Matches<Person, Person> results;
+class PersonGetter extends Task<List<Person>> {
+    //TODO test
+    private final PersonListViewModel resultVM;
+    private final RunConfiguration data;
+    private final PersonType type;
+    private PersonConfiguration personConfiguration;
+    private List<Person> persons;
 
     /**
-     * Initialise a {@code MatchMaker} object.
-     * @param resultVM the view model that will be updated when the task completes.
+     * Initialise a {@code PersonGetter} object.
+     * @param resultVM the view model that will be updated when the task completes
+     * @param data where to get data from
+     * @param type type of person to get
      */
-    MatchMaker(PersonMatchesViewModel resultVM) {
+    PersonGetter(PersonListViewModel resultVM, RunConfiguration data, PersonType type) {
+        this.data = data;
         this.resultVM = resultVM;
+        this.type = type;
     }
 
     @Override
-    protected Void call() throws Exception {
-        RunConfiguration data = RunConfiguration.TEST;
+    protected List<Person> call() throws Exception {
         try {
-            results = makeMatchesWithException(data);
-            resultConfiguration = getResultConfiguration(data);
+            personConfiguration = getPersonConfiguration(data, type);
+            persons = getPersons(data, personConfiguration, type);
         } catch (IOException e) {
             e.printStackTrace();
+            //TODO mark task as failed
         }
-        return null;
+        return persons;
     }
 
     @Override
     protected void succeeded() {
         super.succeeded();
-        resultVM.update(resultConfiguration, results);
+        resultVM.update(personConfiguration, persons);
     }
 
-    private static Matches<Person, Person> makeMatchesWithException(RunConfiguration data) 
-            throws IOException {
-        //Parse mentees
-        List<Person> mentees = parsePersonList(data.getMenteeConfiguration(), 
-                data.getMenteeFilePath());
-        Person defaultMentee = data.getDefaultMentee();
-        //Parse mentors
-        String mentorFilePath = data.getMentorFilePath();
-        PersonConfiguration mentorConfiguration = data.getMentorConfiguration();
-        List<Person> mentors = parsePersonList(mentorConfiguration, mentorFilePath);
-        Person defaultMentor = data.getDefaultMentor();
-        //Get criteria configuration
-        CriteriaConfiguration<Person, Person> criteriaConfiguration = 
-                data.getCriteriaConfiguration();
-        //Build matches
-        return matchMenteesAndMentors(mentees, mentors, criteriaConfiguration, defaultMentee, 
-                defaultMentor);
+    private static List<Person> getPersons(RunConfiguration data, 
+            PersonConfiguration configuration, PersonType type) throws IOException {
+        List<Person> result = parsePersonList(configuration, type.getFilePathFromConfiguration(data));
+        return result;
     }
 
-    private static ResultConfiguration<Person, Person> getResultConfiguration(RunConfiguration data)
-            throws IOException {
-        return data.getResultConfiguration();
+    private static PersonConfiguration getPersonConfiguration(RunConfiguration data, 
+            PersonType type) throws IOException {
+        return switch (type) {
+            case MENTEE -> data.getMenteeConfiguration();
+            case MENTOR -> data.getMentorConfiguration();
+        };
     }
 
     private static List<Person> parsePersonList(PersonConfiguration personConfiguration, 
@@ -80,15 +73,4 @@ class MatchMaker extends Task<Void> {
             return new PersonFileParser(personConfiguration).parse(personFile);
         }
     }
-
-    private static Matches<Person, Person> matchMenteesAndMentors(List<Person> mentees, 
-            List<Person> mentors, CriteriaConfiguration<Person, Person> criteriaConfiguration, 
-            Person defaultMentee, Person defaultMentor) {
-        MatchesBuilder<Person, Person> solver = new MatchesBuilder<>(mentees, mentors, 
-                criteriaConfiguration.getProgressiveCriteria());
-        solver.withNecessaryCriteria(criteriaConfiguration.getNecessaryCriteria())
-                .withPlaceholderPersons(defaultMentee, defaultMentor);
-        return solver.build();
-    }
-    
 }

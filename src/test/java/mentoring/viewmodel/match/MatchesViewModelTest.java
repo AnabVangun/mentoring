@@ -1,6 +1,5 @@
 package mentoring.viewmodel.match;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -8,6 +7,7 @@ import java.util.stream.Stream;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import mentoring.configuration.ResultConfiguration;
+import mentoring.match.Match;
 import mentoring.match.MatchesTest;
 import mentoring.viewmodel.match.MatchesViewModelTest.MatchesViewModelTestArgs;
 import org.apache.commons.lang3.tuple.Pair;
@@ -173,49 +173,43 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
     }
     
     @TestFactory
-    Stream<DynamicNode> transferItem_NPE(){
-        return test("transferItem() throws an NPE when transfering a null object", args -> {
+    Stream<DynamicNode> addManualItem_NPE(){
+        return test("addManualItem() throws an NPE when adding a null object", args -> {
            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel =
                    args.convert();
-           Assertions.assertThrows(NullPointerException.class, () -> viewModel.transferItem(null));
+           Assertions.assertThrows(NullPointerException.class, () -> viewModel.addManualItem(null));
         });
     }
     
     @TestFactory
-    Stream<DynamicNode> transferItem_removeFromBatch(){
-        return test("transferItem() removes the transferred item from the batch items", args -> {
+    Stream<DynamicNode> addManualItem_addToTransferred(){
+        return test("addManualItem() adds the item to the batch items", args -> {
+            /*FIXME: this test only verifies that items already present in the batch
+            items can be added to the manual ones. It should mostly verify that :
+            1. a match between two persons not in the batch items works;
+            2. a match between two persons in the batch items (but not necessarily together) works.
+            */
             MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel =
                     args.convertAndUpdate();
-            List<MatchViewModel<String, String>> expectedContent = 
-                    new ArrayList<>(viewModel.getBatchItems());
-            expectedContent.remove(0);
-            viewModel.transferItem(viewModel.getBatchItems().get(0));
-            Assertions.assertEquals(expectedContent, viewModel.getBatchItems());
+            List<Match<String, String>> expectedContent = 
+                    List.of(viewModel.getBatchItems().get(1).getData(), 
+                            viewModel.getBatchItems().get(0).getData());
+            viewModel.addManualItem(viewModel.getBatchItems().get(1).getData());
+            viewModel.addManualItem(viewModel.getBatchItems().get(0).getData());
+            Assertions.assertEquals(expectedContent, 
+                    viewModel.getTransferredItems().stream().map(e -> e.getData()).toList());
         });
     }
     
     @TestFactory
-    Stream<DynamicNode> transferItem_addToTransferred(){
-        return test("transferItem() adds the transferred items to the batch items", args -> {
-            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel =
-                    args.convertAndUpdate();
-            List<MatchViewModel<String, String>> expectedContent = 
-                    List.of(viewModel.getBatchItems().get(1), viewModel.getBatchItems().get(0));
-            viewModel.transferItem(viewModel.getBatchItems().get(1));
-            viewModel.transferItem(viewModel.getBatchItems().get(0));
-            Assertions.assertEquals(expectedContent, viewModel.getTransferredItems());
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> transferItem_invalidatedEvent(){
-        return test("transferItem() fires an invalidated event to all registered listeners", args -> {
+    Stream<DynamicNode> addManualItem_invalidatedEvent(){
+        return test("addManualItem() fires an invalidated event to all registered listeners", args -> {
             Observable[] notified = new Observable[2];
             MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
                     args.convertAndUpdate();
             viewModel.addListener(observable -> notified[0] = observable);
             viewModel.addListener(observable -> notified[1] = observable);
-            viewModel.transferItem(viewModel.getBatchItems().get(0));
+            viewModel.addManualItem(viewModel.getBatchItems().get(0).getData());
             Assertions.assertAll(
                     () -> Assertions.assertSame(viewModel, notified[0]),
                     () -> Assertions.assertSame(viewModel, notified[1])
@@ -224,8 +218,8 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
     }
     
     @TestFactory
-    Stream<DynamicNode> update_keepTransferredItemsWhenNotChangingConfiguration(){
-        return test("update() does not modify the transferred items when the configuration is unchanged", args -> {
+    Stream<DynamicNode> update_keepAddedItemsWhenNotChangingConfiguration(){
+        return test("update() does not modify the added items when the configuration is unchanged", args -> {
             MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
                     args.convert();
             ResultConfiguration<String, String> configuration = args.getResultConfiguration();
@@ -233,18 +227,22 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
                     new MatchesTest.MatchesArgs<>(List.of(
                             Pair.of("first foo", "first bar"),
                             Pair.of("second foo", "second bar"))).convert());
-            List<MatchViewModel<String, String>> expectedContent = 
-                    List.of(viewModel.getBatchItems().get(0));
-            viewModel.transferItem(viewModel.getBatchItems().get(0));
+            viewModel.addManualItem(viewModel.getBatchItems().get(0).getData());
+            Map<String, String> expectedContent = 
+                    Map.copyOf(viewModel.getTransferredItems().get(0).observableMatch());
             viewModel.update(configuration, 
                     new MatchesTest.MatchesArgs<>(List.of(Pair.of("foo", "bar"))).convert());
-            Assertions.assertEquals(expectedContent, viewModel.getTransferredItems());
+            Assertions.assertAll(
+                    () -> Assertions.assertEquals(1, viewModel.getTransferredItems().size()),
+                    () -> Assertions.assertEquals(expectedContent, 
+                            viewModel.getTransferredItems().get(0).observableMatch())
+            );
         });
     }
     
     @TestFactory
-    Stream<DynamicNode> update_changeTransferredItemsWhenChangingConfiguration(){
-        return test("update() does updates the representation of the transferred items when the configuration is changed", args -> {
+    Stream<DynamicNode> update_changeAddedItemsWhenChangingConfiguration(){
+        return test("update() does updates the representation of the added items when the configuration is changed", args -> {
             MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
                     args.convert();
             viewModel.update(args.getResultConfiguration(), 
@@ -253,7 +251,7 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
             ResultConfiguration<String, String> configuration = ResultConfiguration.create("name", 
                     expectedHeader, match -> new String[]{match.getMentee()});
             List<Map<String, String>> expectedContent = List.of(Map.of("unique", "foo"));
-           viewModel.transferItem(viewModel.getBatchItems().get(0));
+           viewModel.addManualItem(viewModel.getBatchItems().get(0).getData());
             viewModel.update(configuration, 
                     new MatchesTest.MatchesArgs<>(List.of(Pair.of("foo", "bar"))).convert());
             assertContentAsExpected(expectedContent, viewModel.getTransferredItems());

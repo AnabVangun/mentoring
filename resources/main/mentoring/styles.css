@@ -1,6 +1,3 @@
 .textfield {
     -fx-text-fill: blue;
 }
-.drag-hover {
-    -fx-background-color: green;
-}

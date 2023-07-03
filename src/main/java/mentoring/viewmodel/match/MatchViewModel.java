@@ -27,7 +27,7 @@ public class MatchViewModel<Mentee, Mentor> {
         return match;
     }
     
-    protected Match<Mentee, Mentor> getData(){
+    public Match<Mentee, Mentor> getData(){
         return data;
     }
 }

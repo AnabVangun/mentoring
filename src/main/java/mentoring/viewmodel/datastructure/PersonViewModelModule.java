@@ -12,4 +12,9 @@ public class PersonViewModelModule extends AbstractModule {
     public PersonMatchesViewModel providePersonMatchesViewModel() {
         return new PersonMatchesViewModel();
     }
+    
+    @Provides
+    public PersonListViewModel providePersonListViewModel() {
+        return new PersonListViewModel();
+    }
 }

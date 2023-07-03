@@ -1,33 +1,32 @@
-package mentoring.viewmodel.match;
+package mentoring.viewmodel.datastructure;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableMap;
-import mentoring.configuration.ResultConfiguration;
-import mentoring.match.Match;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import mentoring.configuration.PersonConfiguration;
+import mentoring.datastructure.Person;
 
 /**
- * Viewmodel responsible for representing a {@link Match} object.
- * 
- * @param <Mentee> type of the first element of a {@link Match}.
- * @param <Mentor> type of the second element of a {@link Match}.
+ * Viewmodel responsible for representing a {@link Person} object.
  */
-public class MatchViewModel<Mentee, Mentor> {
-    private final ObservableMap<String, String> match;
-    private final ObservableMap<String, String> modifiableMatch;
-    private final Match<Mentee, Mentor> data;
+public class PersonViewModel {
     
-    protected MatchViewModel(ResultConfiguration<Mentee, Mentor> configuration, 
-            Match<Mentee, Mentor> match){
-        modifiableMatch = FXCollections.observableMap(configuration.getResultMap(match));
-        this.match = FXCollections.unmodifiableObservableMap(modifiableMatch);
-        data = match;
+    private final Map<String, String> personData;
+    private final Person person;
+    
+    protected PersonViewModel(PersonConfiguration configuration, Person person){
+        this.person = person;
+        Map<String, String> modifiableMatch = new HashMap<>();
+        //TODO: put all the configured properties here instead of simply the name
+        modifiableMatch.put("Name", person.getFullName());
+        personData = Collections.unmodifiableMap(modifiableMatch);
     }
     
-    public ObservableMap<String, String> observableMatch(){
-        return match;
+    public Map<String, String> getPersonData(){
+        return personData;
     }
     
-    protected Match<Mentee, Mentor> getData(){
-        return data;
+    public Person getPerson(){
+        return person;
     }
 }

@@ -26,11 +26,11 @@ import mentoring.viewmodel.RunConfiguration;
 public class Main {
     /**
      * TODO: link GUI to code.
-     * 2a. Allow manual modification of matching results and reruns excluding the manual modifications.
-     * 2aa. Clean up main view FXML and make window pretty
-     * 2ab. Handle refactoring TODOs
-     * 2b. Internationalize GUI
-     * 3. Add export button to save results in file
+     * 1. Handle manual match delete button
+     * 2b. Add export button to save results in file
+     * 2c. Clean up main view FXML and make window pretty
+     * 2d. Handle refactoring TODOs
+     * 2e. Internationalize GUI
      * 3b. Add view to choose global configuration through RunConfiguration enum.
      * 3d. Add global configuration parameters for magic numbers.
      * 4. Choose mentees file
@@ -39,7 +39,8 @@ public class Main {
      * 7. Choose mentors configuration (file or POJO)
      * 8. Choose criteria configuration (POJO)
      * 9. Choose result configuration (file or POJO)
-     * 10. Make some manual amendments to matches and recompute the rest
+     * 10a. Handle concurrency TODOs
+     * 10b. Add status for person: "not matched", "manual match", "automated match"
      * 11. Alert if configuration is not consistent with data file:
      * for person conf, missing columns in file header
      * 12. Alert if criteria configuration is not consistent with person configuration

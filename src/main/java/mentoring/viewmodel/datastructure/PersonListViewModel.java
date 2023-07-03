@@ -1,59 +1,32 @@
-package mentoring.viewmodel.match;
+package mentoring.viewmodel.datastructure;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiFunction;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
-import mentoring.configuration.ResultConfiguration;
-import mentoring.match.Match;
-import mentoring.match.Matches;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import mentoring.configuration.PersonConfiguration;
+import mentoring.datastructure.Person;
 
 /**
- * Viewmodel responsible for representing a {@link Matches} object. The object is not ready until
- * {@link #update(mentoring.configuration.ResultConfiguration, mentoring.match.Matches) } has been
- * called.
- * 
- * @param <Mentee> type of the first element of a {@link Match}.
- * @param <Mentor> type of the second element of a {@link Match}.
- * @param <VM> type of the {@link MatchViewModel} used to represent each match.
+ * Viewmodel responsible for representing a list of {@link Person} objects.
  */
-public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, Mentor>> 
-        implements Observable {
-    private final List<String> headerContent = new ArrayList<>();
-    private final List<VM> batchUpdateItems = new ArrayList<>();
-    private final List<VM> transferredItems = new ArrayList<>();
-    private ResultConfiguration<Mentee, Mentor> configuration = null;
-    private Matches<Mentee, Mentor> pendingMatches = null;
-    private boolean ready = false;
-    private final BiFunction<ResultConfiguration<Mentee, Mentor>, Match<Mentee, Mentor>, 
-            VM> vmFactory;
+public class PersonListViewModel implements Observable {
+    //TODO once PersonViewModel represents more than just the name, fix this initialisation.
+    private final List<String> headerContent = List.of("Name");
+    private final ObservableList<PersonViewModel> items = 
+            FXCollections.observableArrayList();
+    private List<Person> pendingItems;
+    private final List<Person> underlyingData = new ArrayList<>();
+    private PersonConfiguration configuration = null;
     private final List<InvalidationListener> listeners = new ArrayList<>();
     private boolean invalidated = false;
-    private boolean invalidatedHeader = false;
     
     /**
-     * Builds a new {@code MatchesViewModel} object.
-     * @param vmFactory factory building the viewmodel encapsulating the individual {@link Match}
-     *      objects of the {@link Matches} object represented by this viewmodel.
-     */
-    protected MatchesViewModel(BiFunction<ResultConfiguration<Mentee, Mentor>, 
-            Match<Mentee, Mentor>, VM> vmFactory){
-        this.vmFactory = vmFactory;
-    }
-    
-    /**
-     * Returns true if the viewmodel represents valid data.
-     */
-    public boolean isValid(){
-        return ready || invalidated;
-    }
-    
-    /**
-     * Returns the header of the {@link Matches} object.
-     * The header contains the attributes kept in the {@link ResultConfiguration} argument of the 
+     * Returns the header of the {@link Person} object.
+     * The header contains the attributes from the {@link PersonConfiguration} argument of the 
      * last call to 
      * {@link #update(mentoring.configuration.ResultConfiguration, mentoring.match.Matches) }.
      */
@@ -63,34 +36,28 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
     }
     
     /**
-     * Returns the content of the represented {@link Matches} object.
+     * Returns the content of the represented {@link Person} objects.
      */
-    public List<VM> getBatchItems(){
+    public ObservableList<PersonViewModel> getItems(){
         updateIfNecessary();
-        return batchUpdateItems;
+        return items;
+    }
+    
+    public List<Person> getUnderlyingData(){
+        //TODO: there might be a layer issue, a viewModel should not expose data objects.
+        updateIfNecessary();
+        return underlyingData;
     }
     
     /**
-     * Returns the representation of the {@link Match} objects that have been transferred.
-     */
-    public List<VM> getTransferredItems(){
-        updateIfNecessary();
-        return transferredItems;
-    }
-    
-    /**
-     * Updates this viewmodel to represent a {@link Matches} object.
+     * Updates this viewmodel to represent a list of {@link Person} objects.
      * @param configuration used to select the attributes to represent.
-     * @param matches the data to represent.
+     * @param persons the data to represent.
      */
-    public synchronized void update(ResultConfiguration<Mentee, Mentor> configuration,
-            Matches<Mentee, Mentor> matches){
+    public synchronized void update(PersonConfiguration configuration, List<Person> persons){
         Objects.requireNonNull(configuration);
-        if(!configuration.equals(this.configuration)){
-            this.configuration = configuration;
-            invalidatedHeader = true;
-        }
-        this.pendingMatches = matches;
+        this.configuration = configuration;
+        this.pendingItems = persons;
         invalidated = true;
         notifyListeners();
     }
@@ -103,32 +70,27 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
     
     private synchronized void actuallyUpdate(){
         if(invalidated){
-            if(invalidatedHeader){
-                prepareHeader(configuration);
-                updateManualItems();
-                invalidatedHeader = false;
-            }
-            prepareItems(configuration, pendingMatches);
-            ready = true;
+            prepareHeader(configuration);
+            setUnderlyingData(pendingItems);
+            prepareItems(configuration);
             invalidated = false;
         }
     }
     
-    private void prepareHeader(ResultConfiguration<Mentee, Mentor> configuration) {
+    private void prepareHeader(PersonConfiguration configuration) {
+        //TODO: once PersonViewModel represent more than just the name, fix this method.
         this.configuration = configuration;
-        headerContent.clear();
-        headerContent.addAll(Arrays.asList(configuration.getResultHeader()));
     }
     
-    private void updateManualItems(){
-        transferredItems.replaceAll(vm -> vmFactory.apply(configuration, vm.getData()));
+    private void setUnderlyingData(List<Person> matches) {
+        this.underlyingData.clear();
+        this.underlyingData.addAll(matches);
     }
             
-    private void prepareItems(
-            ResultConfiguration<Mentee, Mentor> configuration, Matches<Mentee, Mentor> matches) {
-        batchUpdateItems.clear();
-        for (Match<Mentee, Mentor> match : matches){
-            batchUpdateItems.add(vmFactory.apply(configuration, match));
+    private void prepareItems(PersonConfiguration configuration) {
+        items.clear();
+        for (Person person : underlyingData){
+            items.add(new PersonViewModel(configuration, person));
         }
     }
     
@@ -142,25 +104,11 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
     public void addListener(InvalidationListener il) {
         Objects.requireNonNull(il);
         listeners.add(il);
-        if(invalidated){
-            il.invalidated(this);
-        }
     }
 
     @Override
     public void removeListener(InvalidationListener il) {
         Objects.requireNonNull(il);
         listeners.remove(il);
-    }
-    
-    /**
-     * Transfer item from the batch list to the manual one.
-     * @param item to transfer between the two lists.
-     */
-    public void transferItem(VM item){
-        Objects.requireNonNull(item);
-        transferredItems.add(item);
-        batchUpdateItems.remove(item);
-        notifyListeners();
     }
 }

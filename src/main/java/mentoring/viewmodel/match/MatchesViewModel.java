@@ -102,6 +102,9 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
     }
     
     private synchronized void actuallyUpdate(){
+        /*FIXME possible race condition between update and actuallyUpdate: verify if synchronized 
+        methods are all protected by the same intrinsic lock.
+        */
         if(invalidated){
             if(invalidatedHeader){
                 prepareHeader(configuration);
@@ -133,6 +136,7 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
     }
     
     private void notifyListeners(){
+        //FIXME: possible concurrency exception if addListener or removeListener is called during notifyListeners
         for(InvalidationListener listener : listeners){
             listener.invalidated(this);
         }
@@ -142,9 +146,6 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
     public void addListener(InvalidationListener il) {
         Objects.requireNonNull(il);
         listeners.add(il);
-        if(invalidated){
-            il.invalidated(this);
-        }
     }
 
     @Override
@@ -157,10 +158,24 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
      * Transfer item from the batch list to the manual one.
      * @param item to transfer between the two lists.
      */
+    @Deprecated
     public void transferItem(VM item){
         Objects.requireNonNull(item);
         transferredItems.add(item);
         batchUpdateItems.remove(item);
+        notifyListeners();
+    }
+    
+    /**
+     * Add an item to the manual items list.
+     * @param item to add
+     * @throws IllegalStateException if this instance is not ready when calling this method
+     */
+    public void addManualItem(Match<Mentee, Mentor> item){
+        //TODO make lazy modification
+        //TODO mark the batch items invalid if the Match is in conflict with one from the batch.
+        Objects.requireNonNull(item);
+        transferredItems.add(vmFactory.apply(configuration, item));
         notifyListeners();
     }
 }
