@@ -26,7 +26,6 @@ import mentoring.viewmodel.RunConfiguration;
 public class Main {
     /**
      * TODO: link GUI to code.
-     * 1. Handle manual match delete button
      * 2b. Add export button to save results in file
      * 2c. Clean up main view FXML and make window pretty
      * 2d. Handle refactoring TODOs

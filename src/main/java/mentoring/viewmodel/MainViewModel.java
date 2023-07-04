@@ -5,6 +5,7 @@ import java.util.concurrent.Future;
 import javax.inject.Inject;
 import mentoring.concurrency.ConcurrencyHandler;
 import mentoring.viewmodel.datastructure.PersonListViewModel;
+import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 import mentoring.viewmodel.datastructure.PersonViewModel;
 
@@ -65,6 +66,16 @@ public class MainViewModel {
             PersonMatchesViewModel resultVM, RunConfiguration data){
         return matchMaker.makeSingleMatch(resultVM, data, menteeVM.getPerson(), 
                 mentorVM.getPerson());
+    }
+    
+    /**
+     * Remove a match between two persons.
+     * @param toRemove the ViewModel containing the match to remove
+     * @param resultVM the ViewModel to update
+     * @return a Future object that can be used to control the execution and completion of the task.
+     */
+    public Future<?> removeSingleMatch(PersonMatchViewModel toRemove, PersonMatchesViewModel resultVM){
+        return matchMaker.removeSingleMatch(resultVM, toRemove);
     }
     
 }

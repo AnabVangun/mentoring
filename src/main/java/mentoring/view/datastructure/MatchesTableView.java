@@ -142,4 +142,8 @@ public class MatchesTableView implements Initializable {
             case MENTOR -> mentorTable.getSelectionModel().getSelectedItem();
         };
     }
+    
+    public PersonMatchViewModel getSelectedManualMatch(){
+        return manualTable.getSelectionModel().getSelectedItem();
+    }
 }

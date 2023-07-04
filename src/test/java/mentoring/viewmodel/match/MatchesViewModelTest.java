@@ -183,7 +183,7 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
     
     @TestFactory
     Stream<DynamicNode> addManualItem_addToTransferred(){
-        return test("addManualItem() adds the item to the batch items", args -> {
+        return test("addManualItem() adds the item to the transferred items", args -> {
             /*FIXME: this test only verifies that items already present in the batch
             items can be added to the manual ones. It should mostly verify that :
             1. a match between two persons not in the batch items works;
@@ -255,6 +255,66 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
             viewModel.update(configuration, 
                     new MatchesTest.MatchesArgs<>(List.of(Pair.of("foo", "bar"))).convert());
             assertContentAsExpected(expectedContent, viewModel.getTransferredItems());
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> removeManualItem_NPE(){
+        return test("removeManualItem() throws an NPE when removing a null object", args -> {
+           MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel =
+                   args.convert();
+           Assertions.assertThrows(NullPointerException.class, () -> viewModel.removeManualItem(null));
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> removeManualItem_removeFromTransferred(){
+        return test("removeManualItem() removed the item from the transferred items", args -> {
+            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel =
+                    args.convertAndUpdate();
+            List<Match<String, String>> expectedContent = 
+                    List.of(viewModel.getBatchItems().get(1).getData());
+            viewModel.addManualItem(viewModel.getBatchItems().get(1).getData());
+            viewModel.addManualItem(viewModel.getBatchItems().get(0).getData());
+            Assertions.assertAll(
+                    () -> Assertions.assertTrue(
+                            viewModel.removeManualItem(viewModel.getTransferredItems().get(1))),
+                    () -> Assertions.assertEquals(expectedContent,
+                            viewModel.getTransferredItems().stream().map(e -> e.getData()).toList())
+            );
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> removeManualItem_invalidatedEvent(){
+        return test("removeManualItem() fires an invalidated event to all registered listeners", args -> {
+            Observable[] notified = new Observable[2];
+            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
+                    args.convertAndUpdate();
+            viewModel.addListener(observable -> notified[0] = observable);
+            viewModel.addListener(observable -> notified[1] = observable);
+            viewModel.addManualItem(viewModel.getBatchItems().get(0).getData());
+            viewModel.removeManualItem(viewModel.getTransferredItems().get(0));
+            Assertions.assertAll(
+                    () -> Assertions.assertSame(viewModel, notified[0]),
+                    () -> Assertions.assertSame(viewModel, notified[1])
+            );
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> removeManualItem_noInvalidatedEventOnNoOp(){
+        return test("removeManualItem() does not fire an invalidated event when not removing", args -> {
+            Observable[] notified = new Observable[2];
+            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
+                    args.convertAndUpdate();
+            viewModel.addListener(observable -> notified[0] = observable);
+            viewModel.addListener(observable -> notified[1] = observable);
+            viewModel.removeManualItem(viewModel.getBatchItems().get(0));
+            Assertions.assertAll(
+                    () -> Assertions.assertNull(notified[0]),
+                    () -> Assertions.assertNull(notified[1])
+            );
         });
     }
     

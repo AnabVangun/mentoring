@@ -11,6 +11,7 @@ import mentoring.match.Match;
 import mentoring.match.Matches;
 import mentoring.match.MatchesTest;
 import mentoring.viewmodel.ConcurrentMatchMaker.MultipleMatchTask;
+import mentoring.viewmodel.ConcurrentMatchMaker.SingleMatchRemovalTask;
 import mentoring.viewmodel.ConcurrentMatchMaker.SingleMatchTask;
 import mentoring.viewmodel.ConcurrentMatchMakerTest.MatchMakerArgs;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
@@ -182,6 +183,27 @@ class ConcurrentMatchMakerTest implements TestFramework<MatchMakerArgs>{
                             actualMatch.getMentee().getFullName()),
                     () -> Assertions.assertEquals(expectedMatch.getMentor().getFullName(),
                             actualMatch.getMentor().getFullName()));
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> removeSingleMatche_updateViewModel(){
+        //TODO refactor test: move stuff to MatchMakerArgs
+        return test("call() updates the input view model", args -> {
+            PersonMatchesViewModel updatedVM = Mockito.mock(PersonMatchesViewModel.class);
+            PersonMatchViewModel mockRemoved = Mockito.mock(PersonMatchViewModel.class);
+            SingleMatchRemovalTask task = new SingleMatchRemovalTask(updatedVM, mockRemoved);
+            try {
+                task.call();
+            } catch (Exception e){
+                Assertions.fail(e);
+            }
+            task.succeeded();
+            @SuppressWarnings("unchecked")
+            ArgumentCaptor<PersonMatchViewModel> captor = 
+                    ArgumentCaptor.forClass(PersonMatchViewModel.class);
+            Mockito.verify(updatedVM).removeManualItem(captor.capture());
+            Assertions.assertSame(mockRemoved, captor.getValue());
         });
     }
     

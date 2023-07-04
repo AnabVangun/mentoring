@@ -4,8 +4,6 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javax.inject.Inject;
 import mentoring.view.datastructure.MatchesTableView;
@@ -52,9 +50,8 @@ public class MainView implements Initializable {
                 tableViewController.getSelectedPerson(PersonType.MENTOR), 
                 tableViewController.getMatchesViewModel(), data));
         deleteManualMatchButton.textProperty().set("Delete manual match");
-        deleteManualMatchButton.setOnAction(event -> {
-            Alert alert = new Alert(AlertType.ERROR, "Not implemented yet"); //TODO implement
-            alert.show();
-        });
+        deleteManualMatchButton.setOnAction(event -> vm.removeSingleMatch(
+                tableViewController.getSelectedManualMatch(), 
+                tableViewController.getMatchesViewModel()));
     }    
 }

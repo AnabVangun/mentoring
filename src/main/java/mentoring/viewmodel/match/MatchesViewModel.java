@@ -2,6 +2,7 @@ package mentoring.viewmodel.match;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
@@ -155,18 +156,6 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
     }
     
     /**
-     * Transfer item from the batch list to the manual one.
-     * @param item to transfer between the two lists.
-     */
-    @Deprecated
-    public void transferItem(VM item){
-        Objects.requireNonNull(item);
-        transferredItems.add(item);
-        batchUpdateItems.remove(item);
-        notifyListeners();
-    }
-    
-    /**
      * Add an item to the manual items list.
      * @param item to add
      * @throws IllegalStateException if this instance is not ready when calling this method
@@ -177,5 +166,21 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
         Objects.requireNonNull(item);
         transferredItems.add(vmFactory.apply(configuration, item));
         notifyListeners();
+    }
+    
+    /**
+     * Remove an item from the manual items list, if it is present (optional operation).
+     * @param item element to be removed from this view model, if present
+     * @return true if an element was removed as a result of this call
+     * @see Collection#remove(java.lang.Object) 
+     */
+    public boolean removeManualItem(VM item){
+        Objects.requireNonNull(item);
+        if(getTransferredItems().remove(item)){
+            notifyListeners();
+            return true;
+        } else {
+            return false;
+        }
     }
 }

@@ -80,13 +80,8 @@ class ConcurrentMatchMaker {
                     resultVM.getTransferredItems(), t -> t.getMentee());
             List<Person> filteredMentors = filterAvailablePerson(mentors, 
                     resultVM.getTransferredItems(), t -> t.getMentor());
-            try {
-                results = makeMatchesWithException(data, filteredMentees, filteredMentors);
-                resultConfiguration = getResultConfiguration(data);
-            } catch (IOException e) {
-                e.printStackTrace();
-                //TODO mark task as failed
-            }
+            results = makeMatchesWithException(data, filteredMentees, filteredMentors);
+            resultConfiguration = getResultConfiguration(data);
             return null;
         }
 
@@ -169,12 +164,7 @@ class ConcurrentMatchMaker {
         
         @Override
         protected Void call() throws Exception {
-            try {
-                result = makeMatchWithException(data, mentee, mentor);
-            } catch (IOException e) {
-                e.printStackTrace();
-                //TODO mark task as failed
-            }
+            result = makeMatchWithException(data, mentee, mentor);
             return null;
         }
 
@@ -202,6 +192,42 @@ class ConcurrentMatchMaker {
                     criteriaConfiguration.getProgressiveCriteria());
             solver.withNecessaryCriteria(criteriaConfiguration.getNecessaryCriteria());
             return solver.buildSingleMatch(mentee, mentor);
+        }
+    }
+    
+    /**
+     * Remove a match between a mentee and a mentor in a background task.
+     * @param resultVM the view model that will be updated when the task completes
+     * @param toRemove the view model representing the match to remove
+     * @return an object that can be used to get the status of the background task
+     */
+    Future<?> removeSingleMatch(PersonMatchesViewModel resultVM, PersonMatchViewModel toRemove) {
+        return handler.submit(new SingleMatchRemovalTask(resultVM, toRemove));
+    }
+    
+    static class SingleMatchRemovalTask extends Task<Void> {
+        private final PersonMatchesViewModel resultVM;
+        private final PersonMatchViewModel toRemove;
+        
+        /**
+         * Initialise a {@code SingleMatchDeletionTask} object.
+         * @param resultVM the view model that will be updated when the task completes
+         * @param toRemove the view model representing the match to remove
+         */
+        SingleMatchRemovalTask(PersonMatchesViewModel resultVM, PersonMatchViewModel toRemove) {
+            this.resultVM = resultVM;
+            this.toRemove = toRemove;
+        }
+        
+        @Override
+        protected Void call() throws Exception {
+            return null;
+        }
+
+        @Override
+        protected void succeeded() {
+            super.succeeded();
+            resultVM.removeManualItem(toRemove);
         }
     }
 }
