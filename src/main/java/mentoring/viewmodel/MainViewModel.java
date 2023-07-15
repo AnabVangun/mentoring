@@ -1,5 +1,6 @@
 package mentoring.viewmodel;
 
+import java.io.File;
 import mentoring.viewmodel.datastructure.PersonType;
 import java.util.concurrent.Future;
 import javax.inject.Inject;
@@ -76,6 +77,18 @@ public class MainViewModel {
      */
     public Future<?> removeSingleMatch(PersonMatchViewModel toRemove, PersonMatchesViewModel resultVM){
         return matchMaker.removeSingleMatch(resultVM, toRemove);
+    }
+    
+    /**
+     * Export the current matches in a file.
+     * @param toExport the ViewModel containing the matches to export
+     * @param outputFile the destination file
+     * @param data how to get the configuration data
+     * @return a Future object that can be used to control the execution and completion of the task.
+     */
+    public Future<?> exportMatches(PersonMatchesViewModel toExport, File outputFile, 
+            RunConfiguration data){
+        return matchMaker.exportMatches(toExport, outputFile, data);
     }
     
 }

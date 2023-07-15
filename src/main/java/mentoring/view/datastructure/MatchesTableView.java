@@ -1,5 +1,8 @@
 package mentoring.view.datastructure;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -143,6 +146,10 @@ public class MatchesTableView implements Initializable {
         };
     }
     
+    /**
+     * Returns this view's selected manual match.
+     * @return the match that is selected in the table corresponding to the manual matches.
+     */
     public PersonMatchViewModel getSelectedManualMatch(){
         return manualTable.getSelectionModel().getSelectedItem();
     }

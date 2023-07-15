@@ -1,5 +1,7 @@
 package mentoring.viewmodel;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -7,6 +9,7 @@ import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javafx.concurrent.Task;
+import javafx.scene.control.Alert;
 import javax.inject.Inject;
 import mentoring.concurrency.ConcurrencyHandler;
 import mentoring.configuration.CriteriaConfiguration;
@@ -26,6 +29,7 @@ class ConcurrentMatchMaker {
     //TODO: make sure that a global match cannot be run while a single match is running
     //TODO: make sure that a single global match can be run at the same time
     //TODO: make sure that if several single matches are running, they only handle different persons
+    //TODO: refactor into multiple subclasses
     
     private final ConcurrencyHandler handler;
     
@@ -228,6 +232,56 @@ class ConcurrentMatchMaker {
         protected void succeeded() {
             super.succeeded();
             resultVM.removeManualItem(toRemove);
+        }
+    }
+    
+    /**
+     * Export matches to a file in a background task.
+     * @param exportedVM the view model that contains the data to export
+     * @param outputFile the file where to export the data
+     * @param data where to get data from
+     * @return an object that can be used to get the status of the background task
+     */
+    Future<?> exportMatches(PersonMatchesViewModel exportedVM, File outputFile, RunConfiguration data){
+        return handler.submit(new MatchExportTask(exportedVM, outputFile, data));
+    }
+    
+    static class MatchExportTask extends Task<Void> {
+        private final PersonMatchesViewModel exportedVM;
+        private final File outputFile;
+        private final RunConfiguration data;
+        
+        /**
+         * Initialise a MatchExportTask object.
+         * @param exportedVM the view model that contains the data to export
+         * @param outputFile the file where to export the data
+         * @param data where to get data from
+         */
+        MatchExportTask(PersonMatchesViewModel exportedVM, File outputFile, RunConfiguration data){
+            this.exportedVM = exportedVM;
+            this.outputFile = outputFile;
+            this.data = data;
+        }
+        
+        @Override
+        protected Void call() throws Exception {
+            try(FileOutputStream outputStream = new FileOutputStream(outputFile)){
+                exportedVM.writeMatches(outputStream, data.getResultConfiguration());
+                return null;
+            }
+        }
+        
+        @Override
+        protected void succeeded() {
+            //TODO internationalise string
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, "Export completed");
+            alert.show();
+        }
+        
+        @Override
+        protected void failed() {
+            Alert alert = new Alert(Alert.AlertType.ERROR, getException().getLocalizedMessage());
+            alert.show();
         }
     }
 }

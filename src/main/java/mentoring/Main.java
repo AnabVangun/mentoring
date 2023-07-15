@@ -26,8 +26,6 @@ import mentoring.viewmodel.RunConfiguration;
 public class Main {
     /**
      * TODO: link GUI to code.
-     * 2b. Add export button to save results in file
-     * 2c. Clean up main view FXML and make window pretty
      * 2d. Handle refactoring TODOs
      * 2e. Internationalize GUI
      * 3b. Add view to choose global configuration through RunConfiguration enum.
@@ -38,12 +36,15 @@ public class Main {
      * 7. Choose mentors configuration (file or POJO)
      * 8. Choose criteria configuration (POJO)
      * 9. Choose result configuration (file or POJO)
+     * 9a. Add forbid button to prevent a match between two persons.
+     * 9b. Add save/load button to load configuration (including forbidden matches) and results from a file
      * 10a. Handle concurrency TODOs
      * 10b. Add status for person: "not matched", "manual match", "automated match"
      * 11. Alert if configuration is not consistent with data file:
      * for person conf, missing columns in file header
      * 12. Alert if criteria configuration is not consistent with person configuration
      * 13. Choose criteria configuration (file)
+     * 13b. make window pretty
      * 14. Modify assignmentproblem to handle cancellation and offer progress status
      * 15. Use new version of assignmentproblem to allow cancellation and display progress status
      * 16. Check good practice for storing FXML files (resources vs in packages)

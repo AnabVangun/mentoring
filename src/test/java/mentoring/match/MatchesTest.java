@@ -63,7 +63,8 @@ public final class MatchesTest implements TestFramework<MatchesTest.MatchesArgs>
             this.matches = matches;
             matches.forEach(matchesCopy::add);
         }
-        
+        /*TODO many uses of this should be replaced with the public Matches constructor.
+        */
         public MatchesArgs(List<Pair<? extends K, ? extends V>> matches){
             this("", matches.stream().map(pair -> new Match<>(pair.getLeft(), pair.getRight(), 0))
                     .collect(Collectors.toList()));

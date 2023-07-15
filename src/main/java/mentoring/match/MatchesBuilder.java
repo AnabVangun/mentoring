@@ -139,7 +139,7 @@ public final class MatchesBuilder<Mentee, Mentor> {
     }
     
     private List<Match<Mentee, Mentor>> 
-        buildMenteeMatchesWithValidOrDefaultMentor(Result rawResult){
+            buildMenteeMatchesWithValidOrDefaultMentor(Result rawResult){
         List<Integer> rowAssignments = rawResult.getRowAssignments();
         List<Match<Mentee, Mentor>> result = new ArrayList<>(rowAssignments.size());
         for (int i = 0; i < rowAssignments.size(); i++){

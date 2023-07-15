@@ -1,5 +1,9 @@
 package mentoring.viewmodel.match;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -8,6 +12,7 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.match.Match;
+import mentoring.match.Matches;
 import mentoring.match.MatchesTest;
 import mentoring.viewmodel.match.MatchesViewModelTest.MatchesViewModelTestArgs;
 import org.apache.commons.lang3.tuple.Pair;
@@ -315,6 +320,130 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
                     () -> Assertions.assertNull(notified[0]),
                     () -> Assertions.assertNull(notified[1])
             );
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> writeMatches_NPE(){
+        return test("writeMatches() throws an NPE on null input", args -> {
+            //TODO make 3 different tests for the 3 test cases
+            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel =
+                    args.convertAndUpdate();
+            Class<? extends Exception> expectedException = NullPointerException.class;
+            Assertions.assertAll(
+                    () -> Assertions.assertThrows(expectedException, 
+                            () -> viewModel.writeMatches(null, args.getResultConfiguration())),
+                    () -> Assertions.assertThrows(expectedException,
+                            () -> viewModel.writeMatches(System.out, null)),
+                    () -> Assertions.assertThrows(expectedException,
+                            () -> viewModel.writeMatches(null, null)));
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> writeMatches_expectedResult_onlyAutomated(){
+        return test("writeMatches() writes the expected result with only automated matches", args -> {
+            OutputStream os = new ByteArrayOutputStream();
+            ResultConfiguration<String, String> configuration = args.getResultConfiguration();
+            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel =
+                    args.convertAndUpdate();
+            viewModel.getBatchItems();
+            try {
+                viewModel.writeMatches(os, configuration);
+            } catch (IOException e){
+                Assertions.fail(e);
+            }
+            String actualResult = os.toString();
+            String expectedResult = """
+                    "first","second"
+                    "first mentee","first mentor"
+                    "second mentee","second mentor"
+                    """;
+            Assertions.assertEquals(expectedResult, actualResult);
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> writeMatches_onlyManual(){
+        return test("writeMatches() writes the expected result with only manual matches", args -> {
+            OutputStream os = new ByteArrayOutputStream();
+            ResultConfiguration<String, String> configuration = args.getResultConfiguration();
+            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel =
+                    args.convert();
+            viewModel.update(configuration, new Matches<>(new ArrayList<>()));
+            Matches<String, String> matches = new MatchesTest.MatchesArgs<>(args.input).convert();
+            for(Match<String, String> match : matches){
+                viewModel.addManualItem(match);
+            }
+            viewModel.getTransferredItems();
+            try {
+                viewModel.writeMatches(os, configuration);
+            } catch (IOException e){
+                Assertions.fail(e);
+            }
+            String actualResult = os.toString();
+            String expectedResult = """
+                    "first","second"
+                    "first mentee","first mentor"
+                    "second mentee","second mentor"
+                    """;
+            Assertions.assertEquals(expectedResult, actualResult);
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> writeMatches_both(){
+        return test("writeMatches() writes the expected result with both manual and automated matches", args -> {
+            OutputStream os = new ByteArrayOutputStream();
+            ResultConfiguration<String, String> configuration = args.getResultConfiguration();
+            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel =
+                    args.convertAndUpdate();
+            Matches<String, String> matches = new MatchesTest.MatchesArgs<>(
+                    List.of(Pair.of("third mentee", "third mentor"), 
+                            Pair.of("fourth mentee", "fourth mentor"))).convert();
+            for(Match<String, String> match : matches){
+                viewModel.addManualItem(match);
+            }
+            viewModel.getBatchItems();
+            try {
+                viewModel.writeMatches(os, configuration);
+            } catch (IOException e){
+                Assertions.fail(e);
+            }
+            String actualResult = os.toString();
+            String expectedResult = """
+                    "first","second"
+                    "third mentee","third mentor"
+                    "fourth mentee","fourth mentor"
+                    "first mentee","first mentor"
+                    "second mentee","second mentor"
+                    """;
+            Assertions.assertEquals(expectedResult, actualResult);
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> writeMatches_none(){
+        return test("writeMatches() writes the expected result with no matches", args -> {
+            OutputStream os = new ByteArrayOutputStream();
+            ResultConfiguration<String, String> configuration = args.getResultConfiguration();
+            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel =
+                    args.convert();
+            viewModel.update(configuration,
+                    new MatchesTest.MatchesArgs<>(
+                            new ArrayList<Pair<? extends String, ? extends String>>())
+                    .convert());
+            viewModel.getBatchItems();
+            try {
+                viewModel.writeMatches(os, configuration);
+            } catch (IOException e){
+                Assertions.fail(e);
+            }
+            String actualResult = os.toString();
+            String expectedResult = """
+                    "first","second"
+                    """;
+            Assertions.assertEquals(expectedResult, actualResult);
         });
     }
     

@@ -13,6 +13,7 @@
               <Button fx:id="runButton"/>
               <Button fx:id="addManualMatchButton"/>
               <Button fx:id="deleteManualMatchButton"/>
+              <Button fx:id="exportButton"/>
           </children>
       </HBox>
    </children>

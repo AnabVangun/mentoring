@@ -1,5 +1,10 @@
 package mentoring.viewmodel.match;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -9,6 +14,7 @@ import java.util.function.BiFunction;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import mentoring.configuration.ResultConfiguration;
+import mentoring.io.ResultWriter;
 import mentoring.match.Match;
 import mentoring.match.Matches;
 
@@ -75,6 +81,7 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
      * Returns the representation of the {@link Match} objects that have been transferred.
      */
     public List<VM> getTransferredItems(){
+        //TODO rename to getManualItems
         updateIfNecessary();
         return transferredItems;
     }
@@ -160,7 +167,7 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
      * @param item to add
      * @throws IllegalStateException if this instance is not ready when calling this method
      */
-    public void addManualItem(Match<Mentee, Mentor> item){
+    public synchronized void addManualItem(Match<Mentee, Mentor> item){
         //TODO make lazy modification
         //TODO mark the batch items invalid if the Match is in conflict with one from the batch.
         Objects.requireNonNull(item);
@@ -174,13 +181,38 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
      * @return true if an element was removed as a result of this call
      * @see Collection#remove(java.lang.Object) 
      */
-    public boolean removeManualItem(VM item){
+    public synchronized boolean removeManualItem(VM item){
         Objects.requireNonNull(item);
         if(getTransferredItems().remove(item)){
             notifyListeners();
             return true;
         } else {
             return false;
+        }
+    }
+    
+    /**
+     * Write the current matches in a given stream. The manual matches are written out before the
+     * automated ones.
+     * @param os where to write the results
+     * @param configuration how to write the results
+     * @throws IOException when the output stream cannot be written
+     */
+    public synchronized void writeMatches(OutputStream os, 
+            ResultConfiguration<Mentee, Mentor> configuration) throws IOException {
+        Objects.requireNonNull(os);
+        Objects.requireNonNull(configuration);
+        ResultWriter<Mentee, Mentor> resultWriter = new ResultWriter<>(configuration);
+        List<Match<Mentee, Mentor>> tmpMatches = new ArrayList<>();
+        for (MatchViewModel<Mentee, Mentor> vm : getTransferredItems()){
+            tmpMatches.add(vm.getData());
+        }
+        for (MatchViewModel<Mentee, Mentor> vm : getBatchItems()) {
+            tmpMatches.add(vm.getData());
+        }
+        Matches<Mentee, Mentor> matches = new Matches<>(tmpMatches);
+        try(Writer writer = new PrintWriter(os, true, Charset.forName("utf-8"))){
+            resultWriter.writeMatches(matches, writer);
         }
     }
 }
