@@ -38,6 +38,7 @@ public class Main {
      * 9. Choose result configuration (file or POJO)
      * 9a. Add forbid button to prevent a match between two persons.
      * 9b. Add save/load button to load configuration (including forbidden matches) and results from a file
+     * 9c. Fix header of PersonListViewModel/PersonViewModel
      * 10a. Handle concurrency TODOs
      * 10b. Add status for person: "not matched", "manual match", "automated match"
      * 11. Alert if configuration is not consistent with data file:

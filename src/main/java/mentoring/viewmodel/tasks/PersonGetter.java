@@ -1,6 +1,5 @@
-package mentoring.viewmodel;
+package mentoring.viewmodel.tasks;
 
-import mentoring.viewmodel.datastructure.PersonType;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -9,12 +8,14 @@ import javafx.concurrent.Task;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.Person;
 import mentoring.io.PersonFileParser;
+import mentoring.viewmodel.RunConfiguration;
 import mentoring.viewmodel.datastructure.PersonListViewModel;
+import mentoring.viewmodel.datastructure.PersonType;
 
 /**
  * Class used to get persons and update an input view model.
  */
-class PersonGetter extends Task<List<Person>> {
+public class PersonGetter extends Task<List<Person>> {
     //TODO test
     private final PersonListViewModel resultVM;
     private final RunConfiguration data;
@@ -28,7 +29,7 @@ class PersonGetter extends Task<List<Person>> {
      * @param data where to get data from
      * @param type type of person to get
      */
-    PersonGetter(PersonListViewModel resultVM, RunConfiguration data, PersonType type) {
+    public PersonGetter(PersonListViewModel resultVM, RunConfiguration data, PersonType type) {
         this.data = data;
         this.resultVM = resultVM;
         this.type = type;
@@ -36,13 +37,8 @@ class PersonGetter extends Task<List<Person>> {
 
     @Override
     protected List<Person> call() throws Exception {
-        try {
-            personConfiguration = getPersonConfiguration(data, type);
-            persons = getPersons(data, personConfiguration, type);
-        } catch (IOException e) {
-            e.printStackTrace();
-            //TODO mark task as failed
-        }
+        personConfiguration = getPersonConfiguration(data, type);
+        persons = getPersons(data, personConfiguration, type);
         return persons;
     }
 

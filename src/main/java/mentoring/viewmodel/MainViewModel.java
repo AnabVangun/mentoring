@@ -1,5 +1,7 @@
 package mentoring.viewmodel;
 
+import mentoring.viewmodel.tasks.ConcurrentMatchMaker;
+import mentoring.viewmodel.tasks.PersonGetter;
 import java.io.File;
 import mentoring.viewmodel.datastructure.PersonType;
 import java.util.concurrent.Future;

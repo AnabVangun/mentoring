@@ -64,8 +64,7 @@ public final class ConcurrencyHandler {
     private synchronized void initialise(boolean functional){
         if(privateExecutor == null){
             if(functional){
-                //TODO: put magic number in global parameters
-                privateExecutor = Executors.newFixedThreadPool(1);
+                privateExecutor = Executors.newFixedThreadPool(Parameters.getNumberOfThreads());
             } else {
                 privateExecutor = new ShutdownExecutorService();
             }
