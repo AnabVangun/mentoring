@@ -16,6 +16,7 @@ public class MainApplication extends Application {
     private final Injector injector = Guice.createInjector(new ConcurrencyModule(), 
             new PersonViewModelModule());
     private final ConcurrencyHandler handler = injector.getInstance(ConcurrencyHandler.class);
+    private final static int SHUTDOWN_TIMEOUT = 5000;
     
     @Override
     public void start(Stage stage) throws Exception {
@@ -33,8 +34,7 @@ public class MainApplication extends Application {
         
     @Override
     public void stop(){
-        //TODO put magic number in parameters
-        handler.shutdown(5000);
+        handler.shutdown(SHUTDOWN_TIMEOUT);
         if (! handler.isShutDown()){
             throw new RuntimeException("Can't shutdown concurrency handler");
         }

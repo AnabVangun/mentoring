@@ -10,7 +10,7 @@ import mentoring.match.MatchesBuilder;
 import mentoring.viewmodel.RunConfiguration;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 
-class SingleMatchTask extends Task<Void> {
+public class SingleMatchTask extends Task<Void> {
     
     private final PersonMatchesViewModel resultVM;
     private final RunConfiguration data;
@@ -25,7 +25,7 @@ class SingleMatchTask extends Task<Void> {
      * @param mentee the mentee to match
      * @param mentor the mentor to match
      */
-    SingleMatchTask(PersonMatchesViewModel resultVM, RunConfiguration data, Person mentee, 
+    public SingleMatchTask(PersonMatchesViewModel resultVM, RunConfiguration data, Person mentee, 
             Person mentor) {
         this.resultVM = resultVM;
         this.data = data;

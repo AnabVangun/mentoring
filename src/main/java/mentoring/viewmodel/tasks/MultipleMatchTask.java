@@ -16,7 +16,7 @@ import mentoring.viewmodel.RunConfiguration;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 
-class MultipleMatchTask extends Task<Void> {
+public class MultipleMatchTask extends Task<Void> {
     
     private final PersonMatchesViewModel resultVM;
     private final RunConfiguration data;
@@ -32,7 +32,7 @@ class MultipleMatchTask extends Task<Void> {
      * @param mentees the list of mentees to match
      * @param mentors the list of mentors to match
      */
-    MultipleMatchTask(PersonMatchesViewModel resultVM, RunConfiguration data, List<Person> mentees, 
+    public MultipleMatchTask(PersonMatchesViewModel resultVM, RunConfiguration data, List<Person> mentees, 
             List<Person> mentors) {
         this.resultVM = resultVM;
         this.data = data;

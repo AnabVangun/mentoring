@@ -1,6 +1,5 @@
 package mentoring.viewmodel;
 
-import mentoring.viewmodel.tasks.ConcurrentMatchMaker;
 import mentoring.viewmodel.tasks.PersonGetter;
 import java.io.File;
 import mentoring.viewmodel.datastructure.PersonType;
@@ -11,23 +10,30 @@ import mentoring.viewmodel.datastructure.PersonListViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 import mentoring.viewmodel.datastructure.PersonViewModel;
+import mentoring.viewmodel.tasks.MatchExportTask;
+import mentoring.viewmodel.tasks.MultipleMatchTask;
+import mentoring.viewmodel.tasks.SingleMatchRemovalTask;
+import mentoring.viewmodel.tasks.SingleMatchTask;
 
 /**
  * ViewModel responsible for handling the main window of the application.
  */
 public class MainViewModel {
-    private final ConcurrencyHandler executor;
-    private final ConcurrentMatchMaker matchMaker;
+    /*
+    TODO: handle concurrency. For each subtask, test and document method
+        make sure that a global match cannot be run while a single match is running
+        make sure that only one global match can be run at the same time
+        make sure that if several single matches are running, they only handle different persons
+    */
+    private final ConcurrencyHandler matchMaker;
     
     /**
      * Create a new {@code MainViewModel}.
      * @param executor Executor service that will receive the task to run the application.
      */
     @Inject
-    MainViewModel(ConcurrencyHandler executor){
-        this.executor = executor;
-        //TODO use dependency injection instead
-        this.matchMaker = new ConcurrentMatchMaker(executor);
+    MainViewModel(ConcurrencyHandler concurrencyHandler){
+        this.matchMaker = concurrencyHandler;
     }
     
     /**
@@ -39,7 +45,7 @@ public class MainViewModel {
      */
     public Future<?> getPersons(PersonListViewModel resultVM, RunConfiguration data,
             PersonType type){
-        return executor.submit(new PersonGetter(resultVM, data, type));
+        return matchMaker.submit(new PersonGetter(resultVM, data, type));
     }
     
     /**
@@ -52,9 +58,9 @@ public class MainViewModel {
      */
     public Future<?> makeMatches(PersonListViewModel menteeVM, PersonListViewModel mentorVM,
             PersonMatchesViewModel resultVM, RunConfiguration data){
-        return matchMaker.makeMultipleMatches(resultVM, data,
+        return matchMaker.submit(new MultipleMatchTask(resultVM, data,
                 menteeVM.getUnderlyingData(),
-                mentorVM.getUnderlyingData());
+                mentorVM.getUnderlyingData()));
     }
     
     /**
@@ -67,8 +73,8 @@ public class MainViewModel {
      */
     public Future<?> makeSingleMatch(PersonViewModel menteeVM, PersonViewModel mentorVM,
             PersonMatchesViewModel resultVM, RunConfiguration data){
-        return matchMaker.makeSingleMatch(resultVM, data, menteeVM.getPerson(), 
-                mentorVM.getPerson());
+        return matchMaker.submit(new SingleMatchTask(resultVM, data, menteeVM.getPerson(), 
+                mentorVM.getPerson()));
     }
     
     /**
@@ -78,7 +84,7 @@ public class MainViewModel {
      * @return a Future object that can be used to control the execution and completion of the task.
      */
     public Future<?> removeSingleMatch(PersonMatchViewModel toRemove, PersonMatchesViewModel resultVM){
-        return matchMaker.removeSingleMatch(resultVM, toRemove);
+        return matchMaker.submit(new SingleMatchRemovalTask(resultVM, toRemove));
     }
     
     /**
@@ -90,7 +96,7 @@ public class MainViewModel {
      */
     public Future<?> exportMatches(PersonMatchesViewModel toExport, File outputFile, 
             RunConfiguration data){
-        return matchMaker.exportMatches(toExport, outputFile, data);
+        return matchMaker.submit(new MatchExportTask(toExport, outputFile, data));
     }
     
 }

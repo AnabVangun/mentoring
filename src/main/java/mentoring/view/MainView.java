@@ -3,6 +3,8 @@ package mentoring.view;
 import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -17,6 +19,7 @@ import mentoring.viewmodel.datastructure.PersonType;
 public class MainView implements Initializable {
     
     private final MainViewModel vm;
+    private final FileChooser chooser = configureFileChooser();
     
     @FXML
     private MatchesTableView tableViewController;
@@ -36,37 +39,62 @@ public class MainView implements Initializable {
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        //TODO internationalize strings
-        //TODO refactor to extract methods
         RunConfiguration data = RunConfiguration.TEST;
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle("Export to");
-        chooser.getExtensionFilters().addAll(
+        fillPersonTables(data);
+        configureButtons(data);
+    }
+    
+    private static FileChooser configureFileChooser(){
+        FileChooser result = new FileChooser();
+        //TODO internationalize strings
+        result.setTitle("Export to");
+        result.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("CSV Files", "*.csv"),
                 new FileChooser.ExtensionFilter("All files", "*.*")
         );
-        vm.getPersons(tableViewController.getPersonViewModel(PersonType.MENTEE), 
-                data, PersonType.MENTEE);
-        vm.getPersons(tableViewController.getPersonViewModel(PersonType.MENTOR), 
-                data, PersonType.MENTOR);
-        runButton.textProperty().set("Run");
-        runButton.setOnAction(event -> vm.makeMatches(
+        return result;
+    }
+    
+    private void fillPersonTables(RunConfiguration data){
+        for (PersonType type : PersonType.values()){
+            vm.getPersons(tableViewController.getPersonViewModel(type), data, type);
+        }
+    }
+    
+    private void configureButtons(RunConfiguration data){
+        configureButtonToMakeMatches(runButton, "Run", data);
+        configureButtonToMakeManualMatch(addManualMatchButton, "Set as match", data);
+        configureButtonToDeleteManualMatch(deleteManualMatchButton, "Delete manual match");
+        configureButtonToExportMatches(exportButton, "Export matches", data);
+    }
+    
+    private void configureButtonToMakeMatches(Button button, String buttonCaption, 
+            RunConfiguration data){
+        configureButtonToMakeAction(button, buttonCaption, event -> vm.makeMatches(
                 tableViewController.getPersonViewModel(PersonType.MENTEE),
                 tableViewController.getPersonViewModel(PersonType.MENTOR),
                 tableViewController.getMatchesViewModel(), data));
-        addManualMatchButton.textProperty().set("Set as match");
-        //FIXME: manualMatchButton should only be enabled when a mentee and a mentor have been selected
-        addManualMatchButton.setOnAction(event -> vm.makeSingleMatch(
+    }
+    
+    private void configureButtonToMakeManualMatch(Button button, String buttonCaption,
+            RunConfiguration data){
+        configureButtonToMakeAction(button, buttonCaption, event -> vm.makeSingleMatch(
                 //FIXME: protect against illegal use: no selection, confirmation for multiple selection...
                 tableViewController.getSelectedPerson(PersonType.MENTEE),
                 tableViewController.getSelectedPerson(PersonType.MENTOR), 
                 tableViewController.getMatchesViewModel(), data));
-        deleteManualMatchButton.setText("Delete manual match");
-        deleteManualMatchButton.setOnAction(event -> vm.removeSingleMatch(
+        //FIXME: manualMatchButton should only be enabled when a mentee and a mentor have been selected
+    }
+    
+    private void configureButtonToDeleteManualMatch(Button button, String buttonCaption){
+        configureButtonToMakeAction(button, buttonCaption, event -> vm.removeSingleMatch(
                 tableViewController.getSelectedManualMatch(), 
                 tableViewController.getMatchesViewModel()));
-        exportButton.setText("Export matches");
-        exportButton.setOnAction(event -> {
+    }
+    
+    private void configureButtonToExportMatches(Button button, String buttonCaption, 
+            RunConfiguration data){
+        configureButtonToMakeAction(button, buttonCaption, event -> {
             File outputFile = chooser.showSaveDialog(
                     ((Node) event.getSource()).getScene().getWindow());
             if(outputFile != null){
@@ -77,5 +105,11 @@ public class MainView implements Initializable {
                 vm.exportMatches(tableViewController.getMatchesViewModel(), outputFile, data);
             }
         });
-    }    
+    }
+    
+    private static void configureButtonToMakeAction(Button button, String buttonCaption,
+            EventHandler<ActionEvent> action){
+        button.setText(buttonCaption);
+        button.setOnAction(action);
+    }
 }

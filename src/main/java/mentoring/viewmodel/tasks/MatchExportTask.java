@@ -7,7 +7,10 @@ import javafx.scene.control.Alert;
 import mentoring.viewmodel.RunConfiguration;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 
-class MatchExportTask extends Task<Void> {
+/**
+ * Export matches to a file in a background task.
+ */
+public class MatchExportTask extends Task<Void> {
     
     private final PersonMatchesViewModel exportedVM;
     private final File outputFile;
@@ -19,7 +22,7 @@ class MatchExportTask extends Task<Void> {
      * @param outputFile the file where to export the data
      * @param data where to get data from
      */
-    MatchExportTask(PersonMatchesViewModel exportedVM, File outputFile, RunConfiguration data) {
+    public MatchExportTask(PersonMatchesViewModel exportedVM, File outputFile, RunConfiguration data) {
         this.exportedVM = exportedVM;
         this.outputFile = outputFile;
         this.data = data;

@@ -4,7 +4,7 @@ import javafx.concurrent.Task;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 
-class SingleMatchRemovalTask extends Task<Void> {
+public class SingleMatchRemovalTask extends Task<Void> {
     
     private final PersonMatchesViewModel resultVM;
     private final PersonMatchViewModel toRemove;
@@ -14,7 +14,7 @@ class SingleMatchRemovalTask extends Task<Void> {
      * @param resultVM the view model that will be updated when the task completes
      * @param toRemove the view model representing the match to remove
      */
-    SingleMatchRemovalTask(PersonMatchesViewModel resultVM, PersonMatchViewModel toRemove) {
+    public SingleMatchRemovalTask(PersonMatchesViewModel resultVM, PersonMatchViewModel toRemove) {
         this.resultVM = resultVM;
         this.toRemove = toRemove;
     }
