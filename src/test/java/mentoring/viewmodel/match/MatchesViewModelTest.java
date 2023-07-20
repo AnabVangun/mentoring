@@ -8,20 +8,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.match.Match;
 import mentoring.match.Matches;
 import mentoring.match.MatchesTest;
+import mentoring.viewmodel.base.ObservableViewModelTest;
+import mentoring.viewmodel.base.ObservableViewModelArgs;
 import mentoring.viewmodel.match.MatchesViewModelTest.MatchesViewModelTestArgs;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
-import test.tools.TestFramework;
 
-class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
+class MatchesViewModelTest extends ObservableViewModelTest<
+        MatchesViewModel<String, String, MatchViewModel<String, String>>, MatchesViewModelTestArgs>{
     
     @Override
     public Stream<MatchesViewModelTestArgs> argumentsSupplier(){
@@ -55,7 +55,7 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
         return test("update() properly sets the header", args -> {
             MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
                     args.convertAndUpdate();
-            Assertions.assertEquals(args.expectedHeader, viewModel.getHeaderContent());
+            Assertions.assertEquals(args.expectedHeader, viewModel.getHeaders());
         });
     }
     
@@ -69,7 +69,7 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
                     expectedHeader, match -> new String[]{match.getMentee()});
             viewModel.update(newConf, 
                     new MatchesTest.MatchesArgs<>(List.of(Pair.of("foo", "bar"))).convert());
-            Assertions.assertEquals(expectedHeader, viewModel.getHeaderContent());
+            Assertions.assertEquals(expectedHeader, viewModel.getHeaders());
         });
     }
     
@@ -78,7 +78,7 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
         return test("update() properly sets the content", args -> {
             MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
                     args.convertAndUpdate();
-            List<Map<String, String>> actualContent = viewModel.getBatchItems().stream()
+            List<Map<String, String>> actualContent = viewModel.getContent().stream()
                     .map(matchVM -> matchVM.observableMatch())
                     .collect(Collectors.toList());
             Assertions.assertEquals(args.expectedContent, actualContent);
@@ -95,7 +95,7 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
                     List.of("unique"), match -> new String[]{match.getMentee()});
             viewModel.update(newConf, 
                     new MatchesTest.MatchesArgs<>(List.of(Pair.of("foo", "bar"))).convert());
-            assertContentAsExpected(expectedContent, viewModel.getBatchItems());
+            assertContentAsExpected(expectedContent, viewModel.getContent());
         });
     }
     
@@ -109,75 +109,12 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
     
     @TestFactory
     Stream<DynamicNode> update_invalidatedEvent(){
-        return test("update() fires an invalidated event to all registered listeners", args -> {
-            Observable[] notified = new Observable[2];
-            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
-                    args.convert();
-            viewModel.addListener(observable -> notified[0] = observable);
-            viewModel.addListener(observable -> notified[1] = observable);
-            args.update(viewModel);
-            Assertions.assertAll(
-                    () -> Assertions.assertSame(viewModel, notified[0]),
-                    () -> Assertions.assertSame(viewModel, notified[1])
-            );
-        });
+        return test("update() fires an invalidated event to all registered listeners", 
+                args -> assertInvalidatedEventFired(args, vm -> args.invalidate(vm)));
     }
     
     @TestFactory
-    Stream<DynamicNode> addListener_NPE(){
-        return test("addListener() throws an NPE when adding a null object", args -> {
-            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
-                    args.convert();
-            Assertions.assertThrows(NullPointerException.class, () -> viewModel.addListener(null));
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> removeListener_nominal(){
-        return test("removeListener() removes exactly the input listener", args -> {
-            Observable[] notified = new Observable[2];
-            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
-                    args.convert();
-            InvalidationListener removed = observable -> notified[0] = observable;
-            viewModel.addListener(removed);
-            viewModel.addListener(observable -> notified[1] = observable);
-            viewModel.removeListener(removed);
-            args.update(viewModel);
-            Assertions.assertAll(
-                    () -> Assertions.assertNull(notified[0]),
-                    () -> Assertions.assertSame(viewModel, notified[1])
-            );
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> removeListener_NPE(){
-        return test("removeListener() throws an NPE when removing a null object", args -> {
-            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
-                    args.convert();
-            Assertions.assertThrows(NullPointerException.class, 
-                    () -> viewModel.removeListener(null));
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> removeListener_notPreviouslyRegistered(){
-        return test("removeListener() does not throw exception when removing absent listener", args -> {
-            Observable[] notified = new Observable[2];
-            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
-                    args.convert();
-            viewModel.addListener(observable -> notified[0] = observable);
-            viewModel.addListener(observable -> notified[1] = observable);
-            viewModel.removeListener(observable -> notified[-1] = observable);
-            args.update(viewModel);
-            Assertions.assertAll(
-                    () -> Assertions.assertSame(viewModel, notified[1]),
-                    () -> Assertions.assertSame(viewModel, notified[1])
-            );
-        });
-    }
-    
-    @TestFactory
+    @SuppressWarnings("ThrowableResultIgnored")
     Stream<DynamicNode> addManualItem_NPE(){
         return test("addManualItem() throws an NPE when adding a null object", args -> {
            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel =
@@ -197,10 +134,10 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
             MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel =
                     args.convertAndUpdate();
             List<Match<String, String>> expectedContent = 
-                    List.of(viewModel.getBatchItems().get(1).getData(), 
-                            viewModel.getBatchItems().get(0).getData());
-            viewModel.addManualItem(viewModel.getBatchItems().get(1).getData());
-            viewModel.addManualItem(viewModel.getBatchItems().get(0).getData());
+                    List.of(viewModel.getContent().get(1).getData(), 
+                            viewModel.getContent().get(0).getData());
+            viewModel.addManualItem(viewModel.getContent().get(1).getData());
+            viewModel.addManualItem(viewModel.getContent().get(0).getData());
             Assertions.assertEquals(expectedContent, 
                     viewModel.getTransferredItems().stream().map(e -> e.getData()).toList());
         });
@@ -208,18 +145,9 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
     
     @TestFactory
     Stream<DynamicNode> addManualItem_invalidatedEvent(){
-        return test("addManualItem() fires an invalidated event to all registered listeners", args -> {
-            Observable[] notified = new Observable[2];
-            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
-                    args.convertAndUpdate();
-            viewModel.addListener(observable -> notified[0] = observable);
-            viewModel.addListener(observable -> notified[1] = observable);
-            viewModel.addManualItem(viewModel.getBatchItems().get(0).getData());
-            Assertions.assertAll(
-                    () -> Assertions.assertSame(viewModel, notified[0]),
-                    () -> Assertions.assertSame(viewModel, notified[1])
-            );
-        });
+        return test("addManualItem() fires an invalidated event to all registered listeners", 
+                args -> assertInvalidatedEventFired(args, vm -> args.invalidate(vm), 
+                        vm -> vm.addManualItem(vm.getContent().get(0).getData())));
     }
     
     @TestFactory
@@ -232,7 +160,7 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
                     new MatchesTest.MatchesArgs<>(List.of(
                             Pair.of("first foo", "first bar"),
                             Pair.of("second foo", "second bar"))).convert());
-            viewModel.addManualItem(viewModel.getBatchItems().get(0).getData());
+            viewModel.addManualItem(viewModel.getContent().get(0).getData());
             Map<String, String> expectedContent = 
                     Map.copyOf(viewModel.getTransferredItems().get(0).observableMatch());
             viewModel.update(configuration, 
@@ -256,7 +184,7 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
             ResultConfiguration<String, String> configuration = ResultConfiguration.create("name", 
                     expectedHeader, match -> new String[]{match.getMentee()});
             List<Map<String, String>> expectedContent = List.of(Map.of("unique", "foo"));
-           viewModel.addManualItem(viewModel.getBatchItems().get(0).getData());
+           viewModel.addManualItem(viewModel.getContent().get(0).getData());
             viewModel.update(configuration, 
                     new MatchesTest.MatchesArgs<>(List.of(Pair.of("foo", "bar"))).convert());
             assertContentAsExpected(expectedContent, viewModel.getTransferredItems());
@@ -264,6 +192,7 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
     }
     
     @TestFactory
+    @SuppressWarnings("ThrowableResultIgnored")
     Stream<DynamicNode> removeManualItem_NPE(){
         return test("removeManualItem() throws an NPE when removing a null object", args -> {
            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel =
@@ -278,9 +207,9 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
             MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel =
                     args.convertAndUpdate();
             List<Match<String, String>> expectedContent = 
-                    List.of(viewModel.getBatchItems().get(1).getData());
-            viewModel.addManualItem(viewModel.getBatchItems().get(1).getData());
-            viewModel.addManualItem(viewModel.getBatchItems().get(0).getData());
+                    List.of(viewModel.getContent().get(1).getData());
+            viewModel.addManualItem(viewModel.getContent().get(1).getData());
+            viewModel.addManualItem(viewModel.getContent().get(0).getData());
             Assertions.assertAll(
                     () -> Assertions.assertTrue(
                             viewModel.removeManualItem(viewModel.getTransferredItems().get(1))),
@@ -292,41 +221,24 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
     
     @TestFactory
     Stream<DynamicNode> removeManualItem_invalidatedEvent(){
-        return test("removeManualItem() fires an invalidated event to all registered listeners", args -> {
-            Observable[] notified = new Observable[2];
-            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
-                    args.convertAndUpdate();
-            viewModel.addListener(observable -> notified[0] = observable);
-            viewModel.addListener(observable -> notified[1] = observable);
-            viewModel.addManualItem(viewModel.getBatchItems().get(0).getData());
-            viewModel.removeManualItem(viewModel.getTransferredItems().get(0));
-            Assertions.assertAll(
-                    () -> Assertions.assertSame(viewModel, notified[0]),
-                    () -> Assertions.assertSame(viewModel, notified[1])
-            );
-        });
+        return test("removeManualItem() fires an invalidated event to all registered listeners", 
+                args -> assertInvalidatedEventFired(args, vm -> {
+                    args.invalidate(vm);
+                    vm.addManualItem(vm.getContent().get(0).getData());
+                }, vm -> vm.removeManualItem(vm.getTransferredItems().get(0))));
     }
     
     @TestFactory
     Stream<DynamicNode> removeManualItem_noInvalidatedEventOnNoOp(){
-        return test("removeManualItem() does not fire an invalidated event when not removing", args -> {
-            Observable[] notified = new Observable[2];
-            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
-                    args.convertAndUpdate();
-            viewModel.addListener(observable -> notified[0] = observable);
-            viewModel.addListener(observable -> notified[1] = observable);
-            viewModel.removeManualItem(viewModel.getBatchItems().get(0));
-            Assertions.assertAll(
-                    () -> Assertions.assertNull(notified[0]),
-                    () -> Assertions.assertNull(notified[1])
-            );
-        });
+        return test("removeManualItem() does not fire an invalidated event when not removing", 
+                args -> assertNoInvalidatedEventFired(args, vm -> args.invalidate(vm), 
+                        vm -> vm.removeManualItem(vm.getContent().get(0))));
     }
     
     @TestFactory
     Stream<DynamicNode> writeMatches_NPE(){
         return test("writeMatches() throws an NPE on null input", args -> {
-            //TODO make 3 different tests for the 3 test cases
+            //TODO refactor make 3 different tests for the 3 test cases
             MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel =
                     args.convertAndUpdate();
             Class<? extends Exception> expectedException = NullPointerException.class;
@@ -347,7 +259,7 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
             ResultConfiguration<String, String> configuration = args.getResultConfiguration();
             MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel =
                     args.convertAndUpdate();
-            viewModel.getBatchItems();
+            viewModel.getContent();
             try {
                 viewModel.writeMatches(os, configuration);
             } catch (IOException e){
@@ -404,7 +316,7 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
             for(Match<String, String> match : matches){
                 viewModel.addManualItem(match);
             }
-            viewModel.getBatchItems();
+            viewModel.getContent();
             try {
                 viewModel.writeMatches(os, configuration);
             } catch (IOException e){
@@ -433,7 +345,7 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
                     new MatchesTest.MatchesArgs<>(
                             new ArrayList<Pair<? extends String, ? extends String>>())
                     .convert());
-            viewModel.getBatchItems();
+            viewModel.getContent();
             try {
                 viewModel.writeMatches(os, configuration);
             } catch (IOException e){
@@ -447,26 +359,34 @@ class MatchesViewModelTest implements TestFramework<MatchesViewModelTestArgs>{
         });
     }
     
-    static record MatchesViewModelTestArgs(String testCase, List<String> expectedHeader,
-            List<Pair<? extends String, ? extends String>> input, 
-            List<Map<String, String>> expectedContent) {
+    static class MatchesViewModelTestArgs extends ObservableViewModelArgs<
+            MatchesViewModel<String, String, MatchViewModel<String, String>>>{
+        private final List<String> expectedHeader;
+        private final List<Pair<? extends String, ? extends String>> input;
+        private final List<Map<String, String>> expectedContent;
         
-        @Override
-        public String toString(){
-            return testCase;
+        MatchesViewModelTestArgs(String testCase, List<String> expectedHeader,
+                List<Pair<? extends String, ? extends String>> input, 
+                List<Map<String, String>> expectedContent){
+            super(testCase);
+            this.expectedHeader = expectedHeader;
+            this.input = input;
+            this.expectedContent = expectedContent;
         }
-        
-        MatchesViewModel<String, String, MatchViewModel<String, String>> convert(){
+    
+        @Override
+        protected MatchesViewModel<String, String, MatchViewModel<String, String>> convert(){
             return new MatchesViewModel<>(MatchViewModel::new);
         }
         
        MatchesViewModel<String, String, MatchViewModel<String, String>> convertAndUpdate(){
             MatchesViewModel<String, String, MatchViewModel<String, String>> vm = convert();
-            update(vm);
+            invalidate(vm);
             return vm;
         }
        
-       void update(
+       @Override
+       protected void invalidate(
                MatchesViewModel<String, String, MatchViewModel<String, String>> vm){
            vm.update(getResultConfiguration(),
                    new MatchesTest.MatchesArgs<>(input).convert());

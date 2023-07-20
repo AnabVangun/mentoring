@@ -1,12 +1,11 @@
 package mentoring.view.datastructure;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.function.Function;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.beans.property.SimpleStringProperty;
@@ -18,6 +17,7 @@ import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
 import javafx.util.Callback;
 import javax.inject.Inject;
+import mentoring.viewmodel.base.TabularDataViewModel;
 import mentoring.viewmodel.datastructure.PersonListViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
@@ -55,15 +55,17 @@ public class MatchesTableView implements Initializable {
         this.vm = computedVM;
         this.menteeVM = menteeVM;
         this.mentorVM = mentorVM;
+        //TODO refactor: when vm has been split, use non-deprecated version of updateTable
         matchesListener = observable -> {
-            update(computedTable, vm);
-            updateManualTable(manualTable, vm);
+            updateTable(computedTable, vm, e -> e.observableMatch());
+            updateTable(manualTable, vm.getHeaders(), vm.getTransferredItems(), 
+                    e -> e.observableMatch());
         };
         menteeListener = observable -> {
-            updatePersonTable(menteeTable, this.menteeVM);
+            updateTable(menteeTable, menteeVM, e -> e.getPersonData());
         };
         mentorListener = observable -> {
-            updatePersonTable(mentorTable, this.mentorVM);
+            updateTable(mentorTable, mentorVM, e -> e.getPersonData());
         };
     }
     
@@ -94,35 +96,26 @@ public class MatchesTableView implements Initializable {
         matchPane.getDividers().get(0).positionProperty()
                 .bindBidirectional(personPane.getDividers().get(0).positionProperty());
     }
-    
-    private void update(TableView<PersonMatchViewModel> table, 
-            PersonMatchesViewModel associatedVM){
+    @Deprecated
+    private static <E> void updateTable(TableView<E> table, 
+            List<String> headers, Collection<E> content,
+            Function<E, Map<String, String>> propertyGetter){
         table.getColumns().clear();
-        List<String> headers = associatedVM.getHeaderContent();
         for (String header : headers){
-            addColumn(table, header, p -> p.getValue().observableMatch());
+            addColumn(table, header, p -> propertyGetter.apply(p.getValue()));
         }
-        table.itemsProperty().get().setAll(associatedVM.getBatchItems());
+        table.itemsProperty().get().setAll(content);
     }
     
-    private void updateManualTable(TableView<PersonMatchViewModel> table, 
-            PersonMatchesViewModel associatedVM) {
+    //TODO extract into tested utility class for TableView
+    private static <E> void updateTable(TableView<E> table, TabularDataViewModel<E> viewModel,
+            Function<E, Map<String, String>> propertyGetter){
         table.getColumns().clear();
-        List<String> headers = associatedVM.getHeaderContent();
+        List<String> headers = viewModel.getHeaders();
         for (String header : headers){
-            addColumn(table, header, p -> p.getValue().observableMatch());
+            addColumn(table, header, p -> propertyGetter.apply(p.getValue()));
         }
-        table.itemsProperty().get().setAll(associatedVM.getTransferredItems());
-    }
-    
-    private void updatePersonTable(TableView<PersonViewModel> table,
-            PersonListViewModel associatedVM){
-        table.getColumns().clear();
-        List<String> headers = associatedVM.getHeaderContent();
-        for (String header : headers){
-            addColumn(table, header, p -> p.getValue().getPersonData());
-        }
-        table.setItems(associatedVM.getItems());
+        table.itemsProperty().get().setAll(viewModel.getContent());
     }
     
     //TODO extract into tested utility class for TableView

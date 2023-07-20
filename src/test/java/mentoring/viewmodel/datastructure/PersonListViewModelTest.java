@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.IndexedPropertyName;
 import mentoring.datastructure.Person;
@@ -13,14 +11,15 @@ import mentoring.datastructure.PersonBuilder;
 import mentoring.datastructure.PropertyName;
 import mentoring.datastructure.PropertyType;
 import mentoring.datastructure.SetPropertyName;
+import mentoring.viewmodel.base.ObservableViewModelTest;
+import mentoring.viewmodel.base.ObservableViewModelArgs;
 import mentoring.viewmodel.datastructure.PersonListViewModelTest.PersonListViewModelArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
-import test.tools.TestFramework;
 
-class PersonListViewModelTest implements TestFramework<PersonListViewModelArgs>{
-    //TODO refactor to extract ObservableTest interface with default tests for listener handling
+class PersonListViewModelTest extends ObservableViewModelTest<PersonListViewModel,
+        PersonListViewModelArgs>{
 
     @Override
     public Stream<PersonListViewModelArgs> argumentsSupplier() {
@@ -33,7 +32,7 @@ class PersonListViewModelTest implements TestFramework<PersonListViewModelArgs>{
             //TODO when header is properly implemented, update test
             PersonListViewModel viewModel = new PersonListViewModel();
             viewModel.update(args.getSimpleConfiguration(), List.of());
-            Assertions.assertEquals(args.expectedHeader(), viewModel.getHeaderContent());
+            Assertions.assertEquals(args.expectedHeader(), viewModel.getHeaders());
         });
     }
     
@@ -47,7 +46,7 @@ class PersonListViewModelTest implements TestFramework<PersonListViewModelArgs>{
                     Set.of(), "|", "%s", List.of("nothing")), 
                     List.of());
             viewModel.update(args.getSimpleConfiguration(), List.of());
-            Assertions.assertEquals(args.expectedHeader(), viewModel.getHeaderContent());
+            Assertions.assertEquals(args.expectedHeader(), viewModel.getHeaders());
         });
     }
     
@@ -129,51 +128,24 @@ class PersonListViewModelTest implements TestFramework<PersonListViewModelArgs>{
         
     @TestFactory
     Stream<DynamicNode> update_notifyListeners(){
-        return test("update() notifies the registered listeners", args -> {
-            Observable[] notified = new Observable[2];
-            InvalidationListener listener1 = observable -> notified[0] = observable;
-            InvalidationListener listener2 = observable -> notified[1] = observable;
-            PersonListViewModel viewModel = new PersonListViewModel();
-            viewModel.addListener(listener1);
-            viewModel.addListener(listener2);
-            viewModel.update(args.getSimpleConfiguration(), List.of());
-            Assertions.assertAll(
-                    () -> Assertions.assertSame(viewModel, notified[0]),
-                    () -> Assertions.assertSame(viewModel, notified[1]));
-        });
+        return test("update() notifies the registered listeners", 
+                args -> assertInvalidatedEventFired(args, vm -> args.invalidate(vm)));
     }
     
-    @TestFactory
-    Stream<DynamicNode> addListener_NPE(){
-        return test("addListener() throws an NPE", args -> {
-            PersonListViewModel viewModel = new PersonListViewModel();
-            Assertions.assertThrows(NullPointerException.class, () -> viewModel.addListener(null));
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> removeListener_nominal(){
-        return test("removeListener() removes exactly the input listener", args -> {
-            PersonListViewModel viewModel = new PersonListViewModel();
-            Observable[] notified = new Observable[2]; 
-            InvalidationListener listener1 = observable -> notified[0] = observable;
-            InvalidationListener listener2 = observable -> notified[1] = observable;
-            viewModel.addListener(listener1);
-            viewModel.addListener(listener2);
-            viewModel.removeListener(listener1);
-            viewModel.update(args.getSimpleConfiguration(), List.of());
-            Assertions.assertAll(
-                    () -> Assertions.assertNull(notified[0]),
-                    () -> Assertions.assertSame(viewModel, notified[1]));
-        });
-    }
-    
-    //TODO implement other tests (including repeated calls to update)
-    
-    static record PersonListViewModelArgs(String testCase){
+    static class PersonListViewModelArgs extends ObservableViewModelArgs<PersonListViewModel>{
+        
+        PersonListViewModelArgs(String testCase){
+            super(testCase);
+        }
+        
         @Override
-        public String toString(){
-            return testCase;
+        protected PersonListViewModel convert(){
+            return new PersonListViewModel();
+        }
+        
+        @Override
+        protected void invalidate(PersonListViewModel viewModel){
+            viewModel.update(getSimpleConfiguration(), List.of());
         }
         
         PersonConfiguration getSimpleConfiguration(){
@@ -190,7 +162,7 @@ class PersonListViewModelTest implements TestFramework<PersonListViewModelArgs>{
         
         void assertItemsAsExpected(PersonListViewModel viewModel, List<Person> data, 
                 PersonConfiguration configuration){
-            List<PersonViewModel> toCheck = viewModel.getItems();
+            List<PersonViewModel> toCheck = viewModel.getContent();
             List<Map<String, String>> actual = toCheck.stream()
                     .map(element -> element.getPersonData()).toList();
             List<Map<String, String>> expected = data.stream()

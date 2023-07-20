@@ -26,7 +26,8 @@ import mentoring.viewmodel.RunConfiguration;
 public class Main {
     /**
      * TODO: link GUI to code.
-     * 2d. Handle refactoring TODOs
+     * 1. Handle refactoring TODOs
+     * 2a. Handle disabled property for all buttons in MainView
      * 2e. Internationalize GUI
      * 3b. Add view to choose global configuration through RunConfiguration enum.
      * 3d. Add global configuration parameters for magic numbers.

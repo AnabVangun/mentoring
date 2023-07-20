@@ -4,16 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.Person;
+import mentoring.viewmodel.base.SimpleObservableViewModel;
+import mentoring.viewmodel.base.TabularDataViewModel;
 
 /**
  * Viewmodel responsible for representing a list of {@link Person} objects.
  */
-public class PersonListViewModel implements Observable {
+public class PersonListViewModel extends SimpleObservableViewModel 
+        implements TabularDataViewModel<PersonViewModel>{
     //TODO once PersonViewModel represents more than just the name, fix this initialisation.
     private final List<String> headerContent = List.of("Name");
     private final ObservableList<PersonViewModel> items = 
@@ -30,7 +32,7 @@ public class PersonListViewModel implements Observable {
      * last call to 
      * {@link #update(mentoring.configuration.ResultConfiguration, mentoring.match.Matches) }.
      */
-    public List<String> getHeaderContent(){
+    public List<String> getHeaders(){
         updateIfNecessary();
         return headerContent;
     }
@@ -38,7 +40,7 @@ public class PersonListViewModel implements Observable {
     /**
      * Returns the content of the represented {@link Person} objects.
      */
-    public ObservableList<PersonViewModel> getItems(){
+    public ObservableList<PersonViewModel> getContent(){
         updateIfNecessary();
         return items;
     }
@@ -92,23 +94,5 @@ public class PersonListViewModel implements Observable {
         for (Person person : underlyingData){
             items.add(new PersonViewModel(configuration, person));
         }
-    }
-    
-    private void notifyListeners(){
-        for(InvalidationListener listener : listeners){
-            listener.invalidated(this);
-        }
-    }
-
-    @Override
-    public void addListener(InvalidationListener il) {
-        Objects.requireNonNull(il);
-        listeners.add(il);
-    }
-
-    @Override
-    public void removeListener(InvalidationListener il) {
-        Objects.requireNonNull(il);
-        listeners.remove(il);
     }
 }

@@ -11,12 +11,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.io.ResultWriter;
 import mentoring.match.Match;
 import mentoring.match.Matches;
+import mentoring.viewmodel.base.SimpleObservableViewModel;
+import mentoring.viewmodel.base.TabularDataViewModel;
 
 /**
  * Viewmodel responsible for representing a {@link Matches} object. The object is not ready until
@@ -28,7 +28,9 @@ import mentoring.match.Matches;
  * @param <VM> type of the {@link MatchViewModel} used to represent each match.
  */
 public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, Mentor>> 
-        implements Observable {
+        extends SimpleObservableViewModel implements TabularDataViewModel<VM> {
+    //TODO refactor: separate in two classes, one for batch items and one for transferred items
+    //The two classes will have links: the headers can be bound
     private final List<String> headerContent = new ArrayList<>();
     private final List<VM> batchUpdateItems = new ArrayList<>();
     private final List<VM> transferredItems = new ArrayList<>();
@@ -37,7 +39,6 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
     private boolean ready = false;
     private final BiFunction<ResultConfiguration<Mentee, Mentor>, Match<Mentee, Mentor>, 
             VM> vmFactory;
-    private final List<InvalidationListener> listeners = new ArrayList<>();
     private boolean invalidated = false;
     private boolean invalidatedHeader = false;
     
@@ -64,7 +65,8 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
      * last call to 
      * {@link #update(mentoring.configuration.ResultConfiguration, mentoring.match.Matches) }.
      */
-    public List<String> getHeaderContent(){
+    @Override
+    public List<String> getHeaders(){
         updateIfNecessary();
         return headerContent;
     }
@@ -72,7 +74,8 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
     /**
      * Returns the content of the represented {@link Matches} object.
      */
-    public List<VM> getBatchItems(){
+    @Override
+    public List<VM> getContent(){
         updateIfNecessary();
         return batchUpdateItems;
     }
@@ -143,25 +146,6 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
         }
     }
     
-    private void notifyListeners(){
-        //FIXME: possible concurrency exception if addListener or removeListener is called during notifyListeners
-        for(InvalidationListener listener : listeners){
-            listener.invalidated(this);
-        }
-    }
-
-    @Override
-    public void addListener(InvalidationListener il) {
-        Objects.requireNonNull(il);
-        listeners.add(il);
-    }
-
-    @Override
-    public void removeListener(InvalidationListener il) {
-        Objects.requireNonNull(il);
-        listeners.remove(il);
-    }
-    
     /**
      * Add an item to the manual items list.
      * @param item to add
@@ -207,7 +191,7 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
         for (MatchViewModel<Mentee, Mentor> vm : getTransferredItems()){
             tmpMatches.add(vm.getData());
         }
-        for (MatchViewModel<Mentee, Mentor> vm : getBatchItems()) {
+        for (MatchViewModel<Mentee, Mentor> vm : getContent()) {
             tmpMatches.add(vm.getData());
         }
         Matches<Mentee, Mentor> matches = new Matches<>(tmpMatches);
