@@ -42,10 +42,11 @@ class ResultWriterTest implements TestFramework<ResultWriterArgs> {
     }
     
     @TestFactory
+    @SuppressWarnings("ThrowableResultIgnored")
     Stream<DynamicNode> writeMatches_npe(){
-        return test(Stream.of(new ResultWriterArgs("null matches", "", null), 
+        return test(Stream.of(new ResultWriterArgs("null matches", "", null, true), 
                 new ResultWriterArgs("null writer", "", 
-                        new MatchesArgs<>(List.of(Pair.of("a","b"))).convert(), null)),
+                        new MatchesArgs<>(List.of(Pair.of("a","b"))).convert(), true, null)),
                 "writeMatches() throws NPE on null input", args -> {
                     ResultWriter<String, String> writer = new ResultWriter<>(args.getConfiguration());
                     Assertions.assertThrows(NullPointerException.class, () -> 
@@ -58,7 +59,7 @@ class ResultWriterTest implements TestFramework<ResultWriterArgs> {
     Stream<DynamicNode> writeMatches_expectedResult(){
         return test("writeMatches() returns the expected result", args -> {
             ResultWriter<String, String> writer = new ResultWriter<>(args.getConfiguration());
-            writer.writeMatches(args.input, args.destination);
+            writer.writeMatches(args.input, args.destination, args.writeHeader);
             Assertions.assertEquals(args.expectedResult, args.destination.toString());
         });
     }
@@ -68,15 +69,16 @@ class ResultWriterTest implements TestFramework<ResultWriterArgs> {
         private final String expectedResult;
         private final Matches<String, String> input;
         private final Writer destination;
+        private final boolean writeHeader;
         
         private ResultWriterArgs(String testCase, String expectedResult, 
-                Matches<String, String> input) {
-            this(testCase, expectedResult, input, new StringWriter());
+                Matches<String, String> input, boolean writeHeader) {
+            this(testCase, expectedResult, input, writeHeader, new StringWriter());
         }
         
         @SuppressWarnings("unchecked")
         private ResultWriterArgs(String testCase, String expectedResult,
-                Matches<String, String> input, Writer destination){
+                Matches<String, String> input, boolean writeHeader, Writer destination){
             super(testCase);
             Iterator<String[]> results = List.of(new String[]{"3","4"}, new String[]{"5","6"}, 
                     new String[]{"7","8"}).iterator();
@@ -85,19 +87,21 @@ class ResultWriterTest implements TestFramework<ResultWriterArgs> {
                     List.of("1","2"), lineFormatter);
             this.expectedResult = expectedResult;
             this.input = input;
+            this.writeHeader = writeHeader;
             this.destination = destination;
         }
         
         static final ResultWriterArgs ONE = new ResultWriterArgs("One match", 
                 "\"1\",\"2\"\n\"3\",\"4\"\n",
-                new MatchesArgs<>(List.of(Pair.of("a","b"))).convert());
+                new MatchesArgs<>(List.of(Pair.of("a","b"))).convert(), true);
         static final ResultWriterArgs TWO = new ResultWriterArgs("Two matches", 
                 "\"1\",\"2\"\n\"3\",\"4\"\n\"5\",\"6\"\n",
-                new MatchesArgs<>(List.of(Pair.of("a","b"), Pair.of("c","d"))).convert());
+                new MatchesArgs<>(List.of(Pair.of("a","b"), Pair.of("c","d"))).convert(), true);
         static final ResultWriterArgs THREE = new ResultWriterArgs("Three matches", 
-                "\"1\",\"2\"\n\"3\",\"4\"\n\"5\",\"6\"\n\"7\",\"8\"\n",
+                "\"3\",\"4\"\n\"5\",\"6\"\n\"7\",\"8\"\n",
                 new MatchesArgs<>(List.of(Pair.of("a","b"), Pair.of("c","d"), Pair.of("e","f")))
-                        .convert());
+                        .convert(),
+                false);
         
         ResultConfiguration<String, String> getConfiguration(){
             return configuration;

@@ -13,15 +13,15 @@ import mentoring.match.Matches;
  * <p>This class is thread-safe as long as the destination {@link Writer} of each call to 
  * {@link #writeMatches(java.io.Writer, mentoring.match.Matches) } is different.
  * 
- * @param <Mentee> type of the first element of the {@link Matches} object to write.
- * @param <Mentor> type of the second element of a {@link Matches} object to write.
+ * @param <Mentee> type of the first element of the {@link Matches} object to write
+ * @param <Mentor> type of the second element of a {@link Matches} object to write
  */
 public final class ResultWriter<Mentee, Mentor> {
     private final ResultConfiguration<Mentee, Mentor> resultConfiguration;
     
     /**
      * Initialises a new ResultWriter.
-     * @param resultConfiguration definition of the output file format.
+     * @param resultConfiguration definition of the output file format
      */
     public ResultWriter(ResultConfiguration<Mentee, Mentor> resultConfiguration){
         this.resultConfiguration = Objects.requireNonNull(resultConfiguration);
@@ -29,14 +29,27 @@ public final class ResultWriter<Mentee, Mentor> {
     
     /**
      * Writes the results to the destination in CSV format.
-     * @param results matches to write.
-     * @param destination writer that will receive the formatted data.
+     * @param results matches to write
+     * @param destination writer that will receive the formatted data
+     * @param writeHeader if true, the header is written before the data
      */
-    public void writeMatches(Matches<Mentee, Mentor> results, Writer destination){
+    public void writeMatches(Matches<Mentee, Mentor> results, Writer destination, 
+            boolean writeHeader){
         CSVWriter writer = new CSVWriter(destination);
-        writer.writeNext(resultConfiguration.getResultHeader());
+        if(writeHeader){
+            writer.writeNext(resultConfiguration.getResultHeader());
+        }
         for (Match<Mentee, Mentor> match : results){
             writer.writeNext(resultConfiguration.getResultLine(match));
         }
+    }
+    
+    /**
+     * Writes the results to the destination in CSV format. The header is written before the data.
+     * @param results matches to write
+     * @param destination writer that will receive the formatted data
+     */
+    public void writeMatches(Matches<Mentee, Mentor> results, Writer destination){
+        writeMatches(results, destination, true);
     }
 }

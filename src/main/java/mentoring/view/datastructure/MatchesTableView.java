@@ -1,7 +1,6 @@
 package mentoring.view.datastructure;
 
 import java.net.URL;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -42,38 +41,44 @@ public class MatchesTableView implements Initializable {
     @FXML
     private SplitPane matchPane;
     
-    private final PersonMatchesViewModel vm;
+    private final PersonMatchesViewModel batchVM;
+    private final PersonMatchesViewModel oneAtATimeVM;
     private final PersonListViewModel menteeVM;
     private final PersonListViewModel mentorVM;
-    private final InvalidationListener matchesListener;
+    private final InvalidationListener batchMatchesListener;
+    private final InvalidationListener oneAtATimeListener;
     private final InvalidationListener menteeListener;
     private final InvalidationListener mentorListener;
     
     @Inject
-    MatchesTableView(PersonMatchesViewModel computedVM, 
+    MatchesTableView(PersonMatchesViewModel computedVM, PersonMatchesViewModel oneAtATimeVM,
             PersonListViewModel menteeVM, PersonListViewModel mentorVM){
-        this.vm = computedVM;
+        this.batchVM = computedVM;
+        this.oneAtATimeVM = oneAtATimeVM;
         this.menteeVM = menteeVM;
         this.mentorVM = mentorVM;
-        //TODO refactor: when vm has been split, use non-deprecated version of updateTable
-        matchesListener = observable -> {
-            updateTable(computedTable, vm, e -> e.observableMatch());
-            updateTable(manualTable, vm.getHeaders(), vm.getTransferredItems(), 
-                    e -> e.observableMatch());
-        };
-        menteeListener = observable -> {
-            updateTable(menteeTable, menteeVM, e -> e.getPersonData());
-        };
-        mentorListener = observable -> {
-            updateTable(mentorTable, mentorVM, e -> e.getPersonData());
-        };
+        batchMatchesListener = observable -> 
+                updateTable(computedTable, batchVM, e -> e.observableMatch());
+        oneAtATimeListener = observable -> 
+                updateTable(manualTable, oneAtATimeVM, e -> e.observableMatch());
+        menteeListener = observable -> updateTable(menteeTable, menteeVM, e -> e.getPersonData());
+        mentorListener = observable -> updateTable(mentorTable, mentorVM, e -> e.getPersonData());
     }
     
     /**
-     * Returns this view's underlying view model for matches.
+     * Returns this view's underlying ViewModel for matches made in batches.
+     * @return a ViewModel encapsulating Matches objects.
      */
-    public PersonMatchesViewModel getMatchesViewModel(){
-        return vm;
+    public PersonMatchesViewModel getBatchMatchesViewModel(){
+        return batchVM;
+    }
+    
+    /**
+     * Returns this view's underlying ViewModel for matches made one at a time.
+     * @return a ViewModel encapsulating Matches objects.
+     */
+    public PersonMatchesViewModel getOneAtATimeMatchesViewModel(){
+        return oneAtATimeVM;
     }
     
     /**
@@ -90,24 +95,15 @@ public class MatchesTableView implements Initializable {
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        vm.addListener(new WeakInvalidationListener(matchesListener));
-        menteeVM.addListener(menteeListener);
-        mentorVM.addListener(mentorListener);
+        batchVM.addListener(new WeakInvalidationListener(batchMatchesListener));
+        oneAtATimeVM.addListener(new WeakInvalidationListener(oneAtATimeListener));
+        menteeVM.addListener(new WeakInvalidationListener(menteeListener));
+        mentorVM.addListener(new WeakInvalidationListener(mentorListener));
         matchPane.getDividers().get(0).positionProperty()
                 .bindBidirectional(personPane.getDividers().get(0).positionProperty());
     }
-    @Deprecated
-    private static <E> void updateTable(TableView<E> table, 
-            List<String> headers, Collection<E> content,
-            Function<E, Map<String, String>> propertyGetter){
-        table.getColumns().clear();
-        for (String header : headers){
-            addColumn(table, header, p -> propertyGetter.apply(p.getValue()));
-        }
-        table.itemsProperty().get().setAll(content);
-    }
     
-    //TODO extract into tested utility class for TableView
+    //TODO refactor extract into tested utility class for TableView
     private static <E> void updateTable(TableView<E> table, TabularDataViewModel<E> viewModel,
             Function<E, Map<String, String>> propertyGetter){
         table.getColumns().clear();
@@ -118,7 +114,7 @@ public class MatchesTableView implements Initializable {
         table.itemsProperty().get().setAll(viewModel.getContent());
     }
     
-    //TODO extract into tested utility class for TableView
+    //TODO refactor extract into tested utility class for TableView
     private static <E> void addColumn(TableView<E> table, String header, 
             Callback<CellDataFeatures<E, String>, Map<String, String>> propertiesGetter){
         TableColumn<E, String> column = new TableColumn<>(header);

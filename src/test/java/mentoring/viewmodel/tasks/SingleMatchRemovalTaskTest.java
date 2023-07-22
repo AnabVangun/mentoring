@@ -34,7 +34,7 @@ class SingleMatchRemovalTaskTest implements TestFramework<SingleMatchRemovalTask
             @SuppressWarnings("unchecked")
             ArgumentCaptor<PersonMatchViewModel> captor = 
                     ArgumentCaptor.forClass(PersonMatchViewModel.class);
-            Mockito.verify(updatedVM).removeManualItem(captor.capture());
+            Mockito.verify(updatedVM).remove(captor.capture());
             Assertions.assertSame(mockRemoved, captor.getValue());
         });
     }

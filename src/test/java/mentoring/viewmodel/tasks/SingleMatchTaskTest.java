@@ -50,7 +50,7 @@ class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
             task.succeeded();
             @SuppressWarnings("unchecked")
             ArgumentCaptor<Match<Person, Person>> captor = ArgumentCaptor.forClass(Match.class);
-            Mockito.verify(updatedVM).addManualItem(captor.capture());
+            Mockito.verify(updatedVM).add(captor.capture());
             PersonBuilder builder = new PersonBuilder();
             //TODO simplify Match creation
             Match<Person,Person> expectedMatch = new MatchesTest.MatchesArgs<>(

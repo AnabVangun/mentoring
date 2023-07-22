@@ -27,7 +27,7 @@ public class SingleMatchRemovalTask extends Task<Void> {
     @Override
     protected void succeeded() {
         super.succeeded();
-        resultVM.removeManualItem(toRemove);
+        resultVM.remove(toRemove);
     }
     
 }

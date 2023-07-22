@@ -53,12 +53,14 @@ public class MainViewModel {
      * @param menteeVM the ViewModel containing the mentees
      * @param mentorVM the ViewModel containing the mentors
      * @param resultVM the ViewModel to update with the results
+     * @param excludedMatchesVM the optional ViewModel containing matches that should be excluded
+     *      from the match-making process
      * @param data how to get the configuration data
      * @return a Future object that can be used to control the execution and completion of the task.
      */
     public Future<?> makeMatches(PersonListViewModel menteeVM, PersonListViewModel mentorVM,
-            PersonMatchesViewModel resultVM, RunConfiguration data){
-        return matchMaker.submit(new MultipleMatchTask(resultVM, data,
+            PersonMatchesViewModel resultVM, PersonMatchesViewModel excludedMatchesVM, RunConfiguration data){
+        return matchMaker.submit(new MultipleMatchTask(resultVM, excludedMatchesVM, data,
                 menteeVM.getUnderlyingData(),
                 mentorVM.getUnderlyingData()));
     }
@@ -89,14 +91,14 @@ public class MainViewModel {
     
     /**
      * Export the current matches in a file.
-     * @param toExport the ViewModel containing the matches to export
      * @param outputFile the destination file
      * @param data how to get the configuration data
+     * @param toExport the ViewModel containing the matches to export
      * @return a Future object that can be used to control the execution and completion of the task.
      */
-    public Future<?> exportMatches(PersonMatchesViewModel toExport, File outputFile, 
-            RunConfiguration data){
-        return matchMaker.submit(new MatchExportTask(toExport, outputFile, data));
+    public Future<?> exportMatches(File outputFile, RunConfiguration data, 
+            PersonMatchesViewModel... toExport){
+        return matchMaker.submit(new MatchExportTask(outputFile, data, toExport));
     }
     
 }

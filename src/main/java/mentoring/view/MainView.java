@@ -1,6 +1,8 @@
 package mentoring.view;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
@@ -70,10 +72,23 @@ public class MainView implements Initializable {
     
     private void configureButtonToMakeMatches(Button button, String buttonCaption, 
             RunConfiguration data){
-        configureButtonToMakeAction(button, buttonCaption, event -> vm.makeMatches(
-                tableViewController.getPersonViewModel(PersonType.MENTEE),
-                tableViewController.getPersonViewModel(PersonType.MENTOR),
-                tableViewController.getMatchesViewModel(), data));
+        configureButtonToMakeAction(button, buttonCaption, event -> {
+            try {
+                //TODO delete when configuration loading is properly implemented
+                tableViewController.getBatchMatchesViewModel()
+                        .setConfiguration(data.getResultConfiguration());
+                tableViewController.getOneAtATimeMatchesViewModel()
+                        .setConfiguration(data.getResultConfiguration());
+            } catch (IOException e){
+                throw new UncheckedIOException(e);
+            }
+            vm.makeMatches(
+                    tableViewController.getPersonViewModel(PersonType.MENTEE),
+                    tableViewController.getPersonViewModel(PersonType.MENTOR),
+                    tableViewController.getBatchMatchesViewModel(), 
+                    tableViewController.getOneAtATimeMatchesViewModel(),
+                    data);
+                    });
     }
     
     private void configureButtonToMakeManualMatch(Button button, String buttonCaption,
@@ -82,14 +97,14 @@ public class MainView implements Initializable {
                 //FIXME: protect against illegal use: no selection, confirmation for multiple selection...
                 tableViewController.getSelectedPerson(PersonType.MENTEE),
                 tableViewController.getSelectedPerson(PersonType.MENTOR), 
-                tableViewController.getMatchesViewModel(), data));
+                tableViewController.getOneAtATimeMatchesViewModel(), data));
         //FIXME: manualMatchButton should only be enabled when a mentee and a mentor have been selected
     }
     
     private void configureButtonToDeleteManualMatch(Button button, String buttonCaption){
         configureButtonToMakeAction(button, buttonCaption, event -> vm.removeSingleMatch(
                 tableViewController.getSelectedManualMatch(), 
-                tableViewController.getMatchesViewModel()));
+                tableViewController.getOneAtATimeMatchesViewModel()));
     }
     
     private void configureButtonToExportMatches(Button button, String buttonCaption, 
@@ -102,7 +117,9 @@ public class MainView implements Initializable {
                 if(parent != null){
                     chooser.setInitialDirectory(parent);
                 }
-                vm.exportMatches(tableViewController.getMatchesViewModel(), outputFile, data);
+                vm.exportMatches(outputFile, data,
+                tableViewController.getOneAtATimeMatchesViewModel(),
+                tableViewController.getBatchMatchesViewModel());
             }
         });
     }

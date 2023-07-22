@@ -7,7 +7,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javafx.concurrent.Task;
 import mentoring.configuration.CriteriaConfiguration;
-import mentoring.configuration.ResultConfiguration;
 import mentoring.datastructure.Person;
 import mentoring.match.Match;
 import mentoring.match.Matches;
@@ -19,22 +18,26 @@ import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 public class MultipleMatchTask extends Task<Void> {
     
     private final PersonMatchesViewModel resultVM;
+    private final PersonMatchesViewModel excludedMatchesVM;
     private final RunConfiguration data;
     private final List<Person> mentees;
     private final List<Person> mentors;
-    private ResultConfiguration<Person, Person> resultConfiguration;
     private Matches<Person, Person> results;
 
     /**
      * Initialise a MultipleMatchTask object.
      * @param resultVM the view model that will be updated when the task completes
+     * @param excludedMatchesVM the optional ViewModel encapsulating matches that should be excluded
+     *      from the match-making process
      * @param data where to get data from
      * @param mentees the list of mentees to match
      * @param mentors the list of mentors to match
      */
-    public MultipleMatchTask(PersonMatchesViewModel resultVM, RunConfiguration data, List<Person> mentees, 
+    public MultipleMatchTask(PersonMatchesViewModel resultVM, PersonMatchesViewModel excludedMatchesVM,
+            RunConfiguration data, List<Person> mentees, 
             List<Person> mentors) {
         this.resultVM = resultVM;
+        this.excludedMatchesVM = excludedMatchesVM;
         this.data = data;
         this.mentees = mentees;
         this.mentors = mentors;
@@ -42,19 +45,25 @@ public class MultipleMatchTask extends Task<Void> {
 
     @Override
     protected Void call() throws Exception {
-        List<Person> filteredMentees = filterAvailablePerson(mentees, resultVM.getTransferredItems(),
+        List<Person> filteredMentees;
+        List<Person> filteredMentors;
+        if (excludedMatchesVM == null){
+            filteredMentees = mentees;
+            filteredMentors = mentors;
+        } else {
+            filteredMentees = filterAvailablePerson(mentees, excludedMatchesVM.getContent(),
                 t -> t.getMentee());
-        List<Person> filteredMentors = filterAvailablePerson(mentors, resultVM.getTransferredItems(),
+            filteredMentors = filterAvailablePerson(mentors, excludedMatchesVM.getContent(),
                 t -> t.getMentor());
+        }
         results = makeMatchesWithException(data, filteredMentees, filteredMentors);
-        resultConfiguration = data.getResultConfiguration();
         return null;
     }
 
     @Override
     protected void succeeded() {
         super.succeeded();
-        resultVM.update(resultConfiguration, results);
+        resultVM.setAll(results);
     }
 
     private static List<Person> filterAvailablePerson(List<Person> toFilter, 

@@ -45,7 +45,7 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
             } catch (Exception e){
                 Assertions.fail(e);
             }
-            MultipleMatchTask task = new MultipleMatchTask(updatedVM, config, mentees, mentors);
+            MultipleMatchTask task = new MultipleMatchTask(updatedVM, null, config, mentees, mentors);
             try {
                 task.call();
             } catch (Exception e){
@@ -54,9 +54,7 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
             task.succeeded();
             @SuppressWarnings("unchecked")
             ArgumentCaptor<Matches<Person, Person>> captor = ArgumentCaptor.forClass(Matches.class);
-            Mockito.verify(updatedVM).update(
-                    Mockito.eq(PojoResultConfiguration.NAMES_AND_SCORE.getConfiguration()), 
-                    captor.capture());
+            Mockito.verify(updatedVM).setAll(captor.capture());
             PersonBuilder builder = new PersonBuilder();
             Iterator<Match<Person,Person>> expectedIterator = new MatchesTest.MatchesArgs<>(
                     List.of(
@@ -83,8 +81,10 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
     }
     
     @TestFactory
+    @SuppressWarnings("null")
     Stream<DynamicNode> makeMultipleMatches_excludeManualMatches(){
         //TODO refactor test: move stuff to MultipleMatchTaskArgs
+        //TODO refactor consequence: makeMultipleMatches should take two VM as input, one to update and one for the excluded persons
         return test("call() updates the input view model excluding the manual matches", args -> {
             PersonMatchesViewModel updatedVM = Mockito.mock(PersonMatchesViewModel.class);
             RunConfiguration config = RunConfiguration.TEST;
@@ -105,9 +105,11 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
             PersonMatchViewModel secondManualMatchVM = Mockito.mock(PersonMatchViewModel.class);
             Mockito.when(secondManualMatchVM.getData()).thenReturn(new MatchesTest.MatchesArgs<>(
                     List.of(Pair.of(mentees.get(1), mentors.get(0)))).convert().iterator().next());
-            Mockito.when(updatedVM.getTransferredItems()).thenReturn(List.of(firstManualMatchVM, 
+            PersonMatchesViewModel exclusionVM = Mockito.mock(PersonMatchesViewModel.class);
+            Mockito.when(exclusionVM.getContent()).thenReturn(List.of(firstManualMatchVM, 
                     secondManualMatchVM));
-            MultipleMatchTask task = new MultipleMatchTask(updatedVM, config, mentees, mentors);
+            MultipleMatchTask task = new MultipleMatchTask(updatedVM, exclusionVM, 
+                    config, mentees, mentors);
             try {
                 task.call();
             } catch (Exception e){
@@ -116,9 +118,7 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
             task.succeeded();
             @SuppressWarnings("unchecked")
             ArgumentCaptor<Matches<Person, Person>> captor = ArgumentCaptor.forClass(Matches.class);
-            Mockito.verify(updatedVM).update(
-                    Mockito.eq(PojoResultConfiguration.NAMES_AND_SCORE.getConfiguration()), 
-                    captor.capture());
+            Mockito.verify(updatedVM).setAll(captor.capture());
             PersonBuilder builder = new PersonBuilder();
             //FIXME: Sandro and Lhya should be switched if Anglais was correctly read but it is false for each Person despite the input file. Investigate!
             Iterator<Match<Person,Person>> expectedIterator = new MatchesTest.MatchesArgs<>(

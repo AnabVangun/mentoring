@@ -42,7 +42,7 @@ public class SingleMatchTask extends Task<Void> {
     @Override
     protected void succeeded() {
         super.succeeded();
-        resultVM.addManualItem(result);
+        resultVM.add(result);
     }
 
     private static Match<Person, Person> makeMatchWithException(RunConfiguration data, Person mentee,

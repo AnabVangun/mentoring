@@ -108,7 +108,7 @@ public abstract class ObservableViewModelTest<VM extends Observable,
     
     @TestFactory
     Stream<DynamicNode> removeListener_notPreviouslyRegistered(){
-        return test("removeListener does not cause issue when removing an absent listener", args -> {
+        return test("removeListener() does not cause issue when removing an absent listener", args -> {
         VM viewModel = args.convert();
         Observable[] notified = configureListeners(viewModel);
             Assertions.assertAll(

@@ -19,44 +19,36 @@ import mentoring.viewmodel.base.SimpleObservableViewModel;
 import mentoring.viewmodel.base.TabularDataViewModel;
 
 /**
- * Viewmodel responsible for representing a {@link Matches} object. The object is not ready until
- * {@link #update(mentoring.configuration.ResultConfiguration, mentoring.match.Matches) } has been
- * called.
+ * ViewModel responsible for representing a {@link Matches} object. 
+ * <p> For each instance of this class, a call to 
+ * {@link #setConfiguration(mentoring.configuration.ResultConfiguration) } should be made before
+ * calling any other method.
  * 
- * @param <Mentee> type of the first element of a {@link Match}.
- * @param <Mentor> type of the second element of a {@link Match}.
- * @param <VM> type of the {@link MatchViewModel} used to represent each match.
+ * @param <Mentee> type of the first element of the {@link Match} objects to encapsulate
+ * @param <Mentor> type of the second element of the {@link Match} objects to encapsulate
+ * @param <VM> type of the {@link MatchViewModel} used to represent each individual match
  */
 public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, Mentor>> 
         extends SimpleObservableViewModel implements TabularDataViewModel<VM> {
-    //TODO refactor: separate in two classes, one for batch items and one for transferred items
-    //The two classes will have links: the headers can be bound
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private final List<String> headerContent = new ArrayList<>();
+    //TODO refactor: rename into content
     private final List<VM> batchUpdateItems = new ArrayList<>();
-    private final List<VM> transferredItems = new ArrayList<>();
     private ResultConfiguration<Mentee, Mentor> configuration = null;
     private Matches<Mentee, Mentor> pendingMatches = null;
-    private boolean ready = false;
     private final BiFunction<ResultConfiguration<Mentee, Mentor>, Match<Mentee, Mentor>, 
             VM> vmFactory;
     private boolean invalidated = false;
     private boolean invalidatedHeader = false;
     
     /**
-     * Builds a new {@code MatchesViewModel} object.
-     * @param vmFactory factory building the viewmodel encapsulating the individual {@link Match}
-     *      objects of the {@link Matches} object represented by this viewmodel.
+     * Builds a new MatchesViewModel instance.
+     * @param vmFactory factory building each ViewModel encapsulating the individual {@link Match}
+     *      objects of the {@link Matches} object represented by this ViewModel.
      */
     protected MatchesViewModel(BiFunction<ResultConfiguration<Mentee, Mentor>, 
             Match<Mentee, Mentor>, VM> vmFactory){
         this.vmFactory = vmFactory;
-    }
-    
-    /**
-     * Returns true if the viewmodel represents valid data.
-     */
-    public boolean isValid(){
-        return ready || invalidated;
     }
     
     /**
@@ -81,33 +73,56 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
     }
     
     /**
-     * Returns the representation of the {@link Match} objects that have been transferred.
+     * Set how the encapsulated {@link Matches} object should be displayed, and what data to expose.
+     * @param configuration used to select the attributes to represent
      */
-    public List<VM> getTransferredItems(){
-        //TODO rename to getManualItems
-        updateIfNecessary();
-        return transferredItems;
-    }
-    
-    /**
-     * Updates this viewmodel to represent a {@link Matches} object.
-     * @param configuration used to select the attributes to represent.
-     * @param matches the data to represent.
-     */
-    public synchronized void update(ResultConfiguration<Mentee, Mentor> configuration,
-            Matches<Mentee, Mentor> matches){
+    public synchronized void setConfiguration(ResultConfiguration<Mentee, Mentor> configuration){
         Objects.requireNonNull(configuration);
         if(!configuration.equals(this.configuration)){
             this.configuration = configuration;
             invalidatedHeader = true;
+            if(! batchUpdateItems.isEmpty()){
+                invalidated = true;
+            }
+            notifyListeners();
+        }
+    }
+    
+    /**
+     * Add an item to the encapsulated {@link Matches} instance.
+     * @param match to add
+     * @throws IllegalStateException if no configuration has been defined yet
+     */
+    public synchronized void add(Match<Mentee, Mentor> match) throws IllegalStateException {
+        Objects.requireNonNull(match);
+        if(configuration == null){
+            throw new IllegalStateException("Attempted to add match " + match + " to " + this 
+                    + " before setting configuration");
+        }
+        //TODO make lazy modification
+        updateIfNecessary();
+        batchUpdateItems.add(vmFactory.apply(configuration, match));
+        notifyListeners();
+    }
+    
+    /**
+     * Replace the content of the encapsulated {@link Matches} with the specified elements
+     * @param matches to be encapsulated
+     * @throws IllegalStateException if no configuration has been defined yet
+     */
+    public synchronized void setAll(Matches<Mentee, Mentor> matches) throws IllegalStateException {
+        Objects.requireNonNull(matches);
+        if(configuration == null){
+            throw new IllegalStateException("Attempted to add matches " + matches + " to " + this 
+                    + " before setting configuration");
         }
         this.pendingMatches = matches;
-        invalidated = true;
+        this.invalidated = true;
         notifyListeners();
     }
     
     private void updateIfNecessary(){
-        if(invalidated){
+        if(invalidated || invalidatedHeader){
             actuallyUpdate();
         }
     }
@@ -115,15 +130,14 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
     private synchronized void actuallyUpdate(){
         /*FIXME possible race condition between update and actuallyUpdate: verify if synchronized 
         methods are all protected by the same intrinsic lock.
+        To help fixing race conditions, consider adding a pendingConfiguration like for the pending matches
         */
+        if(invalidatedHeader){
+            prepareHeader(configuration);
+            invalidatedHeader = false;
+        }
         if(invalidated){
-            if(invalidatedHeader){
-                prepareHeader(configuration);
-                updateManualItems();
-                invalidatedHeader = false;
-            }
             prepareItems(configuration, pendingMatches);
-            ready = true;
             invalidated = false;
         }
     }
@@ -132,10 +146,6 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
         this.configuration = configuration;
         headerContent.clear();
         headerContent.addAll(Arrays.asList(configuration.getResultHeader()));
-    }
-    
-    private void updateManualItems(){
-        transferredItems.replaceAll(vm -> vmFactory.apply(configuration, vm.getData()));
     }
             
     private void prepareItems(
@@ -147,27 +157,14 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
     }
     
     /**
-     * Add an item to the manual items list.
-     * @param item to add
-     * @throws IllegalStateException if this instance is not ready when calling this method
-     */
-    public synchronized void addManualItem(Match<Mentee, Mentor> item){
-        //TODO make lazy modification
-        //TODO mark the batch items invalid if the Match is in conflict with one from the batch.
-        Objects.requireNonNull(item);
-        transferredItems.add(vmFactory.apply(configuration, item));
-        notifyListeners();
-    }
-    
-    /**
-     * Remove an item from the manual items list, if it is present (optional operation).
-     * @param item element to be removed from this view model, if present
+     * Remove an item from the encapsulated {@link Matches} instance if it is present (optional 
+     * operation).
+     * @param item ViewModel encapsulating the element to remove from this ViewModel, if present 
      * @return true if an element was removed as a result of this call
      * @see Collection#remove(java.lang.Object) 
      */
-    public synchronized boolean removeManualItem(VM item){
-        Objects.requireNonNull(item);
-        if(getTransferredItems().remove(item)){
+    public synchronized boolean remove(VM item){
+        if(getContent().remove(item)){
             notifyListeners();
             return true;
         } else {
@@ -176,27 +173,24 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
     }
     
     /**
-     * Write the current matches in a given stream. The manual matches are written out before the
-     * automated ones.
-     * @param os where to write the results
+     * Write the current matches in a given stream.
+     * @param writer where to write the results
      * @param configuration how to write the results
+     * @param writeHeader if true, the header is written before the data
      * @throws IOException when the output stream cannot be written
      */
-    public synchronized void writeMatches(OutputStream os, 
-            ResultConfiguration<Mentee, Mentor> configuration) throws IOException {
-        Objects.requireNonNull(os);
+    public synchronized void writeMatches(Writer writer, 
+            ResultConfiguration<Mentee, Mentor> configuration,
+            boolean writeHeader) throws IOException {
+        Objects.requireNonNull(writer);
         Objects.requireNonNull(configuration);
         ResultWriter<Mentee, Mentor> resultWriter = new ResultWriter<>(configuration);
         List<Match<Mentee, Mentor>> tmpMatches = new ArrayList<>();
-        for (MatchViewModel<Mentee, Mentor> vm : getTransferredItems()){
-            tmpMatches.add(vm.getData());
-        }
         for (MatchViewModel<Mentee, Mentor> vm : getContent()) {
             tmpMatches.add(vm.getData());
         }
         Matches<Mentee, Mentor> matches = new Matches<>(tmpMatches);
-        try(Writer writer = new PrintWriter(os, true, Charset.forName("utf-8"))){
-            resultWriter.writeMatches(matches, writer);
-        }
+        resultWriter.writeMatches(matches, writer, writeHeader);
+        
     }
 }
