@@ -50,6 +50,7 @@ public class Main {
      * 14. Modify assignmentproblem to handle cancellation and offer progress status
      * 15. Use new version of assignmentproblem to allow cancellation and display progress status
      * 16. Check good practice for storing FXML files (resources vs in packages)
+     * 16a. Handle "Unsupported JavaFX configuration: classes were loaded from" warning because of TestFX
      * 17. Add undo/redo option (see command design pattern)
      */
     private final static Mode MODE = Mode.GUI;

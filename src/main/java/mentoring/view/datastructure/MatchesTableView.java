@@ -1,22 +1,15 @@
 package mentoring.view.datastructure;
 
 import java.net.URL;
-import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.function.Function;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.SplitPane;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
-import javafx.util.Callback;
 import javax.inject.Inject;
-import mentoring.viewmodel.base.TabularDataViewModel;
+import mentoring.view.base.TabularDataViewTools;
 import mentoring.viewmodel.datastructure.PersonListViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
@@ -58,11 +51,13 @@ public class MatchesTableView implements Initializable {
         this.menteeVM = menteeVM;
         this.mentorVM = mentorVM;
         batchMatchesListener = observable -> 
-                updateTable(computedTable, batchVM, e -> e.observableMatch());
+                TabularDataViewTools.updateTable(computedTable, batchVM, e -> e.observableMatch());
         oneAtATimeListener = observable -> 
-                updateTable(manualTable, oneAtATimeVM, e -> e.observableMatch());
-        menteeListener = observable -> updateTable(menteeTable, menteeVM, e -> e.getPersonData());
-        mentorListener = observable -> updateTable(mentorTable, mentorVM, e -> e.getPersonData());
+                TabularDataViewTools.updateTable(manualTable, oneAtATimeVM, e -> e.observableMatch());
+        menteeListener = observable -> TabularDataViewTools.updateTable(menteeTable, menteeVM, 
+                e -> e.getPersonData());
+        mentorListener = observable -> TabularDataViewTools.updateTable(mentorTable, mentorVM, 
+                e -> e.getPersonData());
     }
     
     /**
@@ -101,26 +96,6 @@ public class MatchesTableView implements Initializable {
         mentorVM.addListener(new WeakInvalidationListener(mentorListener));
         matchPane.getDividers().get(0).positionProperty()
                 .bindBidirectional(personPane.getDividers().get(0).positionProperty());
-    }
-    
-    //TODO refactor extract into tested utility class for TableView
-    private static <E> void updateTable(TableView<E> table, TabularDataViewModel<E> viewModel,
-            Function<E, Map<String, String>> propertyGetter){
-        table.getColumns().clear();
-        List<String> headers = viewModel.getHeaders();
-        for (String header : headers){
-            addColumn(table, header, p -> propertyGetter.apply(p.getValue()));
-        }
-        table.itemsProperty().get().setAll(viewModel.getContent());
-    }
-    
-    //TODO refactor extract into tested utility class for TableView
-    private static <E> void addColumn(TableView<E> table, String header, 
-            Callback<CellDataFeatures<E, String>, Map<String, String>> propertiesGetter){
-        TableColumn<E, String> column = new TableColumn<>(header);
-        column.setCellValueFactory(p -> new SimpleStringProperty(
-                propertiesGetter.call(p).get(header)));
-        table.getColumns().add(column);
     }
     
     /**
