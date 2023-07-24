@@ -2,6 +2,8 @@ package mentoring.viewmodel;
 
 import mentoring.viewmodel.tasks.PersonGetter;
 import java.io.File;
+import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import mentoring.viewmodel.datastructure.PersonType;
 import java.util.concurrent.Future;
 import javax.inject.Inject;
@@ -93,12 +95,15 @@ public class MainViewModel {
      * Export the current matches in a file.
      * @param outputFile the destination file
      * @param data how to get the configuration data
-     * @param toExport the ViewModel containing the matches to export
+     * @param toExportWithHeader a mandatory first ViewModel containing matches to export
+     * @param toExport optional additional ViewModels containing the matches to export
      * @return a Future object that can be used to control the execution and completion of the task.
      */
     public Future<?> exportMatches(File outputFile, RunConfiguration data, 
-            PersonMatchesViewModel... toExport){
-        return matchMaker.submit(new MatchExportTask(outputFile, data, toExport));
+            PersonMatchesViewModel toExportWithHeader, PersonMatchesViewModel... toExport){
+        return matchMaker.submit(new MatchExportTask(
+                () -> new PrintWriter(outputFile, Charset.forName("utf-8")), data, 
+                toExportWithHeader, toExport));
     }
     
 }

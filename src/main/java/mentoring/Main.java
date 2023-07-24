@@ -28,7 +28,6 @@ public class Main {
      * TODO: link GUI to code.
      * 1. Handle refactoring TODOs
      * 2a. Handle disabled property for all buttons in MainView
-     * 2e. Internationalize GUI
      * 3b. Add view to choose global configuration through RunConfiguration enum.
      * 3d. Add global configuration parameters for magic numbers.
      * 4. Choose mentees file
@@ -38,6 +37,7 @@ public class Main {
      * 8. Choose criteria configuration (POJO)
      * 9. Choose result configuration (file or POJO)
      * 9a. Add forbid button to prevent a match between two persons.
+     * 9aa. Internationalize GUI
      * 9b. Add save/load button to load configuration (including forbidden matches) and results from a file
      * 9c. Fix header of PersonListViewModel/PersonViewModel
      * 10a. Handle concurrency TODOs

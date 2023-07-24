@@ -1,9 +1,8 @@
 package mentoring.viewmodel.tasks;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
-import java.nio.charset.Charset;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Objects;
 import javafx.concurrent.Task;
 import javafx.scene.control.Alert;
 import mentoring.configuration.ResultConfiguration;
@@ -16,34 +15,41 @@ import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
  */
 public class MatchExportTask extends Task<Void> {
     
+    private final PersonMatchesViewModel firstExportedVM;
     @SuppressWarnings("MismatchedReadAndWriteOfArray")
     private final PersonMatchesViewModel[] exportedVMs;
-    private final File outputFile;
+    private final WriterSupplier writerSupplier;
     private final RunConfiguration data;
 
     /**
      * Initialise a MatchExportTask object.
-     * @param outputFile the file where to export the data
+     * @param writerSupplier the writer to use to export the data
      * @param data where to get data from
-     * @param exportedVMs the ViewModels that contain the data to export.
+     * @param firstExportedVM a mandatory ViewModel containing data to export
+     * @param exportedVMs optional additional ViewModels containing data to export
      */
-    public MatchExportTask(File outputFile, RunConfiguration data, PersonMatchesViewModel... exportedVMs) {
-        //TODO test
+    public MatchExportTask(WriterSupplier writerSupplier, RunConfiguration data, 
+            PersonMatchesViewModel firstExportedVM, PersonMatchesViewModel... exportedVMs) {
+        Objects.requireNonNull(writerSupplier);
+        Objects.requireNonNull(data);
+        Objects.requireNonNull(firstExportedVM);
+        Objects.requireNonNull(exportedVMs);
+        for (int i = 0; i < exportedVMs.length; i++) {
+            Objects.requireNonNull(exportedVMs[i], "Null view model at index " + i);
+        }
+        this.firstExportedVM = firstExportedVM;
         this.exportedVMs = exportedVMs;
-        this.outputFile = outputFile;
+        this.writerSupplier = writerSupplier;
         this.data = data;
     }
 
     @Override
     protected Void call() throws Exception {
-        if(exportedVMs.length == 0){
-            return null;
-        }
         ResultConfiguration<Person, Person> configuration = data.getResultConfiguration();
-        try (final PrintWriter writer = new PrintWriter(outputFile, Charset.forName("utf-8"))) {
-            exportedVMs[0].writeMatches(writer, configuration, true);
-            for(int i = 1; i < exportedVMs.length; i++){
-                exportedVMs[i].writeMatches(writer, configuration, false);
+        try (final Writer writer = writerSupplier.get()) {
+            firstExportedVM.writeMatches(writer, configuration, true);
+            for(PersonMatchesViewModel vm : exportedVMs){
+                vm.writeMatches(writer, configuration, false);
             }
         }
         return null;
@@ -64,4 +70,7 @@ public class MatchExportTask extends Task<Void> {
         alert.show();
     }
     
+    public static interface WriterSupplier {
+        Writer get() throws IOException;
+    }
 }

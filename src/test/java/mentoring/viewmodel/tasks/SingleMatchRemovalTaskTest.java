@@ -19,7 +19,7 @@ class SingleMatchRemovalTaskTest implements TestFramework<SingleMatchRemovalTask
     }
     
     @TestFactory
-    Stream<DynamicNode> removeSingleMatche_updateViewModel(){
+    Stream<DynamicNode> removeSingleMatch_updateViewModel(){
         //TODO refactor test: move stuff to SingleMatchRemovalTaskArgs
         return test("call() updates the input view model", args -> {
             PersonMatchesViewModel updatedVM = Mockito.mock(PersonMatchesViewModel.class);

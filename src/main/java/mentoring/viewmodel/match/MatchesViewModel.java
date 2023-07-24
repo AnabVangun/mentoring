@@ -1,10 +1,7 @@
 package mentoring.viewmodel.match;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.io.Writer;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,8 +29,7 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
         extends SimpleObservableViewModel implements TabularDataViewModel<VM> {
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private final List<String> headerContent = new ArrayList<>();
-    //TODO refactor: rename into content
-    private final List<VM> batchUpdateItems = new ArrayList<>();
+    private final List<VM> content = new ArrayList<>();
     private ResultConfiguration<Mentee, Mentor> configuration = null;
     private Matches<Mentee, Mentor> pendingMatches = null;
     private final BiFunction<ResultConfiguration<Mentee, Mentor>, Match<Mentee, Mentor>, 
@@ -69,7 +65,7 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
     @Override
     public List<VM> getContent(){
         updateIfNecessary();
-        return batchUpdateItems;
+        return content;
     }
     
     /**
@@ -81,7 +77,7 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
         if(!configuration.equals(this.configuration)){
             this.configuration = configuration;
             invalidatedHeader = true;
-            if(! batchUpdateItems.isEmpty()){
+            if(! content.isEmpty()){
                 invalidated = true;
             }
             notifyListeners();
@@ -99,9 +95,9 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
             throw new IllegalStateException("Attempted to add match " + match + " to " + this 
                     + " before setting configuration");
         }
-        //TODO make lazy modification
+        //TODO concurrency : make lazy modification
         updateIfNecessary();
-        batchUpdateItems.add(vmFactory.apply(configuration, match));
+        content.add(vmFactory.apply(configuration, match));
         notifyListeners();
     }
     
@@ -150,9 +146,9 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
             
     private void prepareItems(
             ResultConfiguration<Mentee, Mentor> configuration, Matches<Mentee, Mentor> matches) {
-        batchUpdateItems.clear();
+        content.clear();
         for (Match<Mentee, Mentor> match : matches){
-            batchUpdateItems.add(vmFactory.apply(configuration, match));
+            content.add(vmFactory.apply(configuration, match));
         }
     }
     
