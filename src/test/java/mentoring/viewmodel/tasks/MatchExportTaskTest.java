@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.stream.Stream;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.datastructure.Person;
+import mentoring.viewmodel.PojoRunConfiguration;
 import mentoring.viewmodel.RunConfiguration;
 import mentoring.viewmodel.tasks.MatchExportTaskTest.MatchExportTaskArgs;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
@@ -35,16 +36,15 @@ class MatchExportTaskTest implements TestFramework<MatchExportTaskArgs>{
                     Class<NullPointerException> NPE = NullPointerException.class;
                     PersonMatchesViewModel[] vmsWithNull = 
                             new PersonMatchesViewModel[]{args.exportedVMs[0], null};
-                    Assertions.assertAll(
-                            assertConstructorThrowsNPE(null, args.data, args.firstExportedVM, 
+                    Assertions.assertAll(assertConstructorThrowsNPE(null, args.data, args.firstExportedVM, 
                                     args.exportedVMs),
                             assertConstructorThrowsNPE(args.supplier, null, args.firstExportedVM, 
                                     args.exportedVMs),
-                            assertConstructorThrowsNPE(args.supplier, RunConfiguration.TEST, null, 
+                            assertConstructorThrowsNPE(args.supplier, PojoRunConfiguration.TEST, null, 
                                     args.exportedVMs),
-                            assertConstructorThrowsNPE(args.supplier, RunConfiguration.TEST, 
+                            assertConstructorThrowsNPE(args.supplier, PojoRunConfiguration.TEST, 
                                     args.firstExportedVM, (PersonMatchesViewModel[]) null),
-                            assertConstructorThrowsNPE(args.supplier, RunConfiguration.TEST, 
+                            assertConstructorThrowsNPE(args.supplier, PojoRunConfiguration.TEST, 
                                     args.firstExportedVM, vmsWithNull));
                 });
     }
@@ -126,7 +126,7 @@ class MatchExportTaskTest implements TestFramework<MatchExportTaskArgs>{
     static class MatchExportTaskArgs extends TestArgs{
         final Writer writer = Mockito.mock(Writer.class);
         final MatchExportTask.WriterSupplier supplier = () -> writer;
-        final RunConfiguration data = RunConfiguration.TEST;
+        final RunConfiguration data = PojoRunConfiguration.TEST;
         final PersonMatchesViewModel firstExportedVM;
         final PersonMatchesViewModel[] exportedVMs;
         

@@ -18,6 +18,7 @@ import mentoring.io.PersonFileParser;
 import mentoring.io.ResultWriter;
 import mentoring.match.Matches;
 import mentoring.match.MatchesBuilder;
+import mentoring.viewmodel.PojoRunConfiguration;
 import mentoring.viewmodel.RunConfiguration;
 
 /**
@@ -67,7 +68,7 @@ public class Main {
      * @param args the command line arguments, ignored for now.
      */
     public static void runInConsole(String[] args){
-        final RunConfiguration data = RunConfiguration.TEST;
+        final RunConfiguration data = PojoRunConfiguration.TEST;
         String destinationFilePath = data.getDestinationFilePath();
         boolean writeToFile = false;
         try (OutputStream outputStream = chooseOutputStream(writeToFile, destinationFilePath)){

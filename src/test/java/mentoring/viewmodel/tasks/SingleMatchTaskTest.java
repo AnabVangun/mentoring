@@ -6,6 +6,7 @@ import mentoring.datastructure.Person;
 import mentoring.datastructure.PersonBuilder;
 import mentoring.match.Match;
 import mentoring.match.MatchesTest;
+import mentoring.viewmodel.PojoRunConfiguration;
 import mentoring.viewmodel.RunConfiguration;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 import mentoring.viewmodel.datastructure.PersonType;
@@ -30,7 +31,7 @@ class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
         //TODO refactor test: move stuff to MatchMakerArgs
         return test("call() updates the input view model", args -> {
             PersonMatchesViewModel updatedVM = Mockito.mock(PersonMatchesViewModel.class);
-            RunConfiguration config = RunConfiguration.TEST;
+            RunConfiguration config = PojoRunConfiguration.TEST;
             Person mentee = null;
             Person mentor = null;
             try{

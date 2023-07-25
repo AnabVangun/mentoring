@@ -151,7 +151,7 @@ public final class PojoCriteriaConfiguration implements CriteriaConfiguration<Pe
         return Collections.unmodifiableList(necessaryCriteria);
     }
     
-    private PojoCriteriaConfiguration(
+    public PojoCriteriaConfiguration(
         Collection<ProgressiveCriterion<Person, Person>> progressiveCriteria,
         List<NecessaryCriterion<Person, Person>> necessaryCriteria){
         this.progressiveCriteria = progressiveCriteria;

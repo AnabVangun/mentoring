@@ -15,6 +15,7 @@ import javafx.stage.FileChooser;
 import javax.inject.Inject;
 import mentoring.view.datastructure.MatchesTableView;
 import mentoring.viewmodel.MainViewModel;
+import mentoring.viewmodel.PojoRunConfiguration;
 import mentoring.viewmodel.RunConfiguration;
 import mentoring.viewmodel.datastructure.PersonType;
 
@@ -41,7 +42,7 @@ public class MainView implements Initializable {
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        RunConfiguration data = RunConfiguration.TEST;
+        RunConfiguration data = PojoRunConfiguration.TEST;
         fillPersonTables(data);
         configureButtons(data);
     }
