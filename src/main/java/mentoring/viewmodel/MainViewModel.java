@@ -2,6 +2,7 @@ package mentoring.viewmodel;
 
 import mentoring.viewmodel.tasks.PersonGetter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import mentoring.viewmodel.datastructure.PersonType;
@@ -47,7 +48,8 @@ public class MainViewModel {
      */
     public Future<?> getPersons(PersonListViewModel resultVM, RunConfiguration data,
             PersonType type){
-        return matchMaker.submit(new PersonGetter(resultVM, data, type));
+        return matchMaker.submit(new PersonGetter(resultVM, data, type, 
+                fileName -> new FileReader(fileName, Charset.forName("utf-8"))));
     }
     
     /**

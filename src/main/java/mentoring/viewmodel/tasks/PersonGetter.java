@@ -1,9 +1,9 @@
 package mentoring.viewmodel.tasks;
 
-import java.io.FileReader;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.io.Reader;
 import java.util.List;
+import java.util.Objects;
 import javafx.concurrent.Task;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.Person;
@@ -16,10 +16,10 @@ import mentoring.viewmodel.datastructure.PersonType;
  * Class used to get persons and update an input view model.
  */
 public class PersonGetter extends Task<List<Person>> {
-    //TODO test
     private final PersonListViewModel resultVM;
     private final RunConfiguration data;
     private final PersonType type;
+    private final ReaderGenerator supplier;
     private PersonConfiguration personConfiguration;
     private List<Person> persons;
 
@@ -28,17 +28,24 @@ public class PersonGetter extends Task<List<Person>> {
      * @param resultVM the view model that will be updated when the task completes
      * @param data where to get data from
      * @param type type of person to get
+     * @param supplier to supply the reader used to read the data
      */
-    public PersonGetter(PersonListViewModel resultVM, RunConfiguration data, PersonType type) {
+    public PersonGetter(PersonListViewModel resultVM, RunConfiguration data, PersonType type, 
+            ReaderGenerator supplier) {
+        Objects.requireNonNull(data);
+        Objects.requireNonNull(resultVM);
+        Objects.requireNonNull(type);
+        Objects.requireNonNull(supplier);
         this.data = data;
         this.resultVM = resultVM;
         this.type = type;
+        this.supplier = supplier;
     }
 
     @Override
     protected List<Person> call() throws Exception {
         personConfiguration = getPersonConfiguration(data, type);
-        persons = getPersons(data, personConfiguration, type);
+        persons = getPersons(data, supplier, personConfiguration, type);
         return persons;
     }
 
@@ -48,9 +55,10 @@ public class PersonGetter extends Task<List<Person>> {
         resultVM.update(personConfiguration, persons);
     }
 
-    private static List<Person> getPersons(RunConfiguration data, 
+    private static List<Person> getPersons(RunConfiguration data, ReaderGenerator supplier,
             PersonConfiguration configuration, PersonType type) throws IOException {
-        List<Person> result = parsePersonList(configuration, type.getFilePathFromConfiguration(data));
+        List<Person> result = parsePersonList(configuration, supplier, 
+                type.getFilePathFromConfiguration(data));
         return result;
     }
 
@@ -63,10 +71,18 @@ public class PersonGetter extends Task<List<Person>> {
     }
 
     private static List<Person> parsePersonList(PersonConfiguration personConfiguration, 
-            String personFilePath) throws IOException {
-        try (final FileReader personFile = 
-                new FileReader(personFilePath, Charset.forName("utf-8"))) {
+            ReaderGenerator supplier, String filePath) throws IOException {
+        try (final Reader personFile = supplier.generate(filePath)) {
             return new PersonFileParser(personConfiguration).parse(personFile);
         }
+    }
+    
+    /**
+     * Represents an operation that accepts a single input argument and returns a {@link Reader}. 
+     * A typical implementation would return a FileReader using the input as a file path. 
+     */
+    @FunctionalInterface
+    public static interface ReaderGenerator {
+        Reader generate(String input) throws IOException;
     }
 }

@@ -23,7 +23,7 @@ public class MatchExportTask extends Task<Void> {
 
     /**
      * Initialise a MatchExportTask object.
-     * @param writerSupplier the writer to use to export the data
+     * @param writerSupplier to supply the writer used to export the data
      * @param data where to get data from
      * @param firstExportedVM a mandatory ViewModel containing data to export
      * @param exportedVMs optional additional ViewModels containing data to export

@@ -1,5 +1,7 @@
 package mentoring.viewmodel.tasks;
 
+import java.io.FileReader;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.stream.Stream;
 import mentoring.datastructure.Person;
@@ -8,6 +10,7 @@ import mentoring.match.Match;
 import mentoring.match.MatchesTest;
 import mentoring.viewmodel.PojoRunConfiguration;
 import mentoring.viewmodel.RunConfiguration;
+import mentoring.viewmodel.datastructure.PersonListViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 import mentoring.viewmodel.datastructure.PersonType;
 import mentoring.viewmodel.tasks.SingleMatchTaskTest.SingleMatchTaskArgs;
@@ -35,9 +38,13 @@ class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
             Person mentee = null;
             Person mentor = null;
             try{
-                mentee = new PersonGetter(null, config, PersonType.MENTEE)
+                mentee = new PersonGetter(Mockito.mock(PersonListViewModel.class), 
+                        config, PersonType.MENTEE, 
+                        input -> new FileReader(input, Charset.forName("utf-8")))
                     .call().get(0);
-                mentor = new PersonGetter(null, config, PersonType.MENTOR)
+                mentor = new PersonGetter(Mockito.mock(PersonListViewModel.class), 
+                        config, PersonType.MENTOR, 
+                        input -> new FileReader(input, Charset.forName("utf-8")))
                     .call().get(0);
             } catch (Exception e){
                 Assertions.fail(e);
