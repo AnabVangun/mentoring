@@ -60,24 +60,15 @@ class ResultConfigurationTest implements TestFramework<ResultConfigurationTestAr
     @TestFactory
     Stream<DynamicNode> getResultHeader_expectedValues(){
         return test("getResultHeader() returns the expected value", args -> {
-            assertHeaderAsExpected(args.expectedHeader, args.convert().getResultHeader());
+            Assertions.assertEquals(args.expectedHeader, args.convert().getResultHeader());
         });
     }
     
     @TestFactory
     Stream<DynamicNode> getResultHeader_protectedFromModifications(){
-        return test("getResultHeader() returns a value protected from modifications", args -> {
-            ResultConfiguration<String, String> configuration = args.convert();
-            List<String> expectedHeader = List.copyOf(args.expectedHeader);
-            String[] tamperedHeader = configuration.getResultHeader();
-            tamperedHeader[0] += "foo";
-            assertHeaderAsExpected(expectedHeader, configuration.getResultHeader());
-        });
-    }
-    
-    private static void assertHeaderAsExpected(List<String> expectedHeader, String[] actualHeader){
-        List<String> convertedHeaders = Arrays.asList(actualHeader);
-        Assertions.assertEquals(expectedHeader, convertedHeaders);
+        return test("getResultHeader() returns a value protected from modifications", 
+                args -> Assertions.assertThrows(UnsupportedOperationException.class,
+                        () -> args.convert().getResultHeader().set(0, "new foo")));
     }
     
     @TestFactory

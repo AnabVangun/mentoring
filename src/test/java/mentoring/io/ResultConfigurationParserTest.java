@@ -30,7 +30,7 @@ class ResultConfigurationParserTest implements ParserTest<ResultConfiguration<Pe
         return Stream.of(
                 new ResultConfigurationParserArgs("standard configuration", 
                         "validResultConfigurationTest.yaml", 
-                        new String[]{"Mentoré", "Mentor", "Coût", "Propriété"},
+                        List.of("Mentoré", "Mentor", "Coût", "Propriété"),
                         new String[][]{{"foo", "bar", "5", "Paris"},{"bar", "foo", "12", "Reims"}},
                         List.of(
                                 new MatchArgs("", builder.withFullName("foo").build(),
@@ -44,8 +44,8 @@ class ResultConfigurationParserTest implements ParserTest<ResultConfiguration<Pe
                         new YamlReader(), Map.of()),
                 new ResultConfigurationParserArgs("configuration with complex persons",
                         "validComplexResultConfigurationTest.yaml",
-                        new String[]{"Mentoré", "Première propriété", "Mentor", "Coût", 
-                            "Deuxième propriété"},
+                        List.of("Mentoré", "Première propriété", "Mentor", "Coût", 
+                            "Deuxième propriété"),
                         new Object[][]{{"foo1", Map.of("3","6","5","false"), "bar1", "962", "180"}, 
                             {"bar2", Map.of("true","blood","taken","2"), "foo2", "0", "-51"}},
                         List.of(
@@ -87,13 +87,13 @@ class ResultConfigurationParserTest implements ParserTest<ResultConfiguration<Pe
     }
     
     static record ResultConfigurationParserArgs(String testCase, String filePath, 
-            String[] expectedResultHeader, Object[][] expectedResultLines, 
+            List<String> expectedResultHeader, Object[][] expectedResultLines, 
             List<Match<Person, Person>> matchToPrint, DataReader reader, 
             Map<Integer, Function<String, Object>> mapperFunctions, int specificErrorsCount) 
             implements ParserArgs<ResultConfiguration<Person, Person>, ResultConfigurationParser>{
         
         ResultConfigurationParserArgs(String testCase, String filePath, 
-                String[] expectedResultHeader, Object[][] expectedResultLines, 
+                List<String> expectedResultHeader, Object[][] expectedResultLines, 
                 List<Match<Person, Person>> matchToPrint, DataReader reader, 
                 Map<Integer, Function<String, Object>> mapperFunctions){
             this(testCase, filePath, expectedResultHeader, expectedResultLines, matchToPrint, 
@@ -132,7 +132,7 @@ class ResultConfigurationParserTest implements ParserTest<ResultConfiguration<Pe
             }
             Assertions.assertAll("Result configuration is not as expected", 
                     () -> Assertions.assertEquals(testCase, actual.toString()),
-                    () -> Assertions.assertArrayEquals(expectedResultHeader, actual.getResultHeader()),
+                    () -> Assertions.assertEquals(expectedResultHeader, actual.getResultHeader()),
                     () -> Assertions.assertArrayEquals(expectedResultLines, actualResults));
         }
 

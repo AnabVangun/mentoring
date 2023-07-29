@@ -37,7 +37,7 @@ public final class ResultWriter<Mentee, Mentor> {
             boolean writeHeader){
         CSVWriter writer = new CSVWriter(destination);
         if(writeHeader){
-            writer.writeNext(resultConfiguration.getResultHeader());
+            writer.writeNext(resultConfiguration.getResultHeader().toArray(String[]::new));
         }
         for (Match<Mentee, Mentor> match : results){
             writer.writeNext(resultConfiguration.getResultLine(match));

@@ -141,7 +141,7 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
     private void prepareHeader(ResultConfiguration<Mentee, Mentor> configuration) {
         this.configuration = configuration;
         headerContent.clear();
-        headerContent.addAll(Arrays.asList(configuration.getResultHeader()));
+        headerContent.addAll(configuration.getResultHeader());
     }
             
     private void prepareItems(

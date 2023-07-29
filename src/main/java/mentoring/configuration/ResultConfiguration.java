@@ -60,7 +60,7 @@ public abstract sealed class ResultConfiguration<Mentee, Mentor> {
     
     private ResultConfiguration(String configurationName, List<String> resultHeader){
         this.configurationName = configurationName;
-        this.resultHeader = resultHeader;
+        this.resultHeader = List.copyOf(resultHeader);
     }
     
     @Override
@@ -70,11 +70,10 @@ public abstract sealed class ResultConfiguration<Mentee, Mentor> {
     
     /**
      * Generates the header of the output.
-     * @return an array containing each of the properties expected in the output.
+     * @return a list containing each of the properties expected in the output.
      */
-    public String[] getResultHeader(){
-        //TODO refactor: consider returning a List<String>
-        return resultHeader.toArray(String[]::new);
+    public List<String> getResultHeader(){
+        return resultHeader;
     }
     
     /**
