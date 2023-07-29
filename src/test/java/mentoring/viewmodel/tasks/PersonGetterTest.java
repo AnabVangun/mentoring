@@ -94,7 +94,7 @@ class PersonGetterTest implements TestFramework<PersonGetterArgs>{
         RunConfiguration configuration = Mockito.mock(RunConfiguration.class);
         PersonType type = PersonType.MENTOR;
         ReaderGenerator supplier = Mockito.mock(ReaderGenerator.class);
-        return test(Stream.of("unique test case"), "call() throws an NPE on null input", args -> {
+        return test(Stream.of("unique test case"), "constructor throws an NPE on null input", args -> {
             Assertions.assertAll(assertConstructorThrowsNPE(null, configuration, type, supplier),
                     assertConstructorThrowsNPE(vm, null, type, supplier),
                     assertConstructorThrowsNPE(vm, configuration, null, supplier),

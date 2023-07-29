@@ -1,85 +1,129 @@
 package mentoring.viewmodel.tasks;
 
-import java.io.FileReader;
-import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
+import mentoring.configuration.CriteriaConfiguration;
 import mentoring.datastructure.Person;
 import mentoring.datastructure.PersonBuilder;
 import mentoring.match.Match;
-import mentoring.match.MatchesTest;
-import mentoring.viewmodel.PojoRunConfiguration;
+import mentoring.match.MatchTest;
+import mentoring.match.NecessaryCriterion;
+import mentoring.match.ProgressiveCriterion;
 import mentoring.viewmodel.RunConfiguration;
-import mentoring.viewmodel.datastructure.PersonListViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
-import mentoring.viewmodel.datastructure.PersonType;
 import mentoring.viewmodel.tasks.SingleMatchTaskTest.SingleMatchTaskArgs;
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import test.tools.TestArgs;
 import test.tools.TestFramework;
 
 class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
 
     @Override
     public Stream<SingleMatchTaskArgs> argumentsSupplier() {
-        return Stream.of(new SingleMatchTaskArgs("unique test case"));
+        return Stream.of(
+                new SingleMatchTaskArgs("standard match", SingleMatchTaskArgs.MENTEE,
+                        SingleMatchTaskArgs.MENTOR, SingleMatchTaskArgs.PROGRESSIVE_COST),
+                new SingleMatchTaskArgs("prohibited match", SingleMatchTaskArgs.PROHIBITED_MENTEE,
+                        SingleMatchTaskArgs.MENTOR, Integer.MAX_VALUE));
     }
     
     @TestFactory
-    Stream<DynamicNode> makeSingleMatche_updateViewModel(){
-        //TODO refactor test: move stuff to MatchMakerArgs
-        return test("call() updates the input view model", args -> {
-            PersonMatchesViewModel updatedVM = Mockito.mock(PersonMatchesViewModel.class);
-            RunConfiguration config = PojoRunConfiguration.TEST;
-            Person mentee = null;
-            Person mentor = null;
-            try{
-                mentee = new PersonGetter(Mockito.mock(PersonListViewModel.class), 
-                        config, PersonType.MENTEE, 
-                        input -> new FileReader(input, Charset.forName("utf-8")))
-                    .call().get(0);
-                mentor = new PersonGetter(Mockito.mock(PersonListViewModel.class), 
-                        config, PersonType.MENTOR, 
-                        input -> new FileReader(input, Charset.forName("utf-8")))
-                    .call().get(0);
-            } catch (Exception e){
-                Assertions.fail(e);
-            }
-            SingleMatchTask task = new SingleMatchTask(updatedVM, config, mentee, mentor);
-            try {
-                task.call();
-            } catch (Exception e){
-                Assertions.fail(e);
-            }
+    Stream<DynamicNode> makeSingleMatch_returnExpectedMatch(){
+        return test("call() returns the expected match", args -> {
+            SingleMatchTask task = args.convert();
+            Match<Person,Person> expectedMatch = 
+                    new MatchTest.MatchArgs("foo", args.mentee, args.mentor, args.expectedCost)
+                    .convertAs(Person.class, Person.class);
+            Assertions.assertEquals(expectedMatch, callTask(task));
+        });
+    }
+    @TestFactory
+    Stream<DynamicNode> makeSingleMatch_updateViewModel(){
+        return test("succeeded() updates the input view model", args -> {
+            SingleMatchTask task = args.convert();
+            Match<Person,Person> expectedMatch = callTask(task);
             task.succeeded();
-            @SuppressWarnings("unchecked")
-            ArgumentCaptor<Match<Person, Person>> captor = ArgumentCaptor.forClass(Match.class);
-            Mockito.verify(updatedVM).add(captor.capture());
-            PersonBuilder builder = new PersonBuilder();
-            //TODO refactor simplify Match creation
-            Match<Person,Person> expectedMatch = new MatchesTest.MatchesArgs<>(
-                    List.of(
-                            Pair.of(builder.withFullName("Marceau Moussa (X2020)").build(), 
-                                    builder.withFullName("Gaspard Marion (X2000)").build()))
-                            ).convert().iterator().next();
+            ArgumentCaptor<Match<Person, Person>> captor = captureAddedMatch(args.updatedVM);
             Match<Person, Person> actualMatch = captor.getValue();
-            Assertions.assertAll(
-                    () -> Assertions.assertEquals(expectedMatch.getMentee().getFullName(), 
-                            actualMatch.getMentee().getFullName()),
-                    () -> Assertions.assertEquals(expectedMatch.getMentor().getFullName(),
-                            actualMatch.getMentor().getFullName()));
+            Assertions.assertEquals(expectedMatch, actualMatch);
         });
     }
     
-    static record SingleMatchTaskArgs(String testCase) {
+    static Match<Person,Person> callTask(SingleMatchTask task){
+        try {
+            return task.call();
+        } catch (Exception e){
+            Assertions.fail(e);
+            throw new IllegalStateException("unreachable code");
+        }
+    }
+    static ArgumentCaptor<Match<Person, Person>> captureAddedMatch(PersonMatchesViewModel vm){
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Match<Person, Person>> captor = ArgumentCaptor.forClass(Match.class);
+        Mockito.verify(vm).add(captor.capture());
+        return captor;
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> constructor_NPE(){
+        return test(Stream.of(argumentsSupplier().iterator().next()), 
+                "constructor throws NPE on null input", 
+                args -> Assertions.assertAll(
+                        assertConstructorThrowsNPE(null, args.configuration, args.mentee, args.mentor),
+                        assertConstructorThrowsNPE(args.updatedVM, null, args.mentee, args.mentor),
+                        assertConstructorThrowsNPE(args.updatedVM, args.configuration, null, args.mentor),
+                        assertConstructorThrowsNPE(args.updatedVM, args.configuration, args.mentee, null)));
+    }
+    
+    static Executable assertConstructorThrowsNPE(PersonMatchesViewModel vm, 
+            RunConfiguration configuration, Person mentee, Person mentor){
+        return () -> Assertions.assertThrows(NullPointerException.class, 
+                () -> new SingleMatchTask(vm, configuration, mentee, mentor));
+    }
+    
+    static class SingleMatchTaskArgs extends TestArgs {
+        final PersonMatchesViewModel updatedVM = Mockito.mock(PersonMatchesViewModel.class);
+        final RunConfiguration configuration = Mockito.mock(RunConfiguration.class);
+        final Person mentee;
+        final Person mentor;
+        final int expectedCost;
         
-        @Override 
-        public String toString(){
-            return testCase;
+        final static Person MENTEE = new PersonBuilder().withFullName("mentee").build();
+        final static Person MENTOR = new PersonBuilder().withFullName("mentor").build();
+        final static Person PROHIBITED_MENTEE = new PersonBuilder().withFullName("prohibited mentee")
+                .withProperty("value", 0).build();
+        final static int PROGRESSIVE_COST = 3;
+        
+        SingleMatchTaskArgs(String testCase, Person mentee, Person mentor, int expectedCost){
+            super(testCase);
+            this.mentee = mentee;
+            this.mentor = mentor;
+            Mockito.when(configuration.getCriteriaConfiguration())
+                    .thenReturn(new DummyCriteriaConfiguration());
+            this.expectedCost = expectedCost;
+        }
+        
+        SingleMatchTask convert(){
+            SingleMatchTask task = new SingleMatchTask(updatedVM, configuration, mentee, mentor);
+            return task;
+        }
+        
+        static class DummyCriteriaConfiguration implements CriteriaConfiguration<Person, Person> {
+            @Override
+            public Collection<ProgressiveCriterion<Person, Person>> getProgressiveCriteria() {
+                return List.of((mentee, mentor) -> PROGRESSIVE_COST);
+            }
+
+            @Override
+            public List<NecessaryCriterion<Person, Person>> getNecessaryCriteria() {
+                return List.of((mentee, mentor) -> ! mentee.equals(SingleMatchTaskArgs.PROHIBITED_MENTEE));
+            }
         }
     }
 }

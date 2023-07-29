@@ -2,6 +2,7 @@ package mentoring.viewmodel.tasks;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import javafx.concurrent.Task;
 import mentoring.configuration.CriteriaConfiguration;
 import mentoring.datastructure.Person;
@@ -10,7 +11,7 @@ import mentoring.match.MatchesBuilder;
 import mentoring.viewmodel.RunConfiguration;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 
-public class SingleMatchTask extends Task<Void> {
+public class SingleMatchTask extends Task<Match<Person, Person>> {
     
     private final PersonMatchesViewModel resultVM;
     private final RunConfiguration data;
@@ -27,16 +28,16 @@ public class SingleMatchTask extends Task<Void> {
      */
     public SingleMatchTask(PersonMatchesViewModel resultVM, RunConfiguration data, Person mentee, 
             Person mentor) {
-        this.resultVM = resultVM;
-        this.data = data;
-        this.mentee = mentee;
-        this.mentor = mentor;
+        this.resultVM = Objects.requireNonNull(resultVM);
+        this.data = Objects.requireNonNull(data);
+        this.mentee = Objects.requireNonNull(mentee);
+        this.mentor = Objects.requireNonNull(mentor);
     }
 
     @Override
-    protected Void call() throws Exception {
+    protected Match<Person, Person> call() throws Exception {
         result = makeMatchWithException(data, mentee, mentor);
-        return null;
+        return result;
     }
 
     @Override

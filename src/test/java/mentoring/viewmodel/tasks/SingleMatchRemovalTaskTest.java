@@ -7,8 +7,10 @@ import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import test.tools.TestArgs;
 import test.tools.TestFramework;
 
 class SingleMatchRemovalTaskTest implements TestFramework<SingleMatchRemovalTaskArgs>{
@@ -20,11 +22,8 @@ class SingleMatchRemovalTaskTest implements TestFramework<SingleMatchRemovalTask
     
     @TestFactory
     Stream<DynamicNode> removeSingleMatch_updateViewModel(){
-        //TODO refactor test: move stuff to SingleMatchRemovalTaskArgs
         return test("call() updates the input view model", args -> {
-            PersonMatchesViewModel updatedVM = Mockito.mock(PersonMatchesViewModel.class);
-            PersonMatchViewModel mockRemoved = Mockito.mock(PersonMatchViewModel.class);
-            SingleMatchRemovalTask task = new SingleMatchRemovalTask(updatedVM, mockRemoved);
+            SingleMatchRemovalTask task = args.convert();
             try {
                 task.call();
             } catch (Exception e){
@@ -34,16 +33,33 @@ class SingleMatchRemovalTaskTest implements TestFramework<SingleMatchRemovalTask
             @SuppressWarnings("unchecked")
             ArgumentCaptor<PersonMatchViewModel> captor = 
                     ArgumentCaptor.forClass(PersonMatchViewModel.class);
-            Mockito.verify(updatedVM).remove(captor.capture());
-            Assertions.assertSame(mockRemoved, captor.getValue());
+            Mockito.verify(args.updatedVM).remove(captor.capture());
+            Assertions.assertSame(args.removedVM, captor.getValue());
         });
     }
     
-    static record SingleMatchRemovalTaskArgs(String testCase){
+    @TestFactory
+    Stream<DynamicNode> removeSingleMatch_NPE(){
+        return test("constructor throws an NPE on null input", args ->
+                Assertions.assertAll(assertConstructorThrowsNPE(null, args.removedVM),
+                        assertConstructorThrowsNPE(args.updatedVM, null)));
+    }
+    
+    private static Executable assertConstructorThrowsNPE(PersonMatchesViewModel updatedVM,
+            PersonMatchViewModel removedVM){
+        return () -> Assertions.assertThrows(NullPointerException.class,
+                () -> new SingleMatchRemovalTask(updatedVM, removedVM));
+    }
+    
+    static class SingleMatchRemovalTaskArgs extends TestArgs{
+        final PersonMatchesViewModel updatedVM = Mockito.mock(PersonMatchesViewModel.class);
+        final PersonMatchViewModel removedVM = Mockito.mock(PersonMatchViewModel.class);
+        SingleMatchRemovalTaskArgs(String testCase){
+            super(testCase);
+        }
         
-        @Override 
-        public String toString(){
-            return testCase;
+        SingleMatchRemovalTask convert(){
+            return new SingleMatchRemovalTask(updatedVM, removedVM);
         }
     }
 }
