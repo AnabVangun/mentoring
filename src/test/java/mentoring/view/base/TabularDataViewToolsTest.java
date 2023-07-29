@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mockito;
 import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.Start;
@@ -30,13 +31,7 @@ class TabularDataViewToolsTest implements TestFramework<TabularDataViewToolsArgs
     public Stream<TabularDataViewToolsArgs> argumentsSupplier() {
         return Stream.of(new TabularDataViewToolsArgs("unique test case"));
     }
-    /*
-    TODO: reflect on how and what to test.
-    What:
-        1. Check that the headers are as expected --> the text of each header
-        2. Check that the rows are as expected --> the ObservableList contains the input objects
-        3. Check that the content of each cell is as expected --> the propertyGetter functions as expected
-    */
+    
     @TestFactory
     Stream<DynamicNode> updateTable_setHeaders(){
         return test("updateTable() properly sets the headers of the table", args -> {
@@ -98,6 +93,26 @@ class TabularDataViewToolsTest implements TestFramework<TabularDataViewToolsArgs
         return table.getColumns().stream()
                 .map(column -> column.getText())
                 .collect(Collectors.toList());
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> updateTable_NPE(){
+        return test("updateTable() throws NPEs on null input", args -> {
+            TableView<String> view = new TableView<>();
+            List<String> headers = List.of("first", "second");
+            TabularDataViewModel<String> viewModel = forgeViewModel(headers, List.of("foo"));
+            Function<String, Map<String, String>> propertyGetter = forgeGetterProperty(headers);
+            Assertions.assertAll(
+                    assertUpdateTableThrowsNPE(null, viewModel, propertyGetter),
+                    assertUpdateTableThrowsNPE(view, null, propertyGetter),
+                    assertUpdateTableThrowsNPE(view, viewModel, null));
+        });
+    }
+    
+    private static <E> Executable assertUpdateTableThrowsNPE(TableView<E> table, 
+            TabularDataViewModel<E> viewModel, Function<E, Map<String, String>> propertyGetter) {
+        return () -> Assertions.assertThrows(NullPointerException.class, 
+                () -> TabularDataViewTools.updateTable(table, viewModel, propertyGetter));
     }
     
     static record TabularDataViewToolsArgs(String testCase){

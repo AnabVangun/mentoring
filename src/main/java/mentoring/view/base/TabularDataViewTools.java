@@ -2,6 +2,7 @@ package mentoring.view.base;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.TableColumn;
@@ -24,6 +25,9 @@ public class TabularDataViewTools {
      */
     public static <E> void updateTable(TableView<E> table, TabularDataViewModel<E> viewModel,
             Function<E, Map<String, String>> propertyGetter){
+        //No need to requireNonNull on table: the call to getColumns() will fail.
+        Objects.requireNonNull(viewModel);
+        Objects.requireNonNull(propertyGetter);
         table.getColumns().clear();
         List<String> headers = viewModel.getHeaders();
         for (String header : headers){
@@ -32,8 +36,7 @@ public class TabularDataViewTools {
         table.itemsProperty().get().setAll(viewModel.getContent());
     }
     
-    //TODO refactor extract into tested utility class for TableView
-    static <E> void addColumn(TableView<E> table, String header, 
+    private static <E> void addColumn(TableView<E> table, String header, 
             Callback<TableColumn.CellDataFeatures<E, String>, Map<String, String>> propertiesGetter){
         TableColumn<E, String> column = new TableColumn<>(header);
         column.setCellValueFactory(p -> new SimpleStringProperty(
