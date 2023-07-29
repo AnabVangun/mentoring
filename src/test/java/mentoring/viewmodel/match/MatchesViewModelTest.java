@@ -67,7 +67,7 @@ class MatchesViewModelTest extends ObservableViewModelTest<
             MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
                     args.convertAndConfigure();
             List<String> expectedHeader = List.of("unique");
-            ResultConfiguration<String, String> newConf = ResultConfiguration.create("name", 
+            ResultConfiguration<String, String> newConf = ResultConfiguration.createForArrayLine("name", 
                     expectedHeader, match -> new String[]{match.getMentee()});
             viewModel.setConfiguration(newConf);
             Assertions.assertEquals(expectedHeader, viewModel.getHeaders());
@@ -80,7 +80,7 @@ class MatchesViewModelTest extends ObservableViewModelTest<
             MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
                     args.convertAndConfigure();
             List<String> newHeader = List.of("unique");
-            ResultConfiguration<String, String> newConf = ResultConfiguration.create("name", 
+            ResultConfiguration<String, String> newConf = ResultConfiguration.createForArrayLine("name", 
                     newHeader, match -> new String[]{match.getMentee()});
             Matches<String, String> content = new MatchesTest.MatchesArgs<>(
                     List.of(Pair.of("mentee", "mentor"))).convert();
@@ -166,7 +166,7 @@ class MatchesViewModelTest extends ObservableViewModelTest<
                         vm -> {
                             List<String> newHeader = List.of("unique");
                             ResultConfiguration<String, String> newConf =
-                                    ResultConfiguration.create("name",newHeader, 
+                                    ResultConfiguration.createForArrayLine("name",newHeader, 
                                             match -> new String[]{match.getMentee()});
                             vm.setConfiguration(newConf);
                                 }));
@@ -423,7 +423,7 @@ class MatchesViewModelTest extends ObservableViewModelTest<
        }
        
        ResultConfiguration<String, String> getResultConfiguration(){
-           return ResultConfiguration.create("name", expectedHeader,
+           return ResultConfiguration.createForArrayLine("name", expectedHeader,
                    match -> new String[]{match.getMentee(), match.getMentor()});
        }
     }

@@ -60,7 +60,7 @@ class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
             ArgumentCaptor<Match<Person, Person>> captor = ArgumentCaptor.forClass(Match.class);
             Mockito.verify(updatedVM).add(captor.capture());
             PersonBuilder builder = new PersonBuilder();
-            //TODO simplify Match creation
+            //TODO refactor simplify Match creation
             Match<Person,Person> expectedMatch = new MatchesTest.MatchesArgs<>(
                     List.of(
                             Pair.of(builder.withFullName("Marceau Moussa (X2020)").build(), 

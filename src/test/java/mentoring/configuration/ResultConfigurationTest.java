@@ -1,5 +1,6 @@
 package mentoring.configuration;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -15,39 +16,133 @@ import test.tools.TestArgs;
 import test.tools.TestFramework;
 
 class ResultConfigurationTest implements TestFramework<ResultConfigurationTestArgs>{
-
+    
     @Override
     public Stream<ResultConfigurationTestArgs> argumentsSupplier() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        @SuppressWarnings("unchecked")
+        Function<Match<String,String>, String[]> arrayFormatter = Mockito.mock(Function.class);
+        Mockito.when(arrayFormatter.apply(Mockito.any()))
+                .thenReturn(new String[]{"first value", "second value"});
+        @SuppressWarnings("unchecked")
+        Function<Match<String, String>, Map<String, String>> mapFormatter = 
+                Mockito.mock(Function.class);
+        Mockito.when(mapFormatter.apply(Mockito.any()))
+                .thenReturn(Map.of("first", "first value", "second", "second value"));
+        List<String> headers = List.of("first", "second");
+        return Stream.of(
+                new ArrayResultConfigurationTestArgs("array-specialised configuration", 
+                        headers, arrayFormatter),
+                new MapResultConfigurationTestArgs("map-specialised configuration", 
+                        headers, mapFormatter));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> constructor_NPE(){
+        return test(Stream.of("unique test case"), "createXX() throws an NPE on null input", args ->{
+            Class<NullPointerException> NPE = NullPointerException.class;
+            Assertions.assertAll(
+                    () -> Assertions.assertThrows(NPE, () -> ResultConfiguration
+                            .createForArrayLine(null, List.of(), input -> new String[0])),
+                    () -> Assertions.assertThrows(NPE, () -> ResultConfiguration
+                            .createForArrayLine("foo", null, input -> new String[0])),
+                    () -> Assertions.assertThrows(NPE, () -> ResultConfiguration
+                            .createForArrayLine("foo", List.of(), null)),
+                    () -> Assertions.assertThrows(NPE, () -> ResultConfiguration
+                            .createForMapLine(null, List.of(), input -> Map.of())),
+                    () -> Assertions.assertThrows(NPE, () -> ResultConfiguration
+                            .createForMapLine("foo", null, input -> Map.of())),
+                    () -> Assertions.assertThrows(NPE, () -> ResultConfiguration
+                            .createForMapLine("foo", List.of(), null))
+            );
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> getResultHeader_expectedValues(){
+        return test("getResultHeader() returns the expected value", args -> {
+            assertHeaderAsExpected(args.expectedHeader, args.convert().getResultHeader());
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> getResultHeader_protectedFromModifications(){
+        return test("getResultHeader() returns a value protected from modifications", args -> {
+            ResultConfiguration<String, String> configuration = args.convert();
+            List<String> expectedHeader = List.copyOf(args.expectedHeader);
+            String[] tamperedHeader = configuration.getResultHeader();
+            tamperedHeader[0] += "foo";
+            assertHeaderAsExpected(expectedHeader, configuration.getResultHeader());
+        });
+    }
+    
+    private static void assertHeaderAsExpected(List<String> expectedHeader, String[] actualHeader){
+        List<String> convertedHeaders = Arrays.asList(actualHeader);
+        Assertions.assertEquals(expectedHeader, convertedHeaders);
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> getResultLine(){
+        return test("getResultLine() returns the expected value", args -> {
+            String[] expectedResult = new String[]{"first value", "second value"};
+            Assertions.assertArrayEquals(expectedResult, 
+                    args.convert().getResultLine(generateMatch()));
+        });
     }
     
     @TestFactory
     Stream<DynamicNode> getResultMap(){
-        return test(Stream.of(new ResultConfigurationTestArgs("unique test case", 
-                List.of("first", "second"))),
-                "getResultMap() returns the expected value", args -> {
-                    Mockito.when(args.mockFormatter.apply(Mockito.any()))
-                            .thenReturn(new String[]{"first value", "second value"});
-                    ResultConfiguration<String, String> configuration = args.convert();
-                    Assertions.assertEquals(Map.of("first", "first value", "second", "second value"),
-                            configuration.getResultMap(
-                                    new MatchTest.MatchArgs("foo", "bar", "foobar", 0)
-                                            .convertAs(String.class, String.class)));
+        return test("getResultMap() returns the expected value", args -> {
+            Map<String, String> expectedResult = Map.of("first", "first value", 
+                    "second", "second value");
+            Assertions.assertEquals(expectedResult, args.convert().getResultMap(generateMatch()));
         });
     }
     
-    static class ResultConfigurationTestArgs extends TestArgs{
+    private static Match<String, String> generateMatch(){
+        return new MatchTest.MatchArgs("foo", "bar", "foobar", 0)
+                .convertAs(String.class, String.class);
+    }
+    
+    static abstract class ResultConfigurationTestArgs extends TestArgs {
         final List<String> expectedHeader;
-        @SuppressWarnings("unchecked")
-        final Function<Match<String, String>, String[]> mockFormatter = Mockito.mock(Function.class);
-
-        public ResultConfigurationTestArgs(String testCase, List<String> expectedHeader) {
+        
+        protected ResultConfigurationTestArgs(String testCase, List<String> expectedHeader){
             super(testCase);
             this.expectedHeader = expectedHeader;
         }
         
+        abstract ResultConfiguration<String, String> convert();
+    }
+    
+    static class ArrayResultConfigurationTestArgs extends ResultConfigurationTestArgs{
+        @SuppressWarnings("unchecked")
+        final Function<Match<String, String>, String[]> formatter;
+
+        public ArrayResultConfigurationTestArgs(String testCase, List<String> expectedHeader,
+                Function<Match<String, String>, String[]> formatter) {
+            super(testCase, expectedHeader);
+            this.formatter = formatter;
+        }
+        
+        @Override
         ResultConfiguration<String, String> convert(){
-            return ResultConfiguration.create(toString(), expectedHeader, mockFormatter);
+            return ResultConfiguration.createForArrayLine(toString(), expectedHeader, formatter);
+        }
+    }
+    
+    static class MapResultConfigurationTestArgs extends ResultConfigurationTestArgs{
+        @SuppressWarnings("unchecked")
+        final Function<Match<String, String>, Map<String,String>> formatter;
+
+        public MapResultConfigurationTestArgs(String testCase, List<String> expectedHeader,
+                Function<Match<String, String>, Map<String,String>> formatter) {
+            super(testCase, expectedHeader);
+            this.formatter = formatter;
+        }
+        
+        @Override
+        ResultConfiguration<String, String> convert(){
+            return ResultConfiguration.createForMapLine(toString(), expectedHeader, formatter);
         }
     } 
 }
