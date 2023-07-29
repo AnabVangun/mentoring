@@ -15,6 +15,7 @@ import mentoring.match.Match;
  * <p>Instances of this class can be reused and are thread-safe.
  */
 public final class ResultConfigurationParser extends Parser<ResultConfiguration<Person, Person>>{
+    //TODO modify ResultConfigurationParser to make it a map between a header and its column
 
     public ResultConfigurationParser(DataReader dataReader) {
         super(dataReader);

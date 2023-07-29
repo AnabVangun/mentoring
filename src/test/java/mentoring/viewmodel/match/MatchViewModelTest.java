@@ -24,12 +24,8 @@ class MatchViewModelTest implements TestFramework<MatchViewModelTestArgs>{
             Map<String, String> expectedResult = 
                     Map.of("first", "first value", "second", "second value");
             Match<String, String> match = null;
-            /* TODO once ResultConfiguration allow creation with Map, use expectedResult back
-            ResultConfiguration<String, String> configuration = ResultConfiguration.createForArrayLine("name",
+            ResultConfiguration<String, String> configuration = ResultConfiguration.createForMapLine("name",
                     List.of("first", "second"), line -> expectedResult);
-            */
-            ResultConfiguration<String, String> configuration = ResultConfiguration.createForArrayLine("name",
-                    List.of("first", "second"), line -> new String[]{"first value", "second value"});
             MatchViewModel<String, String> viewModel = new MatchViewModel<>(configuration, match);
             Assertions.assertEquals(expectedResult, viewModel.observableMatch());
         });
