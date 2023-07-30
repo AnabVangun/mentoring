@@ -119,7 +119,7 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
                     buildIndexedPerson(2, builder),
                     buildIndexedPerson(3, builder));
             CriteriaConfiguration<Person, Person> criteria = new PojoCriteriaConfiguration(
-                    List.of((mentee, mentor) -> 
+                    "ad-hoc configuration", List.of((mentee, mentor) -> 
                             mentee.getPropertyAs("value", Integer.class) 
                                     * mentor.getPropertyAs("value", Integer.class)), 
                     List.of());

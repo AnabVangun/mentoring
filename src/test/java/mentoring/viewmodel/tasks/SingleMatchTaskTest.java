@@ -114,7 +114,7 @@ class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
             return task;
         }
         
-        static class DummyCriteriaConfiguration implements CriteriaConfiguration<Person, Person> {
+        static class DummyCriteriaConfiguration extends CriteriaConfiguration<Person, Person> {
             @Override
             public Collection<ProgressiveCriterion<Person, Person>> getProgressiveCriteria() {
                 return List.of((mentee, mentor) -> PROGRESSIVE_COST);
@@ -123,6 +123,15 @@ class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
             @Override
             public List<NecessaryCriterion<Person, Person>> getNecessaryCriteria() {
                 return List.of((mentee, mentor) -> ! mentee.equals(SingleMatchTaskArgs.PROHIBITED_MENTEE));
+            }
+            
+            @Override
+            public List<CriteriaConfiguration<Person,Person>> values(){
+                return List.of(this);
+            }
+            
+            DummyCriteriaConfiguration(){
+                super("Dummy configuration");
             }
         }
     }

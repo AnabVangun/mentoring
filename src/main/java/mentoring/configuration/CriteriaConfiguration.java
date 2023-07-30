@@ -5,9 +5,14 @@ import java.util.List;
 import mentoring.match.NecessaryCriterion;
 import mentoring.match.ProgressiveCriterion;
 
-public interface CriteriaConfiguration<Mentee,Mentor> {
+public abstract class CriteriaConfiguration<Mentee,Mentor> 
+        extends Configuration<CriteriaConfiguration<Mentee,Mentor>>{
     
-    Collection<ProgressiveCriterion<Mentee, Mentor>> getProgressiveCriteria();
+    protected CriteriaConfiguration(String configurationName){
+        super(configurationName);
+    }
     
-    List<NecessaryCriterion<Mentee, Mentor>> getNecessaryCriteria();
+    public abstract Collection<ProgressiveCriterion<Mentee, Mentor>> getProgressiveCriteria();
+    
+    public abstract List<NecessaryCriterion<Mentee, Mentor>> getNecessaryCriteria();
 }

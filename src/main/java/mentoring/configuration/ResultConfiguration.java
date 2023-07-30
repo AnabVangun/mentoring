@@ -1,10 +1,14 @@
 package mentoring.configuration;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import mentoring.datastructure.Person;
 import mentoring.match.Match;
 
 /**
@@ -13,8 +17,9 @@ import mentoring.match.Match;
  * @param <Mentee> type of the first element of a {@link Match}.
  * @param <Mentor> type of the second element of a {@link Match}.
  */
-public abstract sealed class ResultConfiguration<Mentee, Mentor> {
-    private final String configurationName;
+public abstract sealed class ResultConfiguration<Mentee, Mentor> 
+        extends Configuration<ResultConfiguration<Person, Person>>{
+    //TODO: check if it is possible to modify to Configuration<...<Mentee, Mentor>>
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private final List<String> resultHeader;
     
@@ -59,13 +64,8 @@ public abstract sealed class ResultConfiguration<Mentee, Mentor> {
     }
     
     private ResultConfiguration(String configurationName, List<String> resultHeader){
-        this.configurationName = configurationName;
+        super(configurationName);
         this.resultHeader = List.copyOf(resultHeader);
-    }
-    
-    @Override
-    public String toString(){
-        return configurationName;
     }
     
     /**
@@ -91,6 +91,16 @@ public abstract sealed class ResultConfiguration<Mentee, Mentor> {
      * the corresponding output
      */
     public abstract Map<String, String> getResultMap(Match<Mentee, Mentor> match);
+    
+    private final List<ResultConfiguration<Person, Person>> values = Collections.unmodifiableList(
+            Arrays.stream(PojoResultConfiguration.values())
+                    .map(PojoResultConfiguration::getConfiguration)
+                    .collect(Collectors.toList()));
+    
+    @Override
+    public List<ResultConfiguration<Person, Person>> values(){
+        return values;
+    }
     
     final static class ArrayResultConfiguration<Mentee, Mentor>
             extends ResultConfiguration<Mentee, Mentor> {

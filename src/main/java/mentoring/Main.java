@@ -27,21 +27,20 @@ import mentoring.viewmodel.RunConfiguration;
 public class Main {
     /**
      * TODO: link GUI to code.
-     * 1. Handle refactoring TODOs
-     * 2a. Handle disabled property for all buttons in MainView
-     * 3b. Add view to choose global configuration through RunConfiguration enum.
-     * 3d. Add global configuration parameters for magic numbers.
+     * 1. Choose result configuration (file or POJO)
      * 4. Choose mentees file
      * 5. Choose mentees configuration (file or POJO)
      * 6. Choose mentors file
      * 7. Choose mentors configuration (file or POJO)
      * 8. Choose criteria configuration (POJO)
-     * 9. Choose result configuration (file or POJO)
-     * 9a. Add forbid button to prevent a match between two persons.
+     * 8b. Add view to choose global configuration through RunConfiguration enum (if RunConfiguration still exists)
+     * 9. Add forbid button to prevent a match between two persons.
+     * 9a. Add global configuration parameters for magic numbers.
      * 9aa. Internationalize GUI
      * 9b. Add save/load button to load configuration (including forbidden matches) and results from a file
      * 9c. Fix header of PersonListViewModel/PersonViewModel
-     * 10a. Handle concurrency TODOs
+     * 10. Handle concurrency TODOs
+     * 10a. Handle disabled property for all buttons in MainView
      * 10b. Add status for person: "not matched", "manual match", "automated match"
      * 11. Alert if configuration is not consistent with data file:
      * for person conf, missing columns in file header

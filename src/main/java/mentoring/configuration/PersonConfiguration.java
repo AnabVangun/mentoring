@@ -1,10 +1,12 @@
 package mentoring.configuration;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import mentoring.datastructure.MultiplePropertyName;
 import mentoring.datastructure.PropertyName;
 import org.apache.commons.lang3.StringUtils;
@@ -14,9 +16,8 @@ import org.apache.commons.lang3.StringUtils;
  * <p>A {@code PersonConfiguration} instance describes at the same time how to parse a CSV-file 
  * database to extract {@link Person} instances and said extracted {@link Person} instances.
  */
-public final class PersonConfiguration {
+public final class PersonConfiguration extends Configuration<PersonConfiguration> {
     
-    private final String configurationName;
     private final Set<PropertyName<?>> properties;
     private final Set<MultiplePropertyName<?,?>> multipleProperties;
     private final String separator;
@@ -40,7 +41,7 @@ public final class PersonConfiguration {
                 Set<MultiplePropertyName<?,?>> multipleProperties, 
                 String separator, String nameFormat,
                 List<String> namePropertiesHeaderNames){
-            this.configurationName = configurationName;
+            super(configurationName);
             Set<String> tmpAllProperties = new HashSet<>();
             this.properties = properties;
             this.properties.forEach(p -> tmpAllProperties.add(p.getHeaderName()));
@@ -56,11 +57,6 @@ public final class PersonConfiguration {
             this.nameProperties = namePropertiesHeaderNames;
             tmpAllProperties.addAll(namePropertiesHeaderNames);
             allPropertiesHeaderNames = Collections.unmodifiableCollection(tmpAllProperties);
-    }
-    
-    @Override
-    public String toString(){
-        return configurationName;
     }
     
     /**
@@ -128,5 +124,15 @@ public final class PersonConfiguration {
     public static boolean isValidNameDefinition(String nameFormat, List<String> nameProperties){
         int count = StringUtils.countMatches(nameFormat.toLowerCase(), "%s");
         return nameProperties.size() == count;
+    }
+    
+    private final List<PersonConfiguration> values = Collections.unmodifiableList(
+            Arrays.stream(PojoPersonConfiguration.values())
+                    .map(PojoPersonConfiguration::getConfiguration)
+                    .collect(Collectors.toList()));
+    
+    @Override
+    public List<PersonConfiguration> values(){
+        return values;
     }
 }

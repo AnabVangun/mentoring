@@ -13,7 +13,7 @@ import mentoring.match.NecessaryCriterion;
 /**
  * Example criteria configurations for test cases.
  */
-public final class PojoCriteriaConfiguration implements CriteriaConfiguration<Person,Person>{
+public final class PojoCriteriaConfiguration extends CriteriaConfiguration<Person,Person>{
     private static final String LANGUAGES_PROPERTY = "Langue";
     private static final String ENGLISH_PROPERTY = "Anglais";
     private static final String ENGLISH_SPEAKING_PROPERTY = "Anglophone";
@@ -35,7 +35,7 @@ public final class PojoCriteriaConfiguration implements CriteriaConfiguration<Pe
     private static final int INTEREST_AMPLIFIER2023 = 3;
     /** Configuration used in simple test cases. */
     public final static PojoCriteriaConfiguration CRITERIA_CONFIGURATION = 
-            new PojoCriteriaConfiguration(List.of(
+            new PojoCriteriaConfiguration("Test criteria configuration", List.of(
                     (mentee, mentor) ->
                             YEAR_WEIGHT * (MENTEE_YEAR
                                     - mentor.getPropertyAs(YEAR_PROPERTY, Integer.class)),
@@ -60,7 +60,7 @@ public final class PojoCriteriaConfiguration implements CriteriaConfiguration<Pe
                             mentor.getPropertyAs(ENGLISH_PROPERTY, Boolean.class))));
     /** Configuration used for real 2021 data. */
     public final static PojoCriteriaConfiguration CRITERIA_CONFIGURATION_REAL_DATA =
-            new PojoCriteriaConfiguration(            
+            new PojoCriteriaConfiguration("Criteria configuration for real data",
                 List.of((mentee, mentor) -> {
                     return YEAR_WEIGHT 
                         * (mentee.getPropertyAs(YEAR_PROPERTY, Integer.class) 
@@ -84,7 +84,7 @@ public final class PojoCriteriaConfiguration implements CriteriaConfiguration<Pe
                                     Boolean.class))));
     /** Configuration used for the preprocessed 2022 data set. */
     public final static PojoCriteriaConfiguration CRITERIA_CONFIGURATION_2023_DATA =
-            new PojoCriteriaConfiguration(
+            new PojoCriteriaConfiguration("Criteria configuration for 2023 data",
                     List.of(
                             (mentee, mentor) -> CriteriaToolbox.exponentialDistance(
                                     MEETING_INDICES, 
@@ -138,6 +138,16 @@ public final class PojoCriteriaConfiguration implements CriteriaConfiguration<Pe
                         return found;
             }));
     
+    
+    private static final List<CriteriaConfiguration<Person, Person>> values = 
+            Collections.unmodifiableList(List.of(CRITERIA_CONFIGURATION,
+                    CRITERIA_CONFIGURATION_2023_DATA,CRITERIA_CONFIGURATION_REAL_DATA));
+    
+    @Override
+    public List<CriteriaConfiguration<Person, Person>> values(){
+        return values;
+    }
+    
     private final Collection<ProgressiveCriterion<Person, Person>> progressiveCriteria;
     private final List<NecessaryCriterion<Person, Person>> necessaryCriteria;
     
@@ -151,9 +161,10 @@ public final class PojoCriteriaConfiguration implements CriteriaConfiguration<Pe
         return Collections.unmodifiableList(necessaryCriteria);
     }
     
-    public PojoCriteriaConfiguration(
-        Collection<ProgressiveCriterion<Person, Person>> progressiveCriteria,
-        List<NecessaryCriterion<Person, Person>> necessaryCriteria){
+    public PojoCriteriaConfiguration(String configurationName,
+            Collection<ProgressiveCriterion<Person, Person>> progressiveCriteria,
+            List<NecessaryCriterion<Person, Person>> necessaryCriteria){
+        super(configurationName);
         this.progressiveCriteria = progressiveCriteria;
         this.necessaryCriteria = necessaryCriteria;
     }
