@@ -126,13 +126,11 @@ public final class PersonConfiguration extends Configuration<PersonConfiguration
         return nameProperties.size() == count;
     }
     
-    private final List<PersonConfiguration> values = Collections.unmodifiableList(
-            Arrays.stream(PojoPersonConfiguration.values())
-                    .map(PojoPersonConfiguration::getConfiguration)
-                    .collect(Collectors.toList()));
-    
     @Override
     public List<PersonConfiguration> values(){
-        return values;
+        return Collections.unmodifiableList(
+                Arrays.stream(PojoPersonConfiguration.values())
+                    .map(PojoPersonConfiguration::getConfiguration)
+                    .collect(Collectors.toList()));
     }
 }

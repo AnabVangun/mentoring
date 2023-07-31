@@ -92,14 +92,12 @@ public abstract sealed class ResultConfiguration<Mentee, Mentor>
      */
     public abstract Map<String, String> getResultMap(Match<Mentee, Mentor> match);
     
-    private final List<ResultConfiguration<Person, Person>> values = Collections.unmodifiableList(
+    @Override
+    public List<ResultConfiguration<Person, Person>> values(){
+        return Collections.unmodifiableList(
             Arrays.stream(PojoResultConfiguration.values())
                     .map(PojoResultConfiguration::getConfiguration)
                     .collect(Collectors.toList()));
-    
-    @Override
-    public List<ResultConfiguration<Person, Person>> values(){
-        return values;
     }
     
     final static class ArrayResultConfiguration<Mentee, Mentor>

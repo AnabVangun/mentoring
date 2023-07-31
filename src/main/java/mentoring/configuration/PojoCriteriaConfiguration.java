@@ -138,14 +138,10 @@ public final class PojoCriteriaConfiguration extends CriteriaConfiguration<Perso
                         return found;
             }));
     
-    
-    private static final List<CriteriaConfiguration<Person, Person>> values = 
-            Collections.unmodifiableList(List.of(CRITERIA_CONFIGURATION,
-                    CRITERIA_CONFIGURATION_2023_DATA,CRITERIA_CONFIGURATION_REAL_DATA));
-    
     @Override
     public List<CriteriaConfiguration<Person, Person>> values(){
-        return values;
+        return Collections.unmodifiableList(List.of(CRITERIA_CONFIGURATION,
+                    CRITERIA_CONFIGURATION_2023_DATA,CRITERIA_CONFIGURATION_REAL_DATA));
     }
     
     private final Collection<ProgressiveCriterion<Person, Person>> progressiveCriteria;

@@ -4,15 +4,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.stage.FileChooser;
 import javax.inject.Inject;
+import mentoring.view.base.ViewTools;
 import mentoring.view.datastructure.MatchesTableView;
 import mentoring.viewmodel.MainViewModel;
 import mentoring.viewmodel.PojoRunConfiguration;
@@ -22,7 +22,9 @@ import mentoring.viewmodel.datastructure.PersonType;
 public class MainView implements Initializable {
     
     private final MainViewModel vm;
-    private final FileChooser chooser = configureFileChooser();
+    private final FileChooser chooser = ViewTools.configureFileChooser("Export to",
+            List.of(new FileChooser.ExtensionFilter("CSV Files", "*.csv"),
+                    new FileChooser.ExtensionFilter("All files", "*.*")));
     
     @FXML
     private MatchesTableView tableViewController;
@@ -46,18 +48,7 @@ public class MainView implements Initializable {
         fillPersonTables(data);
         configureButtons(data);
     }
-    
-    private static FileChooser configureFileChooser(){
-        FileChooser result = new FileChooser();
-        //TODO internationalize strings
-        result.setTitle("Export to");
-        result.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("CSV Files", "*.csv"),
-                new FileChooser.ExtensionFilter("All files", "*.*")
-        );
-        return result;
-    }
-    
+        
     private void fillPersonTables(RunConfiguration data){
         for (PersonType type : PersonType.values()){
             vm.getPersons(tableViewController.getPersonViewModel(type), data, type);
@@ -73,7 +64,11 @@ public class MainView implements Initializable {
     
     private void configureButtonToMakeMatches(Button button, String buttonCaption, 
             RunConfiguration data){
-        configureButtonToMakeAction(button, buttonCaption, event -> {
+        ViewTools.configureButton(button, buttonCaption, event -> {
+            /*When configuration VM has been defined, use this instead the try block
+            Put it in a separate function for a configuration button
+            vm.getConfiguration(configurationVM, tableViewController.getBatchMatchesViewModel(),
+                    tableViewController.getOneAtATimeMatchesViewModel());*/
             try {
                 //TODO delete when configuration loading is properly implemented
                 tableViewController.getBatchMatchesViewModel()
@@ -94,7 +89,7 @@ public class MainView implements Initializable {
     
     private void configureButtonToMakeManualMatch(Button button, String buttonCaption,
             RunConfiguration data){
-        configureButtonToMakeAction(button, buttonCaption, event -> vm.makeSingleMatch(
+        ViewTools.configureButton(button, buttonCaption, event -> vm.makeSingleMatch(
                 //FIXME: protect against illegal use: no selection, confirmation for multiple selection...
                 tableViewController.getSelectedPerson(PersonType.MENTEE),
                 tableViewController.getSelectedPerson(PersonType.MENTOR), 
@@ -103,14 +98,14 @@ public class MainView implements Initializable {
     }
     
     private void configureButtonToDeleteManualMatch(Button button, String buttonCaption){
-        configureButtonToMakeAction(button, buttonCaption, event -> vm.removeSingleMatch(
+        ViewTools.configureButton(button, buttonCaption, event -> vm.removeSingleMatch(
                 tableViewController.getSelectedManualMatch(), 
                 tableViewController.getOneAtATimeMatchesViewModel()));
     }
     
     private void configureButtonToExportMatches(Button button, String buttonCaption, 
             RunConfiguration data){
-        configureButtonToMakeAction(button, buttonCaption, event -> {
+        ViewTools.configureButton(button, buttonCaption, event -> {
             File outputFile = chooser.showSaveDialog(
                     ((Node) event.getSource()).getScene().getWindow());
             if(outputFile != null){
@@ -123,11 +118,5 @@ public class MainView implements Initializable {
                 tableViewController.getBatchMatchesViewModel());
             }
         });
-    }
-    
-    private static void configureButtonToMakeAction(Button button, String buttonCaption,
-            EventHandler<ActionEvent> action){
-        button.setText(buttonCaption);
-        button.setOnAction(action);
     }
 }

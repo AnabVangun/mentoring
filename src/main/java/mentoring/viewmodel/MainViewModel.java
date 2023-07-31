@@ -9,6 +9,9 @@ import mentoring.viewmodel.datastructure.PersonType;
 import java.util.concurrent.Future;
 import javax.inject.Inject;
 import mentoring.concurrency.ConcurrencyHandler;
+import mentoring.configuration.ResultConfiguration;
+import mentoring.datastructure.Person;
+import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.datastructure.PersonListViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
@@ -106,6 +109,18 @@ public class MainViewModel {
         return matchMaker.submit(new MatchExportTask(
                 () -> new PrintWriter(outputFile, Charset.forName("utf-8")), data, 
                 toExportWithHeader, toExport));
+    }
+    
+    /**
+     * Get a {@link ResultConfiguration}.
+     * @param configurationVM the ViewModel containing the configuration
+     * @param resultVM the ViewModels to update with the configuration
+     * @return a Future object that can be used to control the execution and completion of the task.
+     */
+    public Future<?> getConfiguration(
+            ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> configurationVM,
+            PersonMatchesViewModel... resultVM) {
+        throw new UnsupportedOperationException("not implemented yet");//TODO document, test and implement
     }
     
 }

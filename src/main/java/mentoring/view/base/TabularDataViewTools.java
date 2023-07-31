@@ -15,6 +15,8 @@ import mentoring.viewmodel.base.TabularDataViewModel;
  */
 public class TabularDataViewTools {
     
+    private TabularDataViewTools(){/*no-op*/}
+    
     /**
      * Set a TableView to display the content of a TabularDataViewModel.
      * @param <E> the type of data to display in the table

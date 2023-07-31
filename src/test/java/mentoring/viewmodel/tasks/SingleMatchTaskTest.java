@@ -1,6 +1,5 @@
 package mentoring.viewmodel.tasks;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 import mentoring.configuration.CriteriaConfiguration;
@@ -8,8 +7,6 @@ import mentoring.datastructure.Person;
 import mentoring.datastructure.PersonBuilder;
 import mentoring.match.Match;
 import mentoring.match.MatchTest;
-import mentoring.match.NecessaryCriterion;
-import mentoring.match.ProgressiveCriterion;
 import mentoring.viewmodel.RunConfiguration;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 import mentoring.viewmodel.tasks.SingleMatchTaskTest.SingleMatchTaskArgs;
@@ -104,8 +101,12 @@ class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
             super(testCase);
             this.mentee = mentee;
             this.mentor = mentor;
+            @SuppressWarnings("unchecked")
+            CriteriaConfiguration<Person, Person> criteriaConfiguration = 
+                    Mockito.mock(CriteriaConfiguration.class);
+            stubCriteriaConfiguration(criteriaConfiguration);
             Mockito.when(configuration.getCriteriaConfiguration())
-                    .thenReturn(new DummyCriteriaConfiguration());
+                    .thenReturn(criteriaConfiguration);
             this.expectedCost = expectedCost;
         }
         
@@ -114,25 +115,12 @@ class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
             return task;
         }
         
-        static class DummyCriteriaConfiguration extends CriteriaConfiguration<Person, Person> {
-            @Override
-            public Collection<ProgressiveCriterion<Person, Person>> getProgressiveCriteria() {
-                return List.of((mentee, mentor) -> PROGRESSIVE_COST);
-            }
-
-            @Override
-            public List<NecessaryCriterion<Person, Person>> getNecessaryCriteria() {
-                return List.of((mentee, mentor) -> ! mentee.equals(SingleMatchTaskArgs.PROHIBITED_MENTEE));
-            }
-            
-            @Override
-            public List<CriteriaConfiguration<Person,Person>> values(){
-                return List.of(this);
-            }
-            
-            DummyCriteriaConfiguration(){
-                super("Dummy configuration");
-            }
+        static void stubCriteriaConfiguration(CriteriaConfiguration<Person, Person> result){
+            Mockito.when(result.getProgressiveCriteria())
+                    .thenReturn(List.of((mentee, mentor) -> PROGRESSIVE_COST));
+            Mockito.when(result.getNecessaryCriteria())
+                    .thenReturn(List.of((mentee, mentor) -> 
+                            ! mentee.equals(SingleMatchTaskArgs.PROHIBITED_MENTEE)));
         }
     }
 }
