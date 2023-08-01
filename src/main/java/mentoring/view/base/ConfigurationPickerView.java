@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 import javafx.beans.binding.ObjectBinding;
@@ -79,19 +80,28 @@ public class ConfigurationPickerView implements Initializable{
         configurationTypeMap.put(fileConfigurationRadioButton, ConfigurationType.FILE);
     }
     
-    //TODO extract and refactor
-    private final ObjectBinding<ConfigurationType> typeOfConfigurationBinding = new ObjectBinding<>(){
-        {
-            super.bind(configurationSelectionGroup.selectedToggleProperty());
-        }
-        @Override
-        protected ConfigurationType computeValue(){
-            Toggle toggle = configurationSelectionGroup.selectedToggleProperty().getValue();
-            if(configurationTypeMap.containsKey(toggle)){
-                return configurationTypeMap.get(toggle);
-            } else {
-                throw new UnsupportedOperationException("Toggle " + toggle.toString() + " is unknown");
+    private final ObjectBinding<ConfigurationType> typeOfConfigurationBinding = 
+            forgeConfigurationTypeGetterBinding(configurationSelectionGroup, configurationTypeMap);
+    
+    static ObjectBinding<ConfigurationType> forgeConfigurationTypeGetterBinding(ToggleGroup group, 
+            Map<Toggle, ConfigurationType> map){
+        Objects.requireNonNull(map);
+        return new ObjectBinding<>(){
+            {
+                super.bind(group.selectedToggleProperty());
             }
-        }
-    };
+            @Override
+            protected ConfigurationType computeValue(){
+                Toggle toggle = group.selectedToggleProperty().getValue();
+                if (toggle == null){
+                    throw new IllegalStateException("Illegal state: no toggle is selected");
+                }
+                if(map.containsKey(toggle)){
+                    return map.get(toggle);
+                } else {
+                    throw new UnsupportedOperationException("Toggle " + toggle.toString() + " is unknown");
+                }
+            }
+        };
+    }
 }

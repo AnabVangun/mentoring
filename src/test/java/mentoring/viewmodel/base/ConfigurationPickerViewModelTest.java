@@ -18,7 +18,8 @@ import mentoring.configuration.Configuration;
 import mentoring.io.Parser;
 import mentoring.io.datareader.DataReader;
 import mentoring.viewmodel.base.ConfigurationPickerViewModelTest.ConfigurationPickerViewModelArgs;
-import mentoring.viewmodel.tasks.PersonGetter;
+import mentoring.viewmodel.base.function.ConfigurationParserSupplier;
+import mentoring.viewmodel.base.function.ReaderGenerator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
@@ -217,9 +218,9 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
             String filePath = "foo";
             ConfigurationPickerViewModel.ConfigurationType type = 
                     ConfigurationPickerViewModel.ConfigurationType.FILE;
-            ConfigurationPickerViewModel.ConfigurationParserSupplier<DummyConfiguration, 
+            ConfigurationParserSupplier<DummyConfiguration, 
                     DummyConfigurationParser> parserSupplier = ConfigurationPickerViewModelArgs.parserSupplier;
-            PersonGetter.ReaderGenerator readerGenerator = ConfigurationPickerViewModelArgs.readerGenerator;
+            ReaderGenerator readerGenerator = ConfigurationPickerViewModelArgs.readerGenerator;
             Assertions.assertAll(
                     assertConstructorThrowsNPE(null, filePath, type, parserSupplier, readerGenerator),
                     assertConstructorThrowsNPE(configuration, null, type, parserSupplier, readerGenerator),
@@ -241,9 +242,9 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
     static Executable assertConstructorThrowsNPE(
             DummyConfiguration defaultSelectedInstance, String defaultFilePath,
             ConfigurationPickerViewModel.ConfigurationType defaultSelection, 
-            ConfigurationPickerViewModel.ConfigurationParserSupplier<DummyConfiguration, DummyConfigurationParser> 
+            ConfigurationParserSupplier<DummyConfiguration, DummyConfigurationParser> 
                     parserSupplier, 
-            PersonGetter.ReaderGenerator readerGenerator){
+            ReaderGenerator readerGenerator){
         return () -> Assertions.assertThrows(NullPointerException.class, 
                 () -> new ConfigurationPickerViewModel<>(defaultSelectedInstance, defaultFilePath, 
                         defaultSelection, parserSupplier, readerGenerator));
@@ -254,9 +255,9 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
         
         public DummyConfigurationPickerViewModel(DummyConfiguration defaultSelectedInstance, 
                 String defaultFilePath, ConfigurationType defaultSelection, 
-                ConfigurationPickerViewModel.ConfigurationParserSupplier<DummyConfiguration, 
+                ConfigurationParserSupplier<DummyConfiguration, 
                         DummyConfigurationParser> parserGenerator, 
-                PersonGetter.ReaderGenerator readerGenerator) {
+                ReaderGenerator readerGenerator) {
             super(defaultSelectedInstance, defaultFilePath, defaultSelection, parserGenerator, 
                     readerGenerator);
         }
@@ -266,9 +267,9 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
         final String defaultFilePath;
         final ConfigurationPickerViewModel.ConfigurationType type;
         final DummyConfiguration configuration;
-        static ConfigurationPickerViewModel.ConfigurationParserSupplier<DummyConfiguration,
+        static ConfigurationParserSupplier<DummyConfiguration,
                 DummyConfigurationParser> parserSupplier;
-        static final PersonGetter.ReaderGenerator readerGenerator = input -> new StringReader(input);
+        static final ReaderGenerator readerGenerator = input -> new StringReader(input);
         
         ConfigurationPickerViewModelArgs(String testCase, DummyConfiguration configuration,
                 String defaultFilePath, ConfigurationPickerViewModel.ConfigurationType type){

@@ -1,5 +1,6 @@
 package mentoring.viewmodel.tasks;
 
+import mentoring.viewmodel.base.function.ReaderGenerator;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
@@ -75,15 +76,5 @@ public class PersonGetter extends Task<List<Person>> {
         try (final Reader personFile = supplier.generate(filePath)) {
             return new PersonFileParser(personConfiguration).parse(personFile);
         }
-    }
-    
-    //TODO refactor: move to mentoring.viewmodel.base
-    /**
-     * Represents an operation that accepts a single input argument and returns a {@link Reader}. 
-     * A typical implementation would return a FileReader using the input as a file path. 
-     */
-    @FunctionalInterface
-    public static interface ReaderGenerator {
-        Reader generate(String input) throws IOException;
     }
 }

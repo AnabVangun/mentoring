@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -18,7 +17,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import mentoring.configuration.Configuration;
 import mentoring.io.Parser;
-import mentoring.viewmodel.tasks.PersonGetter;
+import mentoring.viewmodel.base.function.ConfigurationParserSupplier;
+import mentoring.viewmodel.base.function.ReaderGenerator;
 
 /**
  * ViewModel used to pick a new configuration.
@@ -33,7 +33,7 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>, E extends 
     private final ReadOnlyObjectWrapper<File> selectedFile;
     private final Property<ConfigurationType> configurationType;
     private final ConfigurationParserSupplier<T,E> parserSupplier;
-    private final PersonGetter.ReaderGenerator readerGenerator;
+    private final ReaderGenerator readerGenerator;
     
     /**
      * Type of configuration to pick.
@@ -59,7 +59,7 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>, E extends 
      */
     public ConfigurationPickerViewModel(T defaultSelectedInstance, String defaultFilePath, 
             ConfigurationType defaultSelection, ConfigurationParserSupplier<T,E> parserSupplier, 
-            PersonGetter.ReaderGenerator readerGenerator){
+            ReaderGenerator readerGenerator){
         List<T> configurations = defaultSelectedInstance.values();
         knownConfigurations = configurations.stream()
                 .collect(Collectors.toMap(item -> item.toString(), Function.identity()));
@@ -161,15 +161,4 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>, E extends 
         E parser = parserSupplier.get();
         return parser.parse(readerGenerator.generate(file.getAbsolutePath()));
     }
-    
-    //TODO refactor, move to mentoring.view.base
-    /**
-     * Represents an operation that accepts a single input argument and returns a {@link Parser} for
-     * the appropriate configuration.
-     * @param <T> type of the configuration to parse
-     * @param <E> type of the returned parser
-     */
-    @FunctionalInterface
-    public static interface ConfigurationParserSupplier<T extends Configuration<T>, 
-            E extends Parser<T>> extends Supplier<E>{}
 }

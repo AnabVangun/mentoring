@@ -12,7 +12,7 @@ import mentoring.datastructure.PersonBuilder;
 import mentoring.viewmodel.RunConfiguration;
 import mentoring.viewmodel.datastructure.PersonListViewModel;
 import mentoring.viewmodel.datastructure.PersonType;
-import mentoring.viewmodel.tasks.PersonGetter.ReaderGenerator;
+import mentoring.viewmodel.base.function.ReaderGenerator;
 import mentoring.viewmodel.tasks.PersonGetterTest.PersonGetterArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
