@@ -13,23 +13,32 @@ import javafx.stage.FileChooser;
 public class ViewTools {
     private ViewTools(){/*no-op*/}
 
-    //TODO test and document
-    public static FileChooser configureFileChooser(String title, 
+    /**
+     * Create and configure a {@link FileChooser} object.
+     * @param title for the chooser window
+     * @param filters used to help select the appropriate file types
+     * @return a configured object ready to be displayed
+     */
+    public static FileChooser createFileChooser(String title, 
             List<FileChooser.ExtensionFilter> filters) {
         Objects.requireNonNull(title);
         FileChooser result = new FileChooser();
-        //TODO internationalize strings
         result.setTitle(title);
         result.getExtensionFilters().addAll(filters);
         return result;
     }
 
-    //TODO test and document
-    public static void configureButton(Button button, String buttonCaption, 
+    /**
+     * Configure a {@link Button} object.
+     * @param button to configure
+     * @param caption to set as the button's label 
+     * @param action to perform when the button is fired
+     */
+    public static void configureButton(Button button, String caption, 
             EventHandler<ActionEvent> action) {
-        Objects.requireNonNull(buttonCaption);
+        Objects.requireNonNull(caption);
         Objects.requireNonNull(action);
-        button.setText(buttonCaption);
+        button.setText(caption);
         button.setOnAction(action);
     }
 }

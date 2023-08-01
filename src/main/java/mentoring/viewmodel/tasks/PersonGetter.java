@@ -77,6 +77,7 @@ public class PersonGetter extends Task<List<Person>> {
         }
     }
     
+    //TODO refactor: move to mentoring.viewmodel.base
     /**
      * Represents an operation that accepts a single input argument and returns a {@link Reader}. 
      * A typical implementation would return a FileReader using the input as a file path. 

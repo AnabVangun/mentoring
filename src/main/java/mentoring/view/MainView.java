@@ -22,7 +22,7 @@ import mentoring.viewmodel.datastructure.PersonType;
 public class MainView implements Initializable {
     
     private final MainViewModel vm;
-    private final FileChooser chooser = ViewTools.configureFileChooser("Export to",
+    private final FileChooser chooser = ViewTools.createFileChooser("Export to",
             List.of(new FileChooser.ExtensionFilter("CSV Files", "*.csv"),
                     new FileChooser.ExtensionFilter("All files", "*.*")));
     

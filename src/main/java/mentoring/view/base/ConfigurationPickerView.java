@@ -41,18 +41,18 @@ public class ConfigurationPickerView implements Initializable{
     @FXML
     private RadioButton fileConfigurationRadioButton;
     
-    private final ConfigurationPickerViewModel<?> viewModel;
+    private final ConfigurationPickerViewModel<?, ?> viewModel;
     private final FileChooser chooser;
-    private final Consumer<ConfigurationPickerViewModel<?>> validationButtonAction;
+    private final Consumer<ConfigurationPickerViewModel<?,?>> validationButtonAction;
     private final Map<Toggle, ConfigurationType> configurationTypeMap = new HashMap<>();
     
-    ConfigurationPickerView(ConfigurationPickerViewModel<?> viewModel,
-            Consumer<ConfigurationPickerViewModel<?>> validationButtonAction){
+    ConfigurationPickerView(ConfigurationPickerViewModel<?,?> viewModel,
+            Consumer<ConfigurationPickerViewModel<?,?>> validationButtonAction){
         this.viewModel = viewModel;
-        chooser = ViewTools.configureFileChooser("Choose configuration file",
+        chooser = ViewTools.createFileChooser("Choose configuration file",
             List.of(new FileChooser.ExtensionFilter("CSV Files", "*.csv"),
                     new FileChooser.ExtensionFilter("All files", "*.*")));
-        chooser.setInitialDirectory(viewModel.getCurrentFile().getValue().getParentFile());
+        chooser.initialDirectoryProperty().bind(viewModel.getCurrentFile());
         this.validationButtonAction = validationButtonAction;
     }
     
@@ -61,7 +61,7 @@ public class ConfigurationPickerView implements Initializable{
         //TODO make sure toggle group is properly updated
         //TODO internationalise strings
         configureTypeMap();
-        configurationSelector.setItems(viewModel.getContent());
+        configurationSelector.setItems(viewModel.getKnownContent());
         configurationSelector.valueProperty().bindBidirectional(viewModel.getSelectedItem());
         configurationFileSelector.textProperty().bind(viewModel.getCurrentFilePath());
         viewModel.getConfigurationSelectionType().bind(typeOfConfigurationBinding);

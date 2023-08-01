@@ -32,32 +32,32 @@ class ViewToolsTest implements TestFramework<ViewToolsArgs>{
     }
     
     @TestFactory
-    Stream<DynamicNode> configureFileChooser_configureTitle(){
-        return test("configureFileChooser() configures the title of the file chooser", args -> {
+    Stream<DynamicNode> createFileChooser_configureTitle(){
+        return test("createFileChooser() configures the title of the file chooser", args -> {
             String expectedTitle = "foo";
-            FileChooser underTest = ViewTools.configureFileChooser(expectedTitle, List.of());
+            FileChooser underTest = ViewTools.createFileChooser(expectedTitle, List.of());
             Assertions.assertEquals(expectedTitle, underTest.getTitle());
         });
     }
     
     @TestFactory
-    Stream<DynamicNode> configureFileChooser_configureFilters(){
-        return test("configureFileChooser() configures the filters of the file chooser", args -> {
+    Stream<DynamicNode> createFileChooser_configureFilters(){
+        return test("createFileChooser() configures the filters of the file chooser", args -> {
             List<FileChooser.ExtensionFilter> expectedFilters = List.of(
                     new FileChooser.ExtensionFilter("first filter", "first filter extension"),
                     new FileChooser.ExtensionFilter("second filter", "second filter extension"),
                     new FileChooser.ExtensionFilter("third filter", "third filter extension"));
-            FileChooser underTest = ViewTools.configureFileChooser("foo", expectedFilters);
+            FileChooser underTest = ViewTools.createFileChooser("foo", expectedFilters);
             Assertions.assertEquals(expectedFilters, underTest.getExtensionFilters());
         });
     }
     
     @TestFactory
-    Stream<DynamicNode> configureFileChooser_NPE(){
-        return test("configureFileChooser() throws NPE on null input", args ->
+    Stream<DynamicNode> createFileChooser_NPE(){
+        return test("createFileChooser() throws NPE on null input", args ->
                 Assertions.assertAll(
-                        assertThrowsNPE(() -> ViewTools.configureFileChooser(null, List.of())),
-                        assertThrowsNPE(() -> ViewTools.configureFileChooser("foo", null))));
+                        assertThrowsNPE(() -> ViewTools.createFileChooser(null, List.of())),
+                        assertThrowsNPE(() -> ViewTools.createFileChooser("foo", null))));
     }
     
     @TestFactory

@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import mentoring.concurrency.ConcurrencyHandler;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.datastructure.Person;
+import mentoring.io.ResultConfigurationParser;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.datastructure.PersonListViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
@@ -118,7 +119,8 @@ public class MainViewModel {
      * @return a Future object that can be used to control the execution and completion of the task.
      */
     public Future<?> getConfiguration(
-            ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> configurationVM,
+            ConfigurationPickerViewModel<ResultConfiguration<Person, Person>, 
+                    ResultConfigurationParser> configurationVM,
             PersonMatchesViewModel... resultVM) {
         throw new UnsupportedOperationException("not implemented yet");//TODO document, test and implement
     }
