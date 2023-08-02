@@ -67,7 +67,7 @@ public class MainView implements Initializable {
         ViewTools.configureButton(button, buttonCaption, event -> {
             /*When configuration VM has been defined, use this instead the try block
             Put it in a separate function for a configuration button
-            vm.getConfiguration(configurationVM, tableViewController.getBatchMatchesViewModel(),
+            vm.getResultConfiguration(configurationVM, tableViewController.getBatchMatchesViewModel(),
                     tableViewController.getOneAtATimeMatchesViewModel());*/
             try {
                 //TODO delete when configuration loading is properly implemented

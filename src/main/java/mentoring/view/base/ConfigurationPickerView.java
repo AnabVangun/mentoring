@@ -42,13 +42,13 @@ public class ConfigurationPickerView implements Initializable{
     @FXML
     private RadioButton fileConfigurationRadioButton;
     
-    private final ConfigurationPickerViewModel<?, ?> viewModel;
+    private final ConfigurationPickerViewModel<?> viewModel;
     private final FileChooser chooser;
-    private final Consumer<ConfigurationPickerViewModel<?,?>> validationButtonAction;
+    private final Consumer<ConfigurationPickerViewModel<?>> validationButtonAction;
     private final Map<Toggle, ConfigurationType> configurationTypeMap = new HashMap<>();
     
-    ConfigurationPickerView(ConfigurationPickerViewModel<?,?> viewModel,
-            Consumer<ConfigurationPickerViewModel<?,?>> validationButtonAction){
+    ConfigurationPickerView(ConfigurationPickerViewModel<?> viewModel,
+            Consumer<ConfigurationPickerViewModel<?>> validationButtonAction){
         this.viewModel = viewModel;
         chooser = ViewTools.createFileChooser("Choose configuration file",
             List.of(new FileChooser.ExtensionFilter("CSV Files", "*.csv"),

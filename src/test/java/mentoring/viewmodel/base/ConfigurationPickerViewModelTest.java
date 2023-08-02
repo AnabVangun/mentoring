@@ -2,11 +2,7 @@ package mentoring.viewmodel.base;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.Property;
@@ -15,11 +11,7 @@ import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import mentoring.configuration.Configuration;
-import mentoring.io.Parser;
-import mentoring.io.datareader.DataReader;
 import mentoring.viewmodel.base.ConfigurationPickerViewModelTest.ConfigurationPickerViewModelArgs;
-import mentoring.viewmodel.base.function.ConfigurationParserSupplier;
-import mentoring.viewmodel.base.function.ReaderGenerator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
@@ -27,6 +19,7 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mockito;
 import test.tools.TestArgs;
 import test.tools.TestFramework;
+import mentoring.viewmodel.base.function.ConfigurationParser;
 
 class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPickerViewModelArgs>{
     @Override
@@ -218,15 +211,13 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
             String filePath = "foo";
             ConfigurationPickerViewModel.ConfigurationType type = 
                     ConfigurationPickerViewModel.ConfigurationType.FILE;
-            ConfigurationParserSupplier<DummyConfiguration, 
-                    DummyConfigurationParser> parserSupplier = ConfigurationPickerViewModelArgs.parserSupplier;
-            ReaderGenerator readerGenerator = ConfigurationPickerViewModelArgs.readerGenerator;
+            ConfigurationParser<DummyConfiguration> parserSupplier = 
+                    ConfigurationPickerViewModelArgs.parserSupplier;
             Assertions.assertAll(
-                    assertConstructorThrowsNPE(null, filePath, type, parserSupplier, readerGenerator),
-                    assertConstructorThrowsNPE(configuration, null, type, parserSupplier, readerGenerator),
-                    assertConstructorThrowsNPE(configuration, filePath, null, parserSupplier, readerGenerator),
-                    assertConstructorThrowsNPE(configuration, filePath, type, null, readerGenerator),
-                    assertConstructorThrowsNPE(configuration, filePath, type, parserSupplier, null));
+                    assertConstructorThrowsNPE(null, filePath, type, parserSupplier),
+                    assertConstructorThrowsNPE(configuration, null, type, parserSupplier),
+                    assertConstructorThrowsNPE(configuration, filePath, null, parserSupplier),
+                    assertConstructorThrowsNPE(configuration, filePath, type, null));
         });
     }
     
@@ -234,7 +225,7 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
     @SuppressWarnings("ThrowableResultIgnored")
     Stream<DynamicNode> setCurrentFile_NPE(){
         return test("setCurrentFile throws NPE on null input", args -> {
-            ConfigurationPickerViewModel<DummyConfiguration, DummyConfigurationParser> viewModel = args.convert();
+            ConfigurationPickerViewModel<DummyConfiguration> viewModel = args.convert();
             Assertions.assertThrows(NullPointerException.class, () -> viewModel.setCurrentFile(null));
         });
     }
@@ -242,24 +233,19 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
     static Executable assertConstructorThrowsNPE(
             DummyConfiguration defaultSelectedInstance, String defaultFilePath,
             ConfigurationPickerViewModel.ConfigurationType defaultSelection, 
-            ConfigurationParserSupplier<DummyConfiguration, DummyConfigurationParser> 
-                    parserSupplier, 
-            ReaderGenerator readerGenerator){
+            ConfigurationParser<DummyConfiguration> parserSupplier){
         return () -> Assertions.assertThrows(NullPointerException.class, 
                 () -> new ConfigurationPickerViewModel<>(defaultSelectedInstance, defaultFilePath, 
-                        defaultSelection, parserSupplier, readerGenerator));
+                        defaultSelection, parserSupplier));
     }
     
     static class DummyConfigurationPickerViewModel extends 
-            ConfigurationPickerViewModel<DummyConfiguration, DummyConfigurationParser>{
+            ConfigurationPickerViewModel<DummyConfiguration>{
         
         public DummyConfigurationPickerViewModel(DummyConfiguration defaultSelectedInstance, 
                 String defaultFilePath, ConfigurationType defaultSelection, 
-                ConfigurationParserSupplier<DummyConfiguration, 
-                        DummyConfigurationParser> parserGenerator, 
-                ReaderGenerator readerGenerator) {
-            super(defaultSelectedInstance, defaultFilePath, defaultSelection, parserGenerator, 
-                    readerGenerator);
+                ConfigurationParser<DummyConfiguration> parserGenerator) {
+            super(defaultSelectedInstance, defaultFilePath, defaultSelection, parserGenerator);
         }
     }
     
@@ -267,9 +253,7 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
         final String defaultFilePath;
         final ConfigurationPickerViewModel.ConfigurationType type;
         final DummyConfiguration configuration;
-        static ConfigurationParserSupplier<DummyConfiguration,
-                DummyConfigurationParser> parserSupplier;
-        static final ReaderGenerator readerGenerator = input -> new StringReader(input);
+        static ConfigurationParser<DummyConfiguration> parserSupplier;
         
         ConfigurationPickerViewModelArgs(String testCase, DummyConfiguration configuration,
                 String defaultFilePath, ConfigurationPickerViewModel.ConfigurationType type){
@@ -277,12 +261,12 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
             this.configuration = configuration;
             this.defaultFilePath = defaultFilePath;
             this.type = type;
-            parserSupplier = () -> new DummyConfigurationParser(defaultFilePath);
+            parserSupplier = (input) -> new DummyConfiguration(input.getAbsolutePath());
         }
         
         DummyConfigurationPickerViewModel convert(){
             return new DummyConfigurationPickerViewModel(configuration, defaultFilePath, type,
-                    parserSupplier, readerGenerator);
+                    parserSupplier);
         }
     }
     
@@ -296,34 +280,6 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
         @Override
         public List<DummyConfiguration> values() {
             return List.of(first, second);
-        }
-    }
-    
-    static class DummyConfigurationParser extends Parser<DummyConfiguration> {
-        private final String expectedResult; 
-        DummyConfigurationParser(String expectedResult){
-            super(Mockito.mock(DataReader.class));
-            this.expectedResult = expectedResult;
-        }
-
-        @Override
-        protected List<String> registerSpecificErrors(Map<String, Object> data) {
-            return List.of();
-        }
-
-        @Override
-        protected Set<String> getExpectedKeys() {
-            return Set.of();
-        }
-
-        @Override
-        protected DummyConfiguration buildObject(Map<String, Object> data) {
-            throw new UnsupportedOperationException("Not needed in these tests.");
-        }
-        
-        @Override
-        public DummyConfiguration parse(Reader reader){
-            return new DummyConfiguration(expectedResult);
         }
     }
 }
