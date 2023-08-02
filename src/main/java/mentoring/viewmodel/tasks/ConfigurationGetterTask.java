@@ -17,7 +17,7 @@ public class ConfigurationGetterTask<T extends Configuration<T>> extends Task<T>
     private T configuration;
     
     public ConfigurationGetterTask(ConfigurationPickerViewModel<T> configurationVM,
-            List<ConfigurableViewModel<T>> resultVMs){
+            List<? extends ConfigurableViewModel<T>> resultVMs){
         this.configurationVM = Objects.requireNonNull(configurationVM);
         this.resultVMs = List.copyOf(resultVMs);
     }

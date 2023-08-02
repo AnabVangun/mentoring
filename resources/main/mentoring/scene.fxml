@@ -1,19 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.Button?>
-
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
 <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mentoring.view.MainView">
    <children>
-      <fx:include source="matchesTableView.fxml" fx:id="tableView"/>
+      <MenuBar>
+        <menus>
+          <Menu fx:id="configureMenuItem" mnemonicParsing="false">
+            <items>
+              <MenuItem mnemonicParsing="false" text="Close" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+      <fx:include fx:id="tableView" source="matchesTableView.fxml" />
       <HBox>
           <children>
-              <Button fx:id="runButton"/>
-              <Button fx:id="addManualMatchButton"/>
-              <Button fx:id="deleteManualMatchButton"/>
-              <Button fx:id="exportButton"/>
+              <Button fx:id="runButton" />
+              <Button fx:id="addManualMatchButton" />
+              <Button fx:id="deleteManualMatchButton" />
+              <Button fx:id="exportButton" />
           </children>
       </HBox>
    </children>

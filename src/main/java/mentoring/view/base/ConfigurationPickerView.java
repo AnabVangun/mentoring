@@ -19,6 +19,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel.ConfigurationType;
 
@@ -41,13 +42,14 @@ public class ConfigurationPickerView implements Initializable{
     private RadioButton knownConfigurationRadioButton;
     @FXML
     private RadioButton fileConfigurationRadioButton;
+    private ObjectBinding<ConfigurationType> typeOfConfigurationBinding;
     
     private final ConfigurationPickerViewModel<?> viewModel;
     private final FileChooser chooser;
     private final Consumer<ConfigurationPickerViewModel<?>> validationButtonAction;
     private final Map<Toggle, ConfigurationType> configurationTypeMap = new HashMap<>();
     
-    ConfigurationPickerView(ConfigurationPickerViewModel<?> viewModel,
+    public ConfigurationPickerView(ConfigurationPickerViewModel<?> viewModel,
             Consumer<ConfigurationPickerViewModel<?>> validationButtonAction){
         this.viewModel = viewModel;
         chooser = ViewTools.createFileChooser("Choose configuration file",
@@ -65,23 +67,30 @@ public class ConfigurationPickerView implements Initializable{
         configurationSelector.setItems(viewModel.getKnownContent());
         configurationSelector.valueProperty().bindBidirectional(viewModel.getSelectedItem());
         configurationFileSelector.textProperty().bind(viewModel.getCurrentFilePath());
+        configurationSelectionGroup.selectToggle(
+                switch(viewModel.getConfigurationSelectionType().getValue()) {
+                    case KNOWN -> knownConfigurationRadioButton;
+                    case FILE -> fileConfigurationRadioButton;
+                });
+        typeOfConfigurationBinding = forgeConfigurationTypeGetterBinding(
+                configurationSelectionGroup, configurationTypeMap);
         viewModel.getConfigurationSelectionType().bind(typeOfConfigurationBinding);
         ViewTools.configureButton(configurationFileButton, "Pick file", event -> {
             File inputFile = chooser.showOpenDialog(
                     ((Node) event.getSource()).getScene().getWindow());
             viewModel.setCurrentFile(inputFile);
         });
+        //TODO refactor: extract method to ViewTools
         ViewTools.configureButton(configurationValidationButton, "Validate", event ->
-                validationButtonAction.accept(viewModel));
+                validationButtonAction
+                        .andThen(input -> ((Stage) configurationValidationButton.getScene().getWindow()).close())
+                        .accept(viewModel));
     }
     
     private void configureTypeMap(){
         configurationTypeMap.put(knownConfigurationRadioButton, ConfigurationType.KNOWN);
         configurationTypeMap.put(fileConfigurationRadioButton, ConfigurationType.FILE);
     }
-    
-    private final ObjectBinding<ConfigurationType> typeOfConfigurationBinding = 
-            forgeConfigurationTypeGetterBinding(configurationSelectionGroup, configurationTypeMap);
     
     static ObjectBinding<ConfigurationType> forgeConfigurationTypeGetterBinding(ToggleGroup group, 
             Map<Toggle, ConfigurationType> map){

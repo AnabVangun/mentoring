@@ -13,7 +13,7 @@
    <children>
       <HBox prefHeight="100.0" prefWidth="200.0">
          <children>
-            <RadioButton mnemonicParsing="false" fx:d="knownConfigurationRadioButton">
+            <RadioButton mnemonicParsing="false" fx:id="knownConfigurationRadioButton">
                <toggleGroup>
                   <ToggleGroup fx:id="configurationSelectionGroup" />
                </toggleGroup>

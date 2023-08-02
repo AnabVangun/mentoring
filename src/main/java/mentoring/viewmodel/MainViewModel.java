@@ -5,17 +5,23 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.util.List;
 import mentoring.viewmodel.datastructure.PersonType;
 import java.util.concurrent.Future;
 import javax.inject.Inject;
 import mentoring.concurrency.ConcurrencyHandler;
+import mentoring.configuration.PojoResultConfiguration;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.datastructure.Person;
+import mentoring.io.ResultConfigurationParser;
+import mentoring.io.datareader.YamlReader;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
+import mentoring.viewmodel.base.function.ConfigurationParser;
 import mentoring.viewmodel.datastructure.PersonListViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 import mentoring.viewmodel.datastructure.PersonViewModel;
+import mentoring.viewmodel.tasks.ConfigurationGetterTask;
 import mentoring.viewmodel.tasks.MatchExportTask;
 import mentoring.viewmodel.tasks.MultipleMatchTask;
 import mentoring.viewmodel.tasks.SingleMatchRemovalTask;
@@ -106,6 +112,7 @@ public class MainViewModel {
      */
     public Future<?> exportMatches(File outputFile, RunConfiguration data, 
             PersonMatchesViewModel toExportWithHeader, PersonMatchesViewModel... toExport){
+        //TODO: use a ResultConfiguration obtained from getResultConfiguration
         return matchMaker.submit(new MatchExportTask(
                 () -> new PrintWriter(outputFile, Charset.forName("utf-8")), data, 
                 toExportWithHeader, toExport));
@@ -114,13 +121,28 @@ public class MainViewModel {
     /**
      * Get a {@link ResultConfiguration}.
      * @param configurationVM the ViewModel containing the configuration
-     * @param resultVM the ViewModels to update with the configuration
+     * @param resultVMs the ViewModels to update with the configuration
      * @return a Future object that can be used to control the execution and completion of the task.
      */
     public Future<?> getResultConfiguration(
             ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> configurationVM,
-            PersonMatchesViewModel... resultVM) {
-        throw new UnsupportedOperationException("not implemented yet");//TODO test and implement
+            List<? extends PersonMatchesViewModel> resultVMs) {
+        return matchMaker.submit(new ConfigurationGetterTask<>(configurationVM, resultVMs));
     }
     
+    public ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> 
+            forgeConfigurationPickerViewModel(){
+                //TODO refactor to return the viewModel needed to initialise the full configuration panel
+                ResultConfiguration<Person, Person> configuration = 
+                        PojoResultConfiguration.NAMES_AND_SCORE.getConfiguration();
+                String defaultPath = "";
+                ConfigurationPickerViewModel.ConfigurationType type = 
+                        ConfigurationPickerViewModel.ConfigurationType.KNOWN;
+                ConfigurationParser<ResultConfiguration<Person, Person>> parser = file -> {
+                    try (FileReader reader = new FileReader(file)){
+                        return new ResultConfigurationParser(new YamlReader()).parse(reader);
+                    }
+                };
+                return new ConfigurationPickerViewModel<>(configuration, defaultPath, type, parser);
+            }
 }

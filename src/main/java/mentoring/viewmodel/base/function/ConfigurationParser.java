@@ -1,7 +1,7 @@
 package mentoring.viewmodel.base.function;
 
 import java.io.File;
-import java.util.function.Function;
+import java.io.IOException;
 import mentoring.configuration.Configuration;
 
 /**
@@ -9,7 +9,6 @@ import mentoring.configuration.Configuration;
  * @param <T> type of the configuration to parse
  */
 @FunctionalInterface
-public interface ConfigurationParser<T extends Configuration<T>> 
-        extends Function<File, T> {
-    
+public interface ConfigurationParser<T extends Configuration<T>> {
+    T apply(File file) throws IOException;
 }

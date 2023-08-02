@@ -7,16 +7,25 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.MenuItem;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javax.inject.Inject;
+import mentoring.configuration.ResultConfiguration;
+import mentoring.datastructure.Person;
+import mentoring.view.base.ConfigurationPickerView;
 import mentoring.view.base.ViewTools;
 import mentoring.view.datastructure.MatchesTableView;
 import mentoring.viewmodel.MainViewModel;
 import mentoring.viewmodel.PojoRunConfiguration;
 import mentoring.viewmodel.RunConfiguration;
+import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.datastructure.PersonType;
 
 public class MainView implements Initializable {
@@ -36,6 +45,8 @@ public class MainView implements Initializable {
     private Button deleteManualMatchButton;
     @FXML
     private Button exportButton;
+    @FXML
+    private MenuItem configureMenuItem;
     
     @Inject
     MainView(MainViewModel vm){
@@ -47,6 +58,7 @@ public class MainView implements Initializable {
         RunConfiguration data = PojoRunConfiguration.TEST;
         fillPersonTables(data);
         configureButtons(data);
+        showConfigurationPicker();
     }
         
     private void fillPersonTables(RunConfiguration data){
@@ -56,28 +68,18 @@ public class MainView implements Initializable {
     }
     
     private void configureButtons(RunConfiguration data){
+        //TODO internationalise string
         configureButtonToMakeMatches(runButton, "Run", data);
         configureButtonToMakeManualMatch(addManualMatchButton, "Set as match", data);
         configureButtonToDeleteManualMatch(deleteManualMatchButton, "Delete manual match");
         configureButtonToExportMatches(exportButton, "Export matches", data);
+        configureMenuItem.setText("Configure");//TODO fix text: still appears as "Close"
+        configureMenuItem.setOnAction(event -> showConfigurationPicker());
     }
     
     private void configureButtonToMakeMatches(Button button, String buttonCaption, 
             RunConfiguration data){
         ViewTools.configureButton(button, buttonCaption, event -> {
-            /*When configuration VM has been defined, use this instead the try block
-            Put it in a separate function for a configuration button
-            vm.getResultConfiguration(configurationVM, tableViewController.getBatchMatchesViewModel(),
-                    tableViewController.getOneAtATimeMatchesViewModel());*/
-            try {
-                //TODO delete when configuration loading is properly implemented
-                tableViewController.getBatchMatchesViewModel()
-                        .setConfiguration(data.getResultConfiguration());
-                tableViewController.getOneAtATimeMatchesViewModel()
-                        .setConfiguration(data.getResultConfiguration());
-            } catch (IOException e){
-                throw new UncheckedIOException(e);
-            }
             vm.makeMatches(
                     tableViewController.getPersonViewModel(PersonType.MENTEE),
                     tableViewController.getPersonViewModel(PersonType.MENTOR),
@@ -118,5 +120,31 @@ public class MainView implements Initializable {
                 tableViewController.getBatchMatchesViewModel());
             }
         });
+    }
+    
+    private void showConfigurationPicker(){
+        //TODO: refactor: emphasize structure and operations.
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/mentoring/configurationSelectionView.fxml"));
+        @SuppressWarnings("unchecked")
+        //FIXME: the explicit cast should not be needed, and the unchecked warning as well
+        ConfigurationPickerView view = new ConfigurationPickerView(vm.forgeConfigurationPickerViewModel(),
+                configurationVM -> vm.getResultConfiguration((ConfigurationPickerViewModel<ResultConfiguration<Person, Person>>) configurationVM,
+                        List.of(tableViewController.getBatchMatchesViewModel(), 
+                                tableViewController.getOneAtATimeMatchesViewModel())));
+        loader.setControllerFactory(input -> view);
+        Scene scene = null;
+        try {
+            scene = new Scene(loader.load());
+        } catch (IOException e){
+            throw new UncheckedIOException(e);
+        }
+        scene.getStylesheets().add(getClass().getResource("/mentoring/styles.css").toExternalForm());
+        Stage configurationWindow = new Stage();
+        configurationWindow.setScene(scene);
+        configurationWindow.initModality(Modality.APPLICATION_MODAL);
+        if(runButton.getScene() != null){
+            configurationWindow.initOwner(runButton.getScene().getWindow());
+        }
+        configurationWindow.showAndWait();
     }
 }
