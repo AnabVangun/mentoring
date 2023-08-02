@@ -20,6 +20,7 @@ import mentoring.match.Match;
 public abstract sealed class ResultConfiguration<Mentee, Mentor> 
         extends Configuration<ResultConfiguration<Person, Person>>{
     //TODO: check if it is possible to modify to Configuration<...<Mentee, Mentor>>
+    //If so, then move ConfigurableViewModel from PersonMatchesViewModel to MatchesViewModel
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private final List<String> resultHeader;
     

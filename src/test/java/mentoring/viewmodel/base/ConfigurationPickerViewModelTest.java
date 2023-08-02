@@ -1,8 +1,8 @@
 package mentoring.viewmodel.base;
 
+import mentoring.configuration.DummyConfiguration;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.stream.Stream;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.Property;
@@ -10,7 +10,6 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleObjectProperty;
-import mentoring.configuration.Configuration;
 import mentoring.viewmodel.base.ConfigurationPickerViewModelTest.ConfigurationPickerViewModelArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
@@ -270,16 +269,4 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
         }
     }
     
-    static class DummyConfiguration extends Configuration<DummyConfiguration> {
-        DummyConfiguration(String name){
-            super(name);
-        }
-        final static List<String> expectedKnownContent = List.of("first", "second");
-        static DummyConfiguration first = new DummyConfiguration("first");
-        static DummyConfiguration second = new DummyConfiguration("second");
-        @Override
-        public List<DummyConfiguration> values() {
-            return List.of(first, second);
-        }
-    }
 }
