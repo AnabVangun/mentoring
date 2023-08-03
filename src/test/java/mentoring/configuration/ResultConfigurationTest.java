@@ -1,6 +1,5 @@
 package mentoring.configuration;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -18,6 +17,7 @@ import test.tools.TestFramework;
 class ResultConfigurationTest implements TestFramework<ResultConfigurationTestArgs>{
     
     @Override
+    @SuppressWarnings("unchecked")
     public Stream<ResultConfigurationTestArgs> argumentsSupplier() {
         @SuppressWarnings("unchecked")
         Function<Match<String,String>, String[]> arrayFormatter = Mockito.mock(Function.class);

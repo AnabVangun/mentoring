@@ -5,9 +5,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.List;
 import mentoring.viewmodel.datastructure.PersonType;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import mentoring.concurrency.ConcurrencyHandler;
 import mentoring.configuration.PojoResultConfiguration;
@@ -144,6 +146,11 @@ public class MainViewModel {
                         return new ResultConfigurationParser(new YamlReader()).parse(reader);
                     }
                 };
-                return new ConfigurationPickerViewModel<>(configuration, defaultPath, type, parser);
+                List<ResultConfiguration<Person,Person>> values = 
+                        Arrays.stream(PojoResultConfiguration.values())
+                                .map(config -> config.getConfiguration())
+                                .collect(Collectors.toList());
+                return new ConfigurationPickerViewModel<>(configuration, values, defaultPath, type,
+                        parser);
             }
 }

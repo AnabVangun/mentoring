@@ -11,6 +11,7 @@ import mentoring.configuration.ResultConfiguration;
 import mentoring.io.ResultWriter;
 import mentoring.match.Match;
 import mentoring.match.Matches;
+import mentoring.viewmodel.base.ConfigurableViewModel;
 import mentoring.viewmodel.base.SimpleObservableViewModel;
 import mentoring.viewmodel.base.TabularDataViewModel;
 
@@ -25,7 +26,8 @@ import mentoring.viewmodel.base.TabularDataViewModel;
  * @param <VM> type of the {@link MatchViewModel} used to represent each individual match
  */
 public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, Mentor>> 
-        extends SimpleObservableViewModel implements TabularDataViewModel<VM> {
+        extends SimpleObservableViewModel implements TabularDataViewModel<VM>,
+        ConfigurableViewModel<ResultConfiguration<Mentee, Mentor>> {
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private final List<String> headerContent = new ArrayList<>();
     private final List<VM> content = new ArrayList<>();
@@ -71,6 +73,7 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
      * Set how the encapsulated {@link Matches} object should be displayed, and what data to expose.
      * @param configuration used to select the attributes to represent
      */
+    @Override
     public synchronized void setConfiguration(ResultConfiguration<Mentee, Mentor> configuration){
         Objects.requireNonNull(configuration);
         if(!configuration.equals(this.configuration)){

@@ -1,12 +1,10 @@
 package mentoring.configuration;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import mentoring.datastructure.MultiplePropertyName;
 import mentoring.datastructure.PropertyName;
 import org.apache.commons.lang3.StringUtils;
@@ -124,13 +122,5 @@ public final class PersonConfiguration extends Configuration<PersonConfiguration
     public static boolean isValidNameDefinition(String nameFormat, List<String> nameProperties){
         int count = StringUtils.countMatches(nameFormat.toLowerCase(), "%s");
         return nameProperties.size() == count;
-    }
-    
-    @Override
-    public List<PersonConfiguration> values(){
-        return Collections.unmodifiableList(
-                Arrays.stream(PojoPersonConfiguration.values())
-                    .map(PojoPersonConfiguration::getConfiguration)
-                    .collect(Collectors.toList()));
     }
 }

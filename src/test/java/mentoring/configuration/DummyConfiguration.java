@@ -10,10 +10,4 @@ public class DummyConfiguration extends Configuration<DummyConfiguration> {
     public static final List<String> expectedKnownContent = List.of("first", "second");
     public static DummyConfiguration first = new DummyConfiguration("first");
     public static DummyConfiguration second = new DummyConfiguration("second");
-
-    @Override
-    public List<DummyConfiguration> values() {
-        return List.of(first, second);
-    }
-    
 }

@@ -75,19 +75,24 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
     
     /**
      * Build a new ConfigurationPickerViewModel instance.
-     * @param defaultSelectedInstance serves two purposes: used to populate the list returned by
-     * {@link ConfigurationPickerViewModel#getKnownContent()} and the first selected item
+     * @param defaultSelectedInstance the first selected item
+     * @param knownInstances the values known to the ViewModel
      * @param defaultFilePath path to a file that can be parsed as a configuration
      * @param defaultSelection the default type of configuration picked by the picker
      * @param parserSupplier to parse the configuration from a file if necessary
      */
-    public ConfigurationPickerViewModel(T defaultSelectedInstance, String defaultFilePath, 
+    public ConfigurationPickerViewModel(T defaultSelectedInstance, List<T> knownInstances, 
+            String defaultFilePath, 
             ConfigurationType defaultSelection, ConfigurationParser<T> parserSupplier){
-        List<T> configurations = defaultSelectedInstance.values();
-        knownConfigurations = configurations.stream()
-                .collect(Collectors.toMap(item -> item.toString(), Function.identity()));
+        if(! knownInstances.contains(defaultSelectedInstance)){
+            throw new IllegalArgumentException(
+                    "Default instance %s is not in the known configurations"
+                    .formatted(defaultSelectedInstance, knownInstances));
+        }
+        knownConfigurations = knownInstances.stream().collect(
+                Collectors.toMap(item -> item.toString(), Function.identity()));
         items = FXCollections.unmodifiableObservableList(FXCollections.observableArrayList(
-                configurations.stream().map(item -> item.toString()).collect(Collectors.toList())));
+                knownInstances.stream().map(item -> item.toString()).collect(Collectors.toList())));
         selectedItem = new SimpleStringProperty(defaultSelectedInstance.toString());
         setCurrentFile(getFileOrDefaultDirectory(defaultFilePath));
         configurationType = new ReadOnlyObjectWrapper<>(Objects.requireNonNull(defaultSelection));

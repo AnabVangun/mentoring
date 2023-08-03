@@ -17,7 +17,4 @@ public abstract class Configuration<T extends Configuration<T>> {
     public String toString(){
         return configurationName;
     }
-    
-    public abstract List<T> values();
-    
 }
