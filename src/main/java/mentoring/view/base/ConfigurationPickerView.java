@@ -19,7 +19,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel.ConfigurationType;
 
@@ -62,11 +61,12 @@ public class ConfigurationPickerView implements Initializable{
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        //TODO make sure toggle group is properly updated
         //TODO internationalise strings
         configureTypeMap();
         configurationSelector.setItems(viewModel.getKnownContent());
         configurationSelector.valueProperty().bindBidirectional(viewModel.getSelectedItem());
+        configurationSelector.setOnMouseClicked(event -> 
+                configurationSelectionGroup.selectToggle(knownConfigurationRadioButton));
         configurationFileSelector.textProperty().bind(viewModel.getCurrentFilePath());
         configurationSelectionGroup.selectToggle(
                 switch(viewModel.getConfigurationSelectionType().getValue()) {
@@ -81,12 +81,12 @@ public class ConfigurationPickerView implements Initializable{
                     ((Node) event.getSource()).getScene().getWindow());
             if(inputFile != null){
                 viewModel.setCurrentFile(inputFile);
+                configurationSelectionGroup.selectToggle(fileConfigurationRadioButton);
             }
         });
-        //TODO refactor: extract method to ViewTools
-        ViewTools.configureButton(configurationValidationButton, "Validate", event ->
-                validationButtonAction
-                        .andThen(input -> ((Stage) configurationValidationButton.getScene().getWindow()).close())
+        ViewTools.configureButton(configurationValidationButton, "Validate", 
+                event -> validationButtonAction
+                        .andThen(e -> ViewTools.closeContainingWindow(configurationValidationButton))
                         .accept(viewModel));
     }
     
