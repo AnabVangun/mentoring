@@ -73,7 +73,7 @@ public class MainView implements Initializable {
         configureButtonToMakeManualMatch(addManualMatchButton, "Set as match", data);
         configureButtonToDeleteManualMatch(deleteManualMatchButton, "Delete manual match");
         configureButtonToExportMatches(exportButton, "Export matches", data);
-        configureMenuItem.setText("Configure");//TODO fix text: still appears as "Close"
+        configureMenuItem.setText("Configure");//FIXME fix text: still appears as "Close"
         configureMenuItem.setOnAction(event -> showConfigurationPicker());
     }
     

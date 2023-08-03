@@ -27,8 +27,9 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
     private final Map<String, T> knownConfigurations;
     private final ObservableList<String> items;
     private final Property<String> selectedItem;
-    private final ReadOnlyStringWrapper selectedFilePath;
-    private final ReadOnlyObjectWrapper<File> selectedFile;
+    private final ReadOnlyStringWrapper selectedFilePath = new ReadOnlyStringWrapper();
+    private final ReadOnlyObjectWrapper<File> selectedFile = new ReadOnlyObjectWrapper<>();
+    private final ReadOnlyObjectWrapper<File> selectedFileDirectory = new ReadOnlyObjectWrapper<>();
     private final Property<ConfigurationType> configurationType;
     private final ConfigurationParser<T> configurationParser;
     
@@ -76,8 +77,7 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
      * Build a new ConfigurationPickerViewModel instance.
      * @param defaultSelectedInstance serves two purposes: used to populate the list returned by
      * {@link ConfigurationPickerViewModel#getKnownContent()} and the first selected item
-     * @param defaultFilePath path to a file that can be parsed as a configuration, or an empty 
-     * string
+     * @param defaultFilePath path to a file that can be parsed as a configuration
      * @param defaultSelection the default type of configuration picked by the picker
      * @param parserSupplier to parse the configuration from a file if necessary
      */
@@ -89,8 +89,7 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
         items = FXCollections.unmodifiableObservableList(FXCollections.observableArrayList(
                 configurations.stream().map(item -> item.toString()).collect(Collectors.toList())));
         selectedItem = new SimpleStringProperty(defaultSelectedInstance.toString());
-        selectedFilePath = new ReadOnlyStringWrapper(Objects.requireNonNull(defaultFilePath));
-        selectedFile = new ReadOnlyObjectWrapper<>(new File(defaultFilePath));
+        setCurrentFile(getFileOrDefaultDirectory(defaultFilePath));
         configurationType = new ReadOnlyObjectWrapper<>(Objects.requireNonNull(defaultSelection));
         this.configurationParser = Objects.requireNonNull(parserSupplier);
     }
@@ -127,9 +126,19 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
      * returned by {@link #getCurrentFile()} and {@link #getCurrentFilePath()} if appropriate.
      * @param file the file to select
      */
-    public void setCurrentFile(File file){
-        selectedFile.set(Objects.requireNonNull(file));
-        selectedFilePath.set(file.getAbsolutePath());
+    public final void setCurrentFile(File file){
+        File safeFile = getFileOrDefaultDirectory(file);
+        selectedFile.set(safeFile);
+        selectedFilePath.set(safeFile.getPath());
+        selectedFileDirectory.set(safeFile.isFile() ? safeFile.getParentFile() : safeFile);
+    }
+    
+    private static File getFileOrDefaultDirectory(String filePath){
+        return getFileOrDefaultDirectory((File) (filePath == null ? null : new File(filePath)));
+    }
+    
+    private static File getFileOrDefaultDirectory(File file){
+        return (file == null || !file.exists()) ? new File(System.getProperty("user.home")) : file;
     }
     
     /**
@@ -139,6 +148,15 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
      */
     public ReadOnlyStringProperty getCurrentFilePath(){
         return selectedFilePath.getReadOnlyProperty();
+    }
+    
+    /**
+     * Get the directory containing the currently selected file. 
+     * This observable may be invalidated by calls to {@link #setCurrentFile(java.io.File)}.
+     * @return an observable describing the currently selected directory
+     */
+    public ReadOnlyObjectProperty<File> getCurrentFileDirectory(){
+        return selectedFileDirectory.getReadOnlyProperty();
     }
     
     /**

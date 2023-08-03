@@ -27,6 +27,7 @@ import mentoring.viewmodel.base.ConfigurationPickerViewModel.ConfigurationType;
  * View responsible for selecting a configuration.
  */
 public class ConfigurationPickerView implements Initializable{
+    //TODO: make it easy to select one of the example configurations from resources.
     
     @FXML
     private ComboBox<String> configurationSelector;
@@ -53,9 +54,9 @@ public class ConfigurationPickerView implements Initializable{
             Consumer<ConfigurationPickerViewModel<?>> validationButtonAction){
         this.viewModel = viewModel;
         chooser = ViewTools.createFileChooser("Choose configuration file",
-            List.of(new FileChooser.ExtensionFilter("CSV Files", "*.csv"),
+            List.of(new FileChooser.ExtensionFilter("YAML Files", "*.yaml"),
                     new FileChooser.ExtensionFilter("All files", "*.*")));
-        chooser.initialDirectoryProperty().bind(viewModel.getCurrentFile());
+        chooser.initialDirectoryProperty().bind(viewModel.getCurrentFileDirectory());
         this.validationButtonAction = validationButtonAction;
     }
     
@@ -78,7 +79,9 @@ public class ConfigurationPickerView implements Initializable{
         ViewTools.configureButton(configurationFileButton, "Pick file", event -> {
             File inputFile = chooser.showOpenDialog(
                     ((Node) event.getSource()).getScene().getWindow());
-            viewModel.setCurrentFile(inputFile);
+            if(inputFile != null){
+                viewModel.setCurrentFile(inputFile);
+            }
         });
         //TODO refactor: extract method to ViewTools
         ViewTools.configureButton(configurationValidationButton, "Validate", event ->

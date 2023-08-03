@@ -133,6 +133,7 @@ public class MainViewModel {
     public ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> 
             forgeConfigurationPickerViewModel(){
                 //TODO refactor to return the viewModel needed to initialise the full configuration panel
+                //The viewModel should by default show the previous selected configuration, if any.
                 ResultConfiguration<Person, Person> configuration = 
                         PojoResultConfiguration.NAMES_AND_SCORE.getConfiguration();
                 String defaultPath = "";
