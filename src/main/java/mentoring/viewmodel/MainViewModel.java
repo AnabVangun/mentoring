@@ -142,7 +142,7 @@ public class MainViewModel {
                 ConfigurationPickerViewModel.ConfigurationType type = 
                         ConfigurationPickerViewModel.ConfigurationType.KNOWN;
                 ConfigurationParser<ResultConfiguration<Person, Person>> parser = file -> {
-                    try (FileReader reader = new FileReader(file)){
+                    try (FileReader reader = new FileReader(file, Charset.forName("utf-8"))){
                         return new ResultConfigurationParser(new YamlReader()).parse(reader);
                     }
                 };

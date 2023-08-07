@@ -38,6 +38,6 @@ public class ConfigurationGetterTask<T extends Configuration<T>> extends Task<T>
     @Override
     protected void failed(){
         //TODO extract alerting logic from MatchExportTask
-        throw new UnsupportedOperationException("not implemented yet");
+        throw new UnsupportedOperationException("not implemented yet", this.getException());
     }
 }
