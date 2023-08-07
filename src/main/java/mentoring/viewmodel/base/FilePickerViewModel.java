@@ -2,16 +2,17 @@ package mentoring.viewmodel.base;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import mentoring.viewmodel.base.function.FileParser;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Abstract class with a basic implementation for ViewModels made to pick specific files.
- * TODO: add an abstract method to handle extension filters
  */
 abstract class FilePickerViewModel<T> {
     private final ReadOnlyStringWrapper selectedFilePath = new ReadOnlyStringWrapper();
@@ -72,7 +73,19 @@ abstract class FilePickerViewModel<T> {
         return selectedFileDirectory.getReadOnlyProperty();
     }
     
+    /**
+     * Parse the currently selected file.
+     * @return the data contained in the file as a Java object
+     * @throws IOException if anything goes wrong during the parsing
+     */
     public final T parseCurrentFile() throws IOException{
         return fileParser.apply(getCurrentFile().get());
     }
+    
+    /**
+     * Return the standard file extensions for this picker as a pair with a description and the 
+     * associated extensions. Each extension SHOULD be of the form {@code *.<extension>}.
+     * @return a mapping between descriptions and a list of associated file extensions
+     */
+    public abstract List<Pair<String, List<String>>> getStandardExtensions();
 }

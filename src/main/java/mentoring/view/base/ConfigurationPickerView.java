@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import javafx.beans.binding.ObjectBinding;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -48,13 +49,15 @@ public class ConfigurationPickerView implements Initializable{
     private final FileChooser chooser;
     private final Consumer<ConfigurationPickerViewModel<?>> validationButtonAction;
     private final Map<Toggle, ConfigurationType> configurationTypeMap = new HashMap<>();
+    private final List<FileChooser.ExtensionFilter> filters;
     
     public ConfigurationPickerView(ConfigurationPickerViewModel<?> viewModel,
             Consumer<ConfigurationPickerViewModel<?>> validationButtonAction){
         this.viewModel = viewModel;
-        chooser = ViewTools.createFileChooser("Choose configuration file",
-            List.of(new FileChooser.ExtensionFilter("YAML Files", "*.yaml"),
-                    new FileChooser.ExtensionFilter("All files", "*.*")));
+        filters = viewModel.getStandardExtensions().stream()
+                .map(entry -> new FileChooser.ExtensionFilter(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+        chooser = ViewTools.createFileChooser("Choose configuration file", filters);
         chooser.initialDirectoryProperty().bind(viewModel.getCurrentFileDirectory());
         this.validationButtonAction = validationButtonAction;
     }

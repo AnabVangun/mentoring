@@ -28,6 +28,7 @@ import mentoring.viewmodel.tasks.MultipleMatchTask;
 import mentoring.viewmodel.tasks.SingleMatchRemovalTask;
 import mentoring.viewmodel.tasks.SingleMatchTask;
 import mentoring.viewmodel.base.function.FileParser;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * ViewModel responsible for handling the main window of the application.
@@ -151,6 +152,8 @@ public class MainViewModel {
                                 .map(config -> config.getConfiguration())
                                 .collect(Collectors.toList());
                 return new ConfigurationPickerViewModel<>(configuration, values, defaultPath, type,
-                        parser);
+                        parser, 
+                        List.of(Pair.of("YAML files", List.of("*.yaml")), 
+                                Pair.of("All files", List.of("*.*"))));
             }
 }

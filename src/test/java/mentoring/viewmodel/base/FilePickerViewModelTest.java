@@ -1,12 +1,14 @@
 package mentoring.viewmodel.base;
 
 import java.io.File;
+import java.util.List;
 import java.util.stream.Stream;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import mentoring.viewmodel.base.FilePickerViewModelTest.FilePickerViewModelArgs;
 import mentoring.viewmodel.base.function.FileParser;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
@@ -136,6 +138,11 @@ class FilePickerViewModelTest implements TestFramework<FilePickerViewModelArgs> 
     static class DummyFilePickerViewModel extends FilePickerViewModel<String>{
         DummyFilePickerViewModel(String defaultPath, FileParser<String> parser){
             super(defaultPath, parser);
+        }
+        
+        @Override
+        public List<Pair<String, List<String>>> getStandardExtensions(){
+            throw new UnsupportedOperationException("not needed for this test");
         }
     }
     

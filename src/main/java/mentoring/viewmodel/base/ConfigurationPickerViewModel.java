@@ -14,6 +14,7 @@ import javafx.collections.ObservableList;
 import mentoring.configuration.Configuration;
 import mentoring.viewmodel.base.function.ConfigurationTypeFunction;
 import mentoring.viewmodel.base.function.FileParser;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * ViewModel used to pick a new configuration.
@@ -24,6 +25,7 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> extends Fi
     private final ObservableList<String> items;
     private final Property<String> selectedItem;
     private final Property<ConfigurationType> configurationType;
+    private final List<Pair<String, List<String>>> fileExtensions;
     
     /**
      * Type of configuration to pick.
@@ -71,10 +73,14 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> extends Fi
      * @param defaultFilePath path to a file that can be parsed as a configuration
      * @param defaultSelection the default type of configuration picked by the picker
      * @param parserSupplier to parse the configuration from a file if necessary
+     * @param fileExtensions the standard file extensions for this picker as a pair with a 
+     *      description and the associated extensions, where each extension SHOULD be of the form 
+     *      {@code *.<extension>}
      */
     public ConfigurationPickerViewModel(T defaultSelectedInstance, List<T> knownInstances, 
             String defaultFilePath, 
-            ConfigurationType defaultSelection, FileParser<T> parserSupplier){
+            ConfigurationType defaultSelection, FileParser<T> parserSupplier,
+            List<Pair<String, List<String>>> fileExtensions){
         super(defaultFilePath, parserSupplier);
         if(! knownInstances.contains(defaultSelectedInstance)){
             throw new IllegalArgumentException(
@@ -87,6 +93,7 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> extends Fi
                 knownInstances.stream().map(item -> item.toString()).collect(Collectors.toList())));
         selectedItem = new SimpleStringProperty(defaultSelectedInstance.toString());
         configurationType = new ReadOnlyObjectWrapper<>(Objects.requireNonNull(defaultSelection));
+        this.fileExtensions = List.copyOf(fileExtensions);//TODO protect against modifications of the values
     }
     
     /**
@@ -126,5 +133,10 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> extends Fi
      */
     public T getConfiguration() throws IOException {
         return configurationType.getValue().getConfiguration(this);
+    }
+    
+    @Override
+    public List<Pair<String, List<String>>> getStandardExtensions(){
+        return fileExtensions;
     }
 }
