@@ -32,6 +32,7 @@ public class Main {
      * 6. Choose mentors file
      * 7. Choose mentors configuration (file or POJO)
      * 8. Choose criteria configuration (POJO)
+     * 8a. Choose result configuration for export (with toggle to make it equal to display result configuration)
      * 8b. Add view to choose global configuration through RunConfiguration enum (if RunConfiguration still exists)
      * 9. Add forbid button to prevent a match between two persons.
      * 9a. Add global configuration parameters for magic numbers.

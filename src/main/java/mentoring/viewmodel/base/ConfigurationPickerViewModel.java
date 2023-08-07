@@ -1,6 +1,5 @@
 package mentoring.viewmodel.base;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -8,30 +7,23 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javafx.beans.property.Property;
-import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.ReadOnlyStringProperty;
-import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import mentoring.configuration.Configuration;
-import mentoring.viewmodel.base.function.ConfigurationParser;
 import mentoring.viewmodel.base.function.ConfigurationTypeFunction;
+import mentoring.viewmodel.base.function.FileParser;
 
 /**
  * ViewModel used to pick a new configuration.
  * @param <T> type of the configuration to pick
  */
-public class ConfigurationPickerViewModel<T extends Configuration<T>> {
+public class ConfigurationPickerViewModel<T extends Configuration<T>> extends FilePickerViewModel<T> {
     private final Map<String, T> knownConfigurations;
     private final ObservableList<String> items;
     private final Property<String> selectedItem;
-    private final ReadOnlyStringWrapper selectedFilePath = new ReadOnlyStringWrapper();
-    private final ReadOnlyObjectWrapper<File> selectedFile = new ReadOnlyObjectWrapper<>();
-    private final ReadOnlyObjectWrapper<File> selectedFileDirectory = new ReadOnlyObjectWrapper<>();
     private final Property<ConfigurationType> configurationType;
-    private final ConfigurationParser<T> configurationParser;
     
     /**
      * Type of configuration to pick.
@@ -68,8 +60,7 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
 
         private static <T extends Configuration<T>> T getConfigurationFromFile(
                 ConfigurationPickerViewModel<T> viewModel) throws IOException{
-            File file = viewModel.selectedFile.getValue();
-            return viewModel.configurationParser.apply(file);
+            return viewModel.parseCurrentFile();
         }
     }
     
@@ -83,7 +74,8 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
      */
     public ConfigurationPickerViewModel(T defaultSelectedInstance, List<T> knownInstances, 
             String defaultFilePath, 
-            ConfigurationType defaultSelection, ConfigurationParser<T> parserSupplier){
+            ConfigurationType defaultSelection, FileParser<T> parserSupplier){
+        super(defaultFilePath, parserSupplier);
         if(! knownInstances.contains(defaultSelectedInstance)){
             throw new IllegalArgumentException(
                     "Default instance %s is not in the known configurations"
@@ -94,9 +86,7 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
         items = FXCollections.unmodifiableObservableList(FXCollections.observableArrayList(
                 knownInstances.stream().map(item -> item.toString()).collect(Collectors.toList())));
         selectedItem = new SimpleStringProperty(defaultSelectedInstance.toString());
-        setCurrentFile(getFileOrDefaultDirectory(defaultFilePath));
         configurationType = new ReadOnlyObjectWrapper<>(Objects.requireNonNull(defaultSelection));
-        this.configurationParser = Objects.requireNonNull(parserSupplier);
     }
     
     /**
@@ -117,52 +107,6 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
         return selectedItem;
     }
     
-    /**
-     * Get the currently selected file. This observable may be invalidated by calls to
-     * {@link #setCurrentFile(java.io.File)}.
-     * @return an observable describing the currently selected file
-     */
-    public ReadOnlyObjectProperty<File> getCurrentFile(){
-        return selectedFile.getReadOnlyProperty();
-    }
-    
-    /**
-     * Select the input file. Calls to this method will invalidate the properties 
-     * returned by {@link #getCurrentFile()} and {@link #getCurrentFilePath()} if appropriate.
-     * @param file the file to select
-     */
-    public final void setCurrentFile(File file){
-        File safeFile = getFileOrDefaultDirectory(file);
-        selectedFile.set(safeFile);
-        selectedFilePath.set(safeFile.getPath());
-        selectedFileDirectory.set(safeFile.isFile() ? safeFile.getParentFile() : safeFile);
-    }
-    
-    private static File getFileOrDefaultDirectory(String filePath){
-        return getFileOrDefaultDirectory((File) (filePath == null ? null : new File(filePath)));
-    }
-    
-    private static File getFileOrDefaultDirectory(File file){
-        return (file == null || !file.exists()) ? new File(System.getProperty("user.home")) : file;
-    }
-    
-    /**
-     * Get an absolute path to the currently selected file. This observable may be invalidated by 
-     * calls to {@link #setCurrentFile(java.io.File)}.
-     * @return an observable describing an absolute path to the currently selected file
-     */
-    public ReadOnlyStringProperty getCurrentFilePath(){
-        return selectedFilePath.getReadOnlyProperty();
-    }
-    
-    /**
-     * Get the directory containing the currently selected file. 
-     * This observable may be invalidated by calls to {@link #setCurrentFile(java.io.File)}.
-     * @return an observable describing the currently selected directory
-     */
-    public ReadOnlyObjectProperty<File> getCurrentFileDirectory(){
-        return selectedFileDirectory.getReadOnlyProperty();
-    }
     
     /**
      * Get the type of configuration currently selected.

@@ -5,27 +5,24 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
-import javafx.beans.InvalidationListener;
 import javafx.beans.property.Property;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import mentoring.viewmodel.base.ConfigurationPickerViewModelTest.ConfigurationPickerViewModelArgs;
+import mentoring.viewmodel.base.FilePickerViewModelTest.FileData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.function.Executable;
-import org.mockito.Mockito;
 import test.tools.TestArgs;
 import test.tools.TestFramework;
-import mentoring.viewmodel.base.function.ConfigurationParser;
+import mentoring.viewmodel.base.function.FileParser;
 
 class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPickerViewModelArgs>{
     @Override
     public Stream<ConfigurationPickerViewModelArgs> argumentsSupplier() {
         DummyConfiguration fileConfiguration = 
-                new DummyConfiguration(DEFAULT_FILE_DATA.defaultFilePath);
+                new DummyConfiguration(DEFAULT_FILE_DATA.defaultFilePath());
         return Stream.of(
                 new ConfigurationPickerViewModelArgs("known configuration", 
                         DummyConfiguration.first, List.of(DummyConfiguration.first), 
@@ -91,108 +88,6 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
     }
     
     @TestFactory
-    Stream<DynamicNode> getCurrentFile_defaultInstance(){
-        return test("getCurrentFile() returns the default file before any action", args -> {
-            DummyConfigurationPickerViewModel viewModel = args.convert();
-            Assertions.assertEquals(args.defaultFileData.defaultFile, 
-                    viewModel.getCurrentFile().getValue());
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> getCurrentFile_modifiedBySetCurrentFile(){
-        return test("getCurrentFile() returns an observable invalidated by setCurrentFile()", args -> {
-            DummyConfigurationPickerViewModel viewModel = args.convert();
-            ReadOnlyObjectProperty<File> observable = viewModel.getCurrentFile();
-            InvalidationListener listener = Mockito.mock(InvalidationListener.class);
-            observable.addListener(listener);
-            File expected = OTHER_FILE;
-            viewModel.setCurrentFile(expected);
-            Assertions.assertAll(
-                    () -> Mockito.verify(listener).invalidated(observable),
-                    () -> Assertions.assertEquals(expected, observable.getValue()));
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> getCurrentFile_sameReturnValue(){
-        return test("getSeCurrentFile() always return the same observable", args -> {
-            DummyConfigurationPickerViewModel viewModel = args.convert();
-            ReadOnlyObjectProperty<File> expected = viewModel.getCurrentFile();
-            viewModel.setCurrentFile(new File("foo"));
-            Assertions.assertSame(expected, viewModel.getCurrentFile());
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> getCurrentFilePath_defaultValue(){
-        return test("getCurrentFilePath() returns the default file path before any action", args -> {
-            DummyConfigurationPickerViewModel viewModel = args.convert();
-            Assertions.assertEquals(args.defaultFileData.defaultFilePath, 
-                    viewModel.getCurrentFilePath().getValue());
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> getCurrentFilePath_modifiedBySetCurrentFile(){
-        return test("getCurrentFilePath() returns an observable invalidated by setCurrentFile()", args -> {
-            DummyConfigurationPickerViewModel viewModel = args.convert();
-            ReadOnlyStringProperty observable = viewModel.getCurrentFilePath();
-            InvalidationListener listener = Mockito.mock(InvalidationListener.class);
-            observable.addListener(listener);
-            String expected = OTHER_FILE_PATH;
-            viewModel.setCurrentFile(new File(expected));
-            Assertions.assertAll(
-                    () -> Mockito.verify(listener).invalidated(observable),
-                    () -> Assertions.assertEquals(expected, observable.getValue()));
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> getCurrentFilePath_sameReturnValue(){
-        return test("getSeCurrentFilePath() always return the same observable", args -> {
-            DummyConfigurationPickerViewModel viewModel = args.convert();
-            ReadOnlyStringProperty expected = viewModel.getCurrentFilePath();
-            viewModel.setCurrentFile(OTHER_FILE);
-            Assertions.assertSame(expected, viewModel.getCurrentFilePath());
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> getCurrentFileDirectory_defaultInstance(){
-        return test("getCurrentFileDirectory() returns the default directory before any action", args -> {
-            DummyConfigurationPickerViewModel viewModel = args.convert();
-            Assertions.assertEquals(args.defaultFileData.defaultDirectory, 
-                    viewModel.getCurrentFileDirectory().getValue());
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> getCurrentFileDirectory_modifiedBySetCurrentFile(){
-        return test("getCurrentFileDirectory() returns an observable invalidated by setCurrentFile()", args -> {
-            DummyConfigurationPickerViewModel viewModel = args.convert();
-            ReadOnlyObjectProperty<File> observable = viewModel.getCurrentFile();
-            InvalidationListener listener = Mockito.mock(InvalidationListener.class);
-            observable.addListener(listener);
-            File expected = OTHER_FILE;
-            viewModel.setCurrentFile(expected);
-            Assertions.assertAll(
-                    () -> Mockito.verify(listener).invalidated(observable),
-                    () -> Assertions.assertEquals(expected, observable.getValue()));
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> getCurrentFileDirectory_sameReturnValue(){
-        return test("getSeCurrentFile() always return the same observable", args -> {
-            DummyConfigurationPickerViewModel viewModel = args.convert();
-            ReadOnlyObjectProperty<File> expected = viewModel.getCurrentFile();
-            viewModel.setCurrentFile(OTHER_FILE);
-            Assertions.assertSame(expected, viewModel.getCurrentFile());
-        });
-    }
-    
-    @TestFactory
     Stream<DynamicNode> getConfigurationSelectionType_defaultInstance(){
         return test("getConfigurationSelectionType() returns the default instance before any action", args -> {
             DummyConfigurationPickerViewModel viewModel = args.convert();
@@ -253,7 +148,7 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
             String filePath = "foo";
             ConfigurationPickerViewModel.ConfigurationType type = 
                     ConfigurationPickerViewModel.ConfigurationType.FILE;
-            ConfigurationParser<DummyConfiguration> parserSupplier = 
+            FileParser<DummyConfiguration> parserSupplier = 
                     ConfigurationPickerViewModelArgs.parserSupplier;
             List<DummyConfiguration> values = List.of(configuration);
             Assertions.assertAll(
@@ -271,7 +166,7 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
             DummyConfiguration defaultSelectedInstance, List<DummyConfiguration> values,
             String defaultFilePath,
             ConfigurationPickerViewModel.ConfigurationType defaultSelection, 
-            ConfigurationParser<DummyConfiguration> parserSupplier){
+            FileParser<DummyConfiguration> parserSupplier){
         return () -> Assertions.assertThrows(NullPointerException.class, 
                 () -> new ConfigurationPickerViewModel<>(defaultSelectedInstance, values,
                         defaultFilePath, defaultSelection, parserSupplier));
@@ -293,7 +188,7 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
         public DummyConfigurationPickerViewModel(DummyConfiguration defaultSelectedInstance, 
                 List<DummyConfiguration> values,
                 String defaultFilePath, ConfigurationType defaultSelection, 
-                ConfigurationParser<DummyConfiguration> parserGenerator) {
+                FileParser<DummyConfiguration> parserGenerator) {
             super(defaultSelectedInstance, values, defaultFilePath, defaultSelection, 
                     parserGenerator);
         }
@@ -305,7 +200,7 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
         final DummyConfiguration configuration;
         final List<DummyConfiguration> inputValues;
         final List<String> expectedValues;
-        static ConfigurationParser<DummyConfiguration> parserSupplier;
+        static FileParser<DummyConfiguration> parserSupplier;
         
         ConfigurationPickerViewModelArgs(String testCase, DummyConfiguration configuration,
                 List<DummyConfiguration> inputValues, List<String> expectedValues,
@@ -321,23 +216,9 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
         
         DummyConfigurationPickerViewModel convert(){
             return new DummyConfigurationPickerViewModel(configuration, inputValues,
-                    defaultFileData.defaultFilePath, type, parserSupplier);
+                    defaultFileData.defaultFilePath(), type, parserSupplier);
         }
     }
     
-    static record FileData(String defaultFilePath, File defaultFile, File defaultDirectory){}
-    static final String PREFIX = "resources_test_mentoring_viewmodel_base"
-            .replace('_', File.separatorChar);
-    static final File PREFIX_FILE = new File(PREFIX);
-    static final String FILE_NAME = "configurationPickerViewModelTestFile.txt";
-    static final String FILE_PATH = PREFIX + File.separator + FILE_NAME;
-    static final File FILE = new File(FILE_PATH);
-    static final String OTHER_PREFIX = "%s%sconfigurationPickerViewModelTestDirectory"
-            .formatted(PREFIX, File.separatorChar);
-    static final String OTHER_FILE_NAME = "configurationPickerViewModelTestOtherFile.txt";
-    static final String OTHER_FILE_PATH = OTHER_PREFIX + File.separator + OTHER_FILE_NAME;
-    static final File OTHER_FILE = new File(OTHER_FILE_PATH);
-    static final FileData DEFAULT_FILE_DATA = new FileData(FILE_PATH,
-        FILE, PREFIX_FILE);
-    
+    static FileData DEFAULT_FILE_DATA = FilePickerViewModelTest.DEFAULT_FILE_DATA;
 }

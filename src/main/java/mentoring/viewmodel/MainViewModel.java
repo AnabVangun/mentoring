@@ -18,7 +18,6 @@ import mentoring.datastructure.Person;
 import mentoring.io.ResultConfigurationParser;
 import mentoring.io.datareader.YamlReader;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
-import mentoring.viewmodel.base.function.ConfigurationParser;
 import mentoring.viewmodel.datastructure.PersonListViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
@@ -28,6 +27,7 @@ import mentoring.viewmodel.tasks.MatchExportTask;
 import mentoring.viewmodel.tasks.MultipleMatchTask;
 import mentoring.viewmodel.tasks.SingleMatchRemovalTask;
 import mentoring.viewmodel.tasks.SingleMatchTask;
+import mentoring.viewmodel.base.function.FileParser;
 
 /**
  * ViewModel responsible for handling the main window of the application.
@@ -141,7 +141,7 @@ public class MainViewModel {
                 String defaultPath = "";
                 ConfigurationPickerViewModel.ConfigurationType type = 
                         ConfigurationPickerViewModel.ConfigurationType.KNOWN;
-                ConfigurationParser<ResultConfiguration<Person, Person>> parser = file -> {
+                FileParser<ResultConfiguration<Person, Person>> parser = file -> {
                     try (FileReader reader = new FileReader(file, Charset.forName("utf-8"))){
                         return new ResultConfigurationParser(new YamlReader()).parse(reader);
                     }

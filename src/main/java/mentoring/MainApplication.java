@@ -27,7 +27,7 @@ public class MainApplication extends Application {
         Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
 
-        stage.setTitle("JavaFX and Gradle");
+        stage.setTitle("Mentoring match-maker");
         stage.setScene(scene);
         stage.show();
     }
