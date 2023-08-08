@@ -27,10 +27,5 @@
               <fx:include fx:id="fileSelectionView" source="fileSelectionView.fxml" />
           </children>
       </HBox>
-      <HBox prefHeight="100.0" prefWidth="200.0">
-          <children>
-              <Button fx:id="configurationValidationButton" mnemonicParsing="false" text="Button" />
-          </children>
-      </HBox>
    </children>
 </VBox>

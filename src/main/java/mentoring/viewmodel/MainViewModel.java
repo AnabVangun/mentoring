@@ -12,9 +12,11 @@ import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import mentoring.concurrency.ConcurrencyHandler;
+import mentoring.configuration.PojoPersonConfiguration;
 import mentoring.configuration.PojoResultConfiguration;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.datastructure.Person;
+import mentoring.io.PersonFileParser;
 import mentoring.io.ResultConfigurationParser;
 import mentoring.io.datareader.YamlReader;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
@@ -135,9 +137,9 @@ public class MainViewModel {
     }
     
     public ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> 
-            forgeConfigurationPickerViewModel(){
-                //TODO refactor to return the viewModel needed to initialise the full configuration panel
-                //The viewModel should by default show the previous selected configuration, if any.
+            forgeResultConfigurationPickerViewModel(){
+                //TODO the viewModel should by default show the previous selected configuration, if any.
+                //Or maybe the viewModel should be forged once and be reused each time?
                 ResultConfiguration<Person, Person> configuration = 
                         PojoResultConfiguration.NAMES_AND_SCORE.getConfiguration();
                 String defaultPath = "";
@@ -159,4 +161,21 @@ public class MainViewModel {
                         new FilePickerViewModel<>(defaultPath, parser, extensions);
                 return new ConfigurationPickerViewModel<>(configuration, values, filePicker, type);
             }
+            
+    public FilePickerViewModel<List<Person>> forgePersonListPickerViewModel(){
+        //TODO refactor to return the viewModel needed to initialise the full configuration panel
+        //The viewModel should by default show the previous selected configuration, if any.
+        String defaultPath = "";
+        FileParser<List<Person>> parser = file -> {
+            try (FileReader reader = new FileReader(file, Charset.forName("utf-8"))){
+                //FIXME: here, the configuration is fixed while it should be only received when validating the configuration
+                return new PersonFileParser(PojoPersonConfiguration.TEST_CONFIGURATION.getConfiguration())
+                        .parse(reader);
+            }
+        };
+        List<Pair<String, List<String>>> extensions = List.of(
+                Pair.of("CSV files", List.of("*.csv")),
+                Pair.of("All files", List.of("*.*")));
+        return new FilePickerViewModel<>(defaultPath, parser, extensions);
+    }
 }

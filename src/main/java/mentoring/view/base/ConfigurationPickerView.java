@@ -5,13 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
-import java.util.function.Consumer;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.beans.binding.ObjectBinding;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Toggle;
@@ -29,8 +27,6 @@ public class ConfigurationPickerView implements Initializable{
     private ComboBox<String> configurationSelector;
     @FXML
     private ToggleGroup configurationSelectionGroup;
-    @FXML
-    private Button configurationValidationButton;
     @FXML
     private RadioButton knownConfigurationRadioButton;
     @FXML
@@ -62,13 +58,6 @@ public class ConfigurationPickerView implements Initializable{
                 configurationSelectionGroup, configurationTypeMap);
         viewModel.getConfigurationSelectionType().bind(typeOfConfigurationBinding);
         fileSelectionViewController.setViewModel(viewModel.getFilePicker());
-    }
-    
-    public void setValidationAction(Consumer<ConfigurationPickerViewModel<?>> validationButtonAction){
-        ViewTools.configureButton(configurationValidationButton, "Validate", 
-                event -> validationButtonAction
-                        .andThen(e -> ViewTools.closeContainingWindow(configurationValidationButton))
-                        .accept(viewModel));
     }
     
     @Override

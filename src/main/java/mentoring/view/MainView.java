@@ -20,13 +20,13 @@ import javafx.stage.Stage;
 import javax.inject.Inject;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.datastructure.Person;
-import mentoring.view.base.ConfigurationPickerView;
 import mentoring.view.base.ViewTools;
 import mentoring.view.datastructure.MatchesTableView;
 import mentoring.viewmodel.MainViewModel;
 import mentoring.viewmodel.PojoRunConfiguration;
 import mentoring.viewmodel.RunConfiguration;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
+import mentoring.viewmodel.base.FilePickerViewModel;
 import mentoring.viewmodel.datastructure.PersonType;
 
 public class MainView implements Initializable {
@@ -127,20 +127,28 @@ public class MainView implements Initializable {
     //FIXME: the explicit cast should not be needed, and the unchecked warning as well
     private void showConfigurationPicker(){
         //TODO: refactor: emphasize structure and operations.
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/mentoring/configurationSelectionView.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass()
+                .getResource("/mentoring/globalConfigurationSelectionView.fxml"));
         Parent node = null;
         try {
             node = loader.load();
         } catch (IOException e){
             throw new UncheckedIOException(e);
         }
-        ConfigurationPickerView test = (ConfigurationPickerView) loader.getController();
-        test.setViewModel(vm.forgeConfigurationPickerViewModel());
-        test.setValidationAction(configurationVM -> 
-                vm.getResultConfiguration(
-                        (ConfigurationPickerViewModel<ResultConfiguration<Person, Person>>) configurationVM,
-                        List.of(tableViewController.getBatchMatchesViewModel(),
-                                tableViewController.getOneAtATimeMatchesViewModel())));
+        GlobalConfigurationPickerView globalConfigurationView = 
+                (GlobalConfigurationPickerView) loader.getController();
+        FilePickerViewModel<List<Person>> menteeSourceVM =
+                vm.forgePersonListPickerViewModel();
+        ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> resultVM = 
+                vm.forgeResultConfigurationPickerViewModel();
+        globalConfigurationView.getMenteeSourceView().setViewModel(menteeSourceVM);
+        globalConfigurationView.getResultConfigurationView().setViewModel(resultVM);
+        globalConfigurationView.setValidationAction(() -> {
+            //TODO modify person handling to add mentees to VM here
+            vm.getResultConfiguration(resultVM,
+                    List.of(tableViewController.getBatchMatchesViewModel(),
+                            tableViewController.getOneAtATimeMatchesViewModel()));
+        });
         Scene scene = new Scene(node);
         scene.getStylesheets().add(getClass().getResource("/mentoring/styles.css").toExternalForm());
         Stage configurationWindow = new Stage();
