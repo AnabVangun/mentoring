@@ -9,8 +9,7 @@ import javafx.beans.Observable;
 /**
  * Abstract class with a basic implementation of the {@link Observable} interface.
  */
-public abstract class SimpleObservableViewModel implements Observable{
-    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+public abstract class SimpleObservable implements Observable{
     private final List<InvalidationListener> listeners = new CopyOnWriteArrayList<>();
     
     @Override

@@ -8,13 +8,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.Person;
-import mentoring.viewmodel.base.SimpleObservableViewModel;
+import mentoring.viewmodel.base.SimpleObservable;
 import mentoring.viewmodel.base.TabularDataViewModel;
 
 /**
  * Viewmodel responsible for representing a list of {@link Person} objects.
  */
-public class PersonListViewModel extends SimpleObservableViewModel 
+public class PersonListViewModel extends SimpleObservable 
         implements TabularDataViewModel<PersonViewModel>{
     //TODO once PersonViewModel represents more than just the name, fix this initialisation.
     private final List<String> headerContent = List.of("Name");

@@ -13,12 +13,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
 import mentoring.viewmodel.base.FilePickerViewModel;
+import mentoring.viewmodel.base.SimpleObservable;
 
 /**
  * View responsible for selecting a file to parse.
  * <p> This view is not fully operational until setViewModel has been called.
  */
-public class FilePickerView implements Initializable {
+public class FilePickerView extends SimpleObservable implements Initializable {
     @FXML
     private TextField fileSelectorLabel;
     @FXML
@@ -47,6 +48,7 @@ public class FilePickerView implements Initializable {
                     ((Node) event.getSource()).getScene().getWindow());
             if(inputFile != null){
                 viewModel.setCurrentFile(inputFile);
+                notifyListeners();
             }
         });
     }

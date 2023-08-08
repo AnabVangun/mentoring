@@ -12,7 +12,7 @@ import mentoring.io.ResultWriter;
 import mentoring.match.Match;
 import mentoring.match.Matches;
 import mentoring.viewmodel.base.ConfigurableViewModel;
-import mentoring.viewmodel.base.SimpleObservableViewModel;
+import mentoring.viewmodel.base.SimpleObservable;
 import mentoring.viewmodel.base.TabularDataViewModel;
 
 /**
@@ -26,7 +26,7 @@ import mentoring.viewmodel.base.TabularDataViewModel;
  * @param <VM> type of the {@link MatchViewModel} used to represent each individual match
  */
 public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, Mentor>> 
-        extends SimpleObservableViewModel implements TabularDataViewModel<VM>,
+        extends SimpleObservable implements TabularDataViewModel<VM>,
         ConfigurableViewModel<ResultConfiguration<Mentee, Mentor>> {
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private final List<String> headerContent = new ArrayList<>();

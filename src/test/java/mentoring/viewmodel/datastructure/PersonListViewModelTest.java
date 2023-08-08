@@ -11,14 +11,14 @@ import mentoring.datastructure.PersonBuilder;
 import mentoring.datastructure.PropertyName;
 import mentoring.datastructure.PropertyType;
 import mentoring.datastructure.SetPropertyName;
-import mentoring.viewmodel.base.ObservableViewModelTest;
-import mentoring.viewmodel.base.ObservableViewModelArgs;
+import mentoring.viewmodel.base.ObservableTest;
+import mentoring.viewmodel.base.ObservableArgs;
 import mentoring.viewmodel.datastructure.PersonListViewModelTest.PersonListViewModelArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 
-class PersonListViewModelTest extends ObservableViewModelTest<PersonListViewModel,
+class PersonListViewModelTest extends ObservableTest<PersonListViewModel,
         PersonListViewModelArgs>{
 
     @Override
@@ -132,7 +132,7 @@ class PersonListViewModelTest extends ObservableViewModelTest<PersonListViewMode
                 args -> assertInvalidatedEventFired(args, vm -> args.invalidate(vm)));
     }
     
-    static class PersonListViewModelArgs extends ObservableViewModelArgs<PersonListViewModel>{
+    static class PersonListViewModelArgs extends ObservableArgs<PersonListViewModel>{
         
         PersonListViewModelArgs(String testCase){
             super(testCase);

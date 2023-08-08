@@ -10,12 +10,12 @@ import org.junit.jupiter.api.TestFactory;
 import test.tools.TestFramework;
 
 /**
- * Base class providing tests related to the {@link Observable} interface.
+ * Base class providing tests and utilities related to the {@link Observable} interface.
  * @param <VM> type of the observable class under test.
  * @param <A> type of the test argument class used to generate and manipulate the class under test.
  */
-public abstract class ObservableViewModelTest<VM extends Observable, 
-        A extends ObservableViewModelArgs<VM>> implements TestFramework<A>{
+public abstract class ObservableTest<VM extends Observable, 
+        A extends ObservableArgs<VM>> implements TestFramework<A>{
     
     /**
      * Assert that a given action notifies the registered listeners.

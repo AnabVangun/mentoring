@@ -14,15 +14,15 @@ import mentoring.match.Match;
 import mentoring.match.MatchTest;
 import mentoring.match.Matches;
 import mentoring.match.MatchesTest;
-import mentoring.viewmodel.base.ObservableViewModelTest;
-import mentoring.viewmodel.base.ObservableViewModelArgs;
+import mentoring.viewmodel.base.ObservableTest;
+import mentoring.viewmodel.base.ObservableArgs;
 import mentoring.viewmodel.match.MatchesViewModelTest.MatchesViewModelTestArgs;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 
-class MatchesViewModelTest extends ObservableViewModelTest<
+class MatchesViewModelTest extends ObservableTest<
         MatchesViewModel<String, String, MatchViewModel<String, String>>, MatchesViewModelTestArgs>{
     
     @Override
@@ -382,7 +382,7 @@ class MatchesViewModelTest extends ObservableViewModelTest<
         });
     }
     
-    static class MatchesViewModelTestArgs extends ObservableViewModelArgs<
+    static class MatchesViewModelTestArgs extends ObservableArgs<
             MatchesViewModel<String, String, MatchViewModel<String, String>>>{
         private final List<String> expectedHeader;
         private final Matches<String, String> input;

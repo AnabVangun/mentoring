@@ -1,17 +1,17 @@
 package mentoring.viewmodel.base;
 
 import java.util.stream.Stream;
-import mentoring.viewmodel.base.SimpleObservableViewModelTest.SimpleObservableViewModelTestArgs;
+import mentoring.viewmodel.base.SimpleObservableTest.SimpleObservablelTestArgs;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 
 
-class SimpleObservableViewModelTest extends ObservableViewModelTest<SimpleObservableViewModel, 
-        SimpleObservableViewModelTestArgs>{
+class SimpleObservableTest extends ObservableTest<SimpleObservable, 
+        SimpleObservablelTestArgs>{
     
     @Override
-    public Stream<SimpleObservableViewModelTestArgs> argumentsSupplier(){
-        return Stream.of(new SimpleObservableViewModelTestArgs("unique test case"));
+    public Stream<SimpleObservablelTestArgs> argumentsSupplier(){
+        return Stream.of(new SimpleObservablelTestArgs("unique test case"));
     }
     
     @TestFactory
@@ -27,20 +27,20 @@ class SimpleObservableViewModelTest extends ObservableViewModelTest<SimpleObserv
                 args -> assertNoInvalidatedEventFired(args, observable -> {}));
     }
     
-    static class SimpleObservableViewModelTestArgs extends 
-            ObservableViewModelArgs<SimpleObservableViewModel> {
+    static class SimpleObservablelTestArgs extends 
+            ObservableArgs<SimpleObservable> {
         
-        public SimpleObservableViewModelTestArgs(String testCase) {
+        public SimpleObservablelTestArgs(String testCase) {
             super(testCase);
         }
 
         @Override
-        protected SimpleObservableViewModel convert() {
-            return new SimpleObservableViewModel() {};
+        protected SimpleObservable convert() {
+            return new SimpleObservable() {};
         }
 
         @Override
-        protected void invalidate(SimpleObservableViewModel viewModel) {
+        protected void invalidate(SimpleObservable viewModel) {
             viewModel.notifyListeners();
         }
     }

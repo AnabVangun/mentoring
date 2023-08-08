@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
+import javafx.beans.InvalidationListener;
+import javafx.beans.WeakInvalidationListener;
 import javafx.beans.binding.ObjectBinding;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -37,6 +39,9 @@ public class ConfigurationPickerView implements Initializable{
     private FilePickerView fileSelectionViewController;
     private ObjectBinding<ConfigurationType> typeOfConfigurationBinding;
     
+    private final InvalidationListener fileRadioButtonSelector = observable -> 
+            configurationSelectionGroup.selectToggle(fileConfigurationRadioButton);
+    
     private ConfigurationPickerViewModel<?> viewModel;
     private final Map<Toggle, ConfigurationType> configurationTypeMap = new HashMap<>();
     
@@ -56,7 +61,6 @@ public class ConfigurationPickerView implements Initializable{
         typeOfConfigurationBinding = forgeConfigurationTypeGetterBinding(
                 configurationSelectionGroup, configurationTypeMap);
         viewModel.getConfigurationSelectionType().bind(typeOfConfigurationBinding);
-        //TODO every time the label of the FilePickerView is updated, change toggle
         fileSelectionViewController.setViewModel(viewModel.getFilePicker());
     }
     
@@ -70,6 +74,7 @@ public class ConfigurationPickerView implements Initializable{
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         configureTypeMap();
+        fileSelectionViewController.addListener(new WeakInvalidationListener(fileRadioButtonSelector));
     }
     
     private void configureTypeMap(){
