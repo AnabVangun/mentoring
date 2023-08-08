@@ -22,6 +22,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.stage.FileChooser;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel.ConfigurationType;
+import mentoring.viewmodel.base.FilePickerViewModel;
 
 /**
  * View responsible for selecting a configuration.
@@ -46,6 +47,7 @@ public class ConfigurationPickerView implements Initializable{
     private ObjectBinding<ConfigurationType> typeOfConfigurationBinding;
     
     private final ConfigurationPickerViewModel<?> viewModel;
+    private final FilePickerViewModel<?> filePickerViewModel;
     private final FileChooser chooser;
     private final Consumer<ConfigurationPickerViewModel<?>> validationButtonAction;
     private final Map<Toggle, ConfigurationType> configurationTypeMap = new HashMap<>();
@@ -54,23 +56,25 @@ public class ConfigurationPickerView implements Initializable{
     public ConfigurationPickerView(ConfigurationPickerViewModel<?> viewModel,
             Consumer<ConfigurationPickerViewModel<?>> validationButtonAction){
         this.viewModel = viewModel;
-        filters = viewModel.getStandardExtensions().stream()
+        filePickerViewModel = viewModel.getFilePicker();
+        filters = filePickerViewModel.getStandardExtensions().stream()
                 .map(entry -> new FileChooser.ExtensionFilter(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
         chooser = ViewTools.createFileChooser("Choose configuration file", filters);
-        chooser.initialDirectoryProperty().bind(viewModel.getCurrentFileDirectory());
+        chooser.initialDirectoryProperty().bind(filePickerViewModel.getCurrentFileDirectory());
         this.validationButtonAction = validationButtonAction;
     }
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         //TODO internationalise strings
+        //TODO refactor to explicit structure
         configureTypeMap();
         configurationSelector.setItems(viewModel.getKnownContent());
         configurationSelector.valueProperty().bindBidirectional(viewModel.getSelectedItem());
         configurationSelector.setOnMouseClicked(event -> 
                 configurationSelectionGroup.selectToggle(knownConfigurationRadioButton));
-        configurationFileSelector.textProperty().bind(viewModel.getCurrentFilePath());
+        configurationFileSelector.textProperty().bind(filePickerViewModel.getCurrentFilePath());
         configurationSelectionGroup.selectToggle(
                 switch(viewModel.getConfigurationSelectionType().getValue()) {
                     case KNOWN -> knownConfigurationRadioButton;
@@ -83,7 +87,7 @@ public class ConfigurationPickerView implements Initializable{
             File inputFile = chooser.showOpenDialog(
                     ((Node) event.getSource()).getScene().getWindow());
             if(inputFile != null){
-                viewModel.setCurrentFile(inputFile);
+                filePickerViewModel.setCurrentFile(inputFile);
                 configurationSelectionGroup.selectToggle(fileConfigurationRadioButton);
             }
         });
@@ -114,7 +118,8 @@ public class ConfigurationPickerView implements Initializable{
                 if(map.containsKey(toggle)){
                     return map.get(toggle);
                 } else {
-                    throw new UnsupportedOperationException("Toggle " + toggle.toString() + " is unknown");
+                    throw new UnsupportedOperationException("Toggle " + toggle.toString() +
+                            " is unknown");
                 }
             }
         };

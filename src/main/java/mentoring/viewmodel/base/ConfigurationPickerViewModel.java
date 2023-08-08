@@ -13,19 +13,17 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import mentoring.configuration.Configuration;
 import mentoring.viewmodel.base.function.ConfigurationTypeFunction;
-import mentoring.viewmodel.base.function.FileParser;
-import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * ViewModel used to pick a new configuration.
  * @param <T> type of the configuration to pick
  */
-public class ConfigurationPickerViewModel<T extends Configuration<T>> extends FilePickerViewModel<T> {
+public class ConfigurationPickerViewModel<T extends Configuration<T>> {
     private final Map<String, T> knownConfigurations;
     private final ObservableList<String> items;
     private final Property<String> selectedItem;
     private final Property<ConfigurationType> configurationType;
-    private final List<Pair<String, List<String>>> fileExtensions;
+    private final FilePickerViewModel<T> filePicker;
     
     /**
      * Type of configuration to pick.
@@ -62,7 +60,7 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> extends Fi
 
         private static <T extends Configuration<T>> T getConfigurationFromFile(
                 ConfigurationPickerViewModel<T> viewModel) throws IOException{
-            return viewModel.parseCurrentFile();
+            return viewModel.filePicker.parseCurrentFile();
         }
     }
     
@@ -70,18 +68,13 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> extends Fi
      * Build a new ConfigurationPickerViewModel instance.
      * @param defaultSelectedInstance the first selected item
      * @param knownInstances the values known to the ViewModel
-     * @param defaultFilePath path to a file that can be parsed as a configuration
+     * @param filePicker ViewModel used to pick a configuration file
      * @param defaultSelection the default type of configuration picked by the picker
-     * @param parserSupplier to parse the configuration from a file if necessary
-     * @param fileExtensions the standard file extensions for this picker as a pair with a 
-     *      description and the associated extensions, where each extension SHOULD be of the form 
-     *      {@code *.<extension>}
      */
     public ConfigurationPickerViewModel(T defaultSelectedInstance, List<T> knownInstances, 
-            String defaultFilePath, 
-            ConfigurationType defaultSelection, FileParser<T> parserSupplier,
-            List<Pair<String, List<String>>> fileExtensions){
-        super(defaultFilePath, parserSupplier);
+            FilePickerViewModel<T> filePicker,
+            ConfigurationType defaultSelection){
+        this.filePicker = Objects.requireNonNull(filePicker);
         if(! knownInstances.contains(defaultSelectedInstance)){
             throw new IllegalArgumentException(
                     "Default instance %s is not in the known configurations"
@@ -93,7 +86,6 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> extends Fi
                 knownInstances.stream().map(item -> item.toString()).collect(Collectors.toList())));
         selectedItem = new SimpleStringProperty(defaultSelectedInstance.toString());
         configurationType = new ReadOnlyObjectWrapper<>(Objects.requireNonNull(defaultSelection));
-        this.fileExtensions = List.copyOf(fileExtensions);//TODO protect against modifications of the values
     }
     
     /**
@@ -135,8 +127,11 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> extends Fi
         return configurationType.getValue().getConfiguration(this);
     }
     
-    @Override
-    public List<Pair<String, List<String>>> getStandardExtensions(){
-        return fileExtensions;
+    /**
+     * Get the FilePickerViewModel used to pick a configuration file by this ViewModel.
+     * @return the internal FilePickerViewModel
+     */
+    public FilePickerViewModel<T> getFilePicker() {
+        return this.filePicker;
     }
 }

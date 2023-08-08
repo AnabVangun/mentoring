@@ -12,16 +12,28 @@ import mentoring.viewmodel.base.function.FileParser;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
- * Abstract class with a basic implementation for ViewModels made to pick specific files.
+ * ViewModel made to pick and parse files containing a Java object (that may be a collection).
+ * @param<T> type of the Java object to get from the selected file
  */
-abstract class FilePickerViewModel<T> {
+public class FilePickerViewModel<T> {
     private final ReadOnlyStringWrapper selectedFilePath = new ReadOnlyStringWrapper();
     private final ReadOnlyObjectWrapper<File> selectedFile = new ReadOnlyObjectWrapper<>();
     private final ReadOnlyObjectWrapper<File> selectedFileDirectory = new ReadOnlyObjectWrapper<>();
     private final FileParser<T> fileParser;
+    private final List<Pair<String, List<String>>> fileExtensions;
     
-    protected FilePickerViewModel(String defaultFilePath, FileParser<T> fileParser){
+    /**
+     * Build a new ConfigurationPickerViewModel instance.
+     * @param defaultFilePath path to a file that can be parsed, MAY be a null or empty String
+     * @param fileParser to parse the file
+     * @param fileExtensions the standard file extensions for this picker as a pair with a 
+     *      description and the associated extensions, where each extension SHOULD be of the form 
+     *      {@code *.<extension>}
+     */
+    public  FilePickerViewModel(String defaultFilePath, FileParser<T> fileParser,
+            List<Pair<String, List<String>>> fileExtensions){
         this.fileParser = Objects.requireNonNull(fileParser);
+        this.fileExtensions = List.copyOf(fileExtensions);//TODO protect against modifications of the values
         setCurrentFile(getFileOrDefaultDirectory(defaultFilePath));
     }
     
@@ -87,5 +99,7 @@ abstract class FilePickerViewModel<T> {
      * associated extensions. Each extension SHOULD be of the form {@code *.<extension>}.
      * @return a mapping between descriptions and a list of associated file extensions
      */
-    public abstract List<Pair<String, List<String>>> getStandardExtensions();
+    public final List<Pair<String, List<String>>> getStandardExtensions(){
+        return this.fileExtensions;
+    }
 }

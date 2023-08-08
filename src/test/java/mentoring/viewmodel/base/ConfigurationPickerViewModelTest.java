@@ -9,33 +9,31 @@ import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import mentoring.viewmodel.base.ConfigurationPickerViewModelTest.ConfigurationPickerViewModelArgs;
-import mentoring.viewmodel.base.FilePickerViewModelTest.FileData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.function.Executable;
 import test.tools.TestArgs;
 import test.tools.TestFramework;
-import mentoring.viewmodel.base.function.FileParser;
-import org.apache.commons.lang3.tuple.Pair;
+import org.mockito.Mockito;
 
 class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPickerViewModelArgs>{
     @Override
     public Stream<ConfigurationPickerViewModelArgs> argumentsSupplier() {
-        DummyConfiguration fileConfiguration = 
-                new DummyConfiguration(DEFAULT_FILE_DATA.defaultFilePath());
         return Stream.of(
                 new ConfigurationPickerViewModelArgs("known configuration", 
-                        DummyConfiguration.first, List.of(DummyConfiguration.first), 
-                        List.of(DummyConfiguration.first.toString()), DEFAULT_FILE_DATA,
-                        ConfigurationPickerViewModel.ConfigurationType.KNOWN,
-                        List.of(Pair.of("foo", List.of("*.bar","*.foobar")))),
+                        DummyConfiguration.first, DummyConfiguration.first, 
+                        List.of(DummyConfiguration.first), 
+                        List.of(DummyConfiguration.first.toString()),
+                        ConfigurationPickerViewModel.ConfigurationType.KNOWN, "foo"),
                 new ConfigurationPickerViewModelArgs("file configuration",
-                        fileConfiguration, List.of(DummyConfiguration.second, fileConfiguration), 
-                        List.of(DummyConfiguration.second.toString(), fileConfiguration.toString()), 
-                        DEFAULT_FILE_DATA,
+                        ConfigurationPickerViewModelArgs.FILE_CONFIGURATION, 
+                        DummyConfiguration.second,
+                        List.of(DummyConfiguration.first, DummyConfiguration.second), 
+                        List.of(DummyConfiguration.first.toString(), 
+                                DummyConfiguration.second.toString()),
                         ConfigurationPickerViewModel.ConfigurationType.FILE,
-                        List.of(Pair.of("foo", List.of("foobar")), Pair.of("bar", List.of("barfoo")))));
+                        FilePickerViewModelTest.DEFAULT_FILE_DATA.defaultFilePath()));
     }
     
     @TestFactory
@@ -61,7 +59,7 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
     Stream<DynamicNode> getSelectedItem_defaultInstance(){
         return test("getSelectedItem() returns the default instance before any action", args -> {
             DummyConfigurationPickerViewModel viewModel = args.convert();
-            Assertions.assertEquals(args.configuration.toString(), 
+            Assertions.assertEquals(args.selectedConfiguration.toString(), 
                     viewModel.getSelectedItem().getValue());
         });
     }
@@ -138,17 +136,9 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
                 Assertions.fail(e);
             }
             //Compare the file name to avoid false negative due to absolute vs relative path
-            String expected = new File(args.configuration.toString()).getName();
+            String expected = new File(args.expectedConfiguration.toString()).getName();
             String actual = new File(actualConfiguration.toString()).getName();
             Assertions.assertEquals(expected, actual);
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> getStandardExtensions_expectedValue(){
-        return test("getStandardExtensions() returns the expected value", args -> {
-            DummyConfigurationPickerViewModel viewModel = args.convert();
-            Assertions.assertEquals(args.expectedExtensions, viewModel.getStandardExtensions());
         });
     }
     
@@ -156,43 +146,35 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
     Stream<DynamicNode> constructor_NPE(){
         return test(Stream.of("unique test case"), "constructor throws NPE on null input", args -> {
             DummyConfiguration configuration = DummyConfiguration.first;
-            String filePath = "foo";
             ConfigurationPickerViewModel.ConfigurationType type = 
                     ConfigurationPickerViewModel.ConfigurationType.FILE;
-            FileParser<DummyConfiguration> parserSupplier = 
-                    ConfigurationPickerViewModelArgs.parserSupplier;
+            @SuppressWarnings("unchecked")
+            FilePickerViewModel<DummyConfiguration> filePicker = 
+                    Mockito.mock(FilePickerViewModel.class);
             List<DummyConfiguration> values = List.of(configuration);
-            List<Pair<String, List<String>>> extensions = List.of();
             Assertions.assertAll(
-                    assertConstructorThrowsNPE(null, values, filePath, type, parserSupplier, extensions),
-                    assertConstructorThrowsNPE(configuration, null, filePath, type, parserSupplier, extensions),
-                    () -> Assertions.assertDoesNotThrow(() -> 
-                            new ConfigurationPickerViewModel<>(configuration, values, null, type, 
-                                    parserSupplier, extensions)),
-                    assertConstructorThrowsNPE(configuration, values, filePath, null, parserSupplier, extensions),
-                    assertConstructorThrowsNPE(configuration, values, filePath, type, null, extensions),
-                    assertConstructorThrowsNPE(configuration, values, filePath, type, parserSupplier, null));
+                    assertConstructorThrowsNPE(null, values, filePicker, type),
+                    assertConstructorThrowsNPE(configuration, null, filePicker, type),
+                    assertConstructorThrowsNPE(configuration, values, null, type),
+                    assertConstructorThrowsNPE(configuration, values, filePicker, null));
         });
     }
     
     static Executable assertConstructorThrowsNPE(
             DummyConfiguration defaultSelectedInstance, List<DummyConfiguration> values,
-            String defaultFilePath,
-            ConfigurationPickerViewModel.ConfigurationType defaultSelection, 
-            FileParser<DummyConfiguration> parserSupplier, 
-            List<Pair<String, List<String>>> extensions){
+            FilePickerViewModel<DummyConfiguration> filePicker,
+            ConfigurationPickerViewModel.ConfigurationType defaultSelection){
         return () -> Assertions.assertThrows(NullPointerException.class, 
                 () -> new ConfigurationPickerViewModel<>(defaultSelectedInstance, values,
-                        defaultFilePath, defaultSelection, parserSupplier, extensions));
+                        filePicker, defaultSelection));
     }
     
     @TestFactory
     Stream<DynamicNode> constructor_IllegalArgumentException(){
         return test(
-                Stream.of(new ConfigurationPickerViewModelArgs("invalid test case",
-                        DummyConfiguration.first, List.of(DummyConfiguration.second), null, 
-                        DEFAULT_FILE_DATA, ConfigurationPickerViewModel.ConfigurationType.FILE,
-                        List.of())), 
+                Stream.of(new ConfigurationPickerViewModelArgs("invalid test case", null,
+                        DummyConfiguration.first, List.of(DummyConfiguration.second), null,
+                        ConfigurationPickerViewModel.ConfigurationType.FILE, "")), 
                 "constructor throws an exception when default instance not in values",
                 args -> Assertions.assertThrows(IllegalArgumentException.class, () -> args.convert()));
     }
@@ -202,42 +184,41 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
         
         public DummyConfigurationPickerViewModel(DummyConfiguration defaultSelectedInstance, 
                 List<DummyConfiguration> values,
-                String defaultFilePath, ConfigurationType defaultSelection, 
-                FileParser<DummyConfiguration> parserGenerator, 
-                List<Pair<String, List<String>>> extensions) {
-            super(defaultSelectedInstance, values, defaultFilePath, defaultSelection, 
-                    parserGenerator, extensions);
+                FilePickerViewModel<DummyConfiguration> filePicker, 
+                ConfigurationType defaultSelection) {
+            super(defaultSelectedInstance, values, filePicker, defaultSelection);
         }
     }
     
     static class ConfigurationPickerViewModelArgs extends TestArgs {
-        final FileData defaultFileData;
         final ConfigurationPickerViewModel.ConfigurationType type;
-        final DummyConfiguration configuration;
+        final DummyConfiguration expectedConfiguration;
+        final DummyConfiguration selectedConfiguration;
         final List<DummyConfiguration> inputValues;
         final List<String> expectedValues;
-        static FileParser<DummyConfiguration> parserSupplier;
-        final List<Pair<String, List<String>>> expectedExtensions;
+        final FilePickerViewModel<DummyConfiguration> filePicker;
         
-        ConfigurationPickerViewModelArgs(String testCase, DummyConfiguration configuration,
-                List<DummyConfiguration> inputValues, List<String> expectedValues,
-                FileData defaultFileData, ConfigurationPickerViewModel.ConfigurationType type,
-                List<Pair<String, List<String>>> expectedExtensions){
+        @SuppressWarnings("unchecked")
+        ConfigurationPickerViewModelArgs(String testCase, DummyConfiguration expectedConfiguration,
+                DummyConfiguration selectedConfiguration, List<DummyConfiguration> inputValues, 
+                List<String> expectedValues, ConfigurationPickerViewModel.ConfigurationType type,
+                String filePath){
             super(testCase);
-            this.configuration = configuration;
+            this.expectedConfiguration = expectedConfiguration;
+            filePicker = new FilePickerViewModel<>(filePath, 
+                    input -> new DummyConfiguration(input.getName()), List.of());
+            this.selectedConfiguration = selectedConfiguration;
             this.inputValues = inputValues;
             this.expectedValues = expectedValues;
-            this.defaultFileData = defaultFileData;
             this.type = type;
-            this.expectedExtensions = expectedExtensions;
-            parserSupplier = (input) -> new DummyConfiguration(input.getAbsolutePath());
         }
         
         DummyConfigurationPickerViewModel convert(){
-            return new DummyConfigurationPickerViewModel(configuration, inputValues,
-                    defaultFileData.defaultFilePath(), type, parserSupplier, expectedExtensions);
+            return new DummyConfigurationPickerViewModel(selectedConfiguration, inputValues,
+                    filePicker, type);
         }
+        
+        final static DummyConfiguration FILE_CONFIGURATION = 
+                new DummyConfiguration(FilePickerViewModelTest.DEFAULT_FILE_DATA.defaultFilePath());
     }
-    
-    static FileData DEFAULT_FILE_DATA = FilePickerViewModelTest.DEFAULT_FILE_DATA;
 }

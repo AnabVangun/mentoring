@@ -18,6 +18,7 @@ import mentoring.datastructure.Person;
 import mentoring.io.ResultConfigurationParser;
 import mentoring.io.datareader.YamlReader;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
+import mentoring.viewmodel.base.FilePickerViewModel;
 import mentoring.viewmodel.datastructure.PersonListViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
@@ -151,9 +152,11 @@ public class MainViewModel {
                         Arrays.stream(PojoResultConfiguration.values())
                                 .map(config -> config.getConfiguration())
                                 .collect(Collectors.toList());
-                return new ConfigurationPickerViewModel<>(configuration, values, defaultPath, type,
-                        parser, 
-                        List.of(Pair.of("YAML files", List.of("*.yaml")), 
-                                Pair.of("All files", List.of("*.*"))));
+                List<Pair<String, List<String>>> extensions = List.of(
+                        Pair.of("YAML files", List.of("*.yaml")),
+                        Pair.of("All files", List.of("*.*")));
+                FilePickerViewModel<ResultConfiguration<Person, Person>> filePicker = 
+                        new FilePickerViewModel<>(defaultPath, parser, extensions);
+                return new ConfigurationPickerViewModel<>(configuration, values, filePicker, type);
             }
 }

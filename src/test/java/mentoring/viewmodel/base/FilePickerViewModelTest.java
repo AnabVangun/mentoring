@@ -20,7 +20,8 @@ class FilePickerViewModelTest implements TestFramework<FilePickerViewModelArgs> 
     
     @Override
     public Stream<FilePickerViewModelArgs> argumentsSupplier(){
-        return Stream.of(new FilePickerViewModelArgs("default file", DEFAULT_FILE_DATA));
+        return Stream.of(new FilePickerViewModelArgs("default file", DEFAULT_FILE_DATA, 
+                List.of(Pair.of("foo", List.of("*.foo", "*.bar")))));
     }
     
     @TestFactory
@@ -129,34 +130,37 @@ class FilePickerViewModelTest implements TestFramework<FilePickerViewModelArgs> 
     Stream<DynamicNode> constructor_NPE(){
         return test(Stream.of("unique test case"), "constructor throws NPE on null input", args ->
                 Assertions.assertAll(
-                        () -> Assertions.assertThrows(NullPointerException.class, 
-                                () -> new DummyFilePickerViewModel(FILE_PATH, null)),
                         () -> Assertions.assertDoesNotThrow(
-                                () -> new DummyFilePickerViewModel(null, input -> input.toString()))));
+                                () -> new DummyFilePickerViewModel(null, input -> input.toString(), 
+                                        List.of())),
+                        () -> Assertions.assertThrows(NullPointerException.class, 
+                                () -> new DummyFilePickerViewModel(FILE_PATH, null, List.of())),
+                        () -> Assertions.assertThrows(NullPointerException.class,
+                                () -> new DummyFilePickerViewModel(FILE_PATH, input -> input.toString(), 
+                                        null))));
     }
     
     static class DummyFilePickerViewModel extends FilePickerViewModel<String>{
-        DummyFilePickerViewModel(String defaultPath, FileParser<String> parser){
-            super(defaultPath, parser);
-        }
-        
-        @Override
-        public List<Pair<String, List<String>>> getStandardExtensions(){
-            throw new UnsupportedOperationException("not needed for this test");
+        DummyFilePickerViewModel(String defaultPath, FileParser<String> parser, 
+                List<Pair<String, List<String>>> extensions){
+            super(defaultPath, parser, extensions);
         }
     }
     
     static class FilePickerViewModelArgs extends TestArgs {
         final FileData defaultFileData;
+        final List<Pair<String, List<String>>> expectedExtensions;
         
-        FilePickerViewModelArgs(String testCase, FileData defaultFileData){
+        FilePickerViewModelArgs(String testCase, FileData defaultFileData, 
+                List<Pair<String, List<String>>> extensions){
             super(testCase);
             this.defaultFileData = defaultFileData;
+            this.expectedExtensions = extensions;
         }
         
         DummyFilePickerViewModel convert(){
             return new DummyFilePickerViewModel(defaultFileData.defaultFilePath, 
-                    input -> input.getName());
+                    input -> input.getName(), expectedExtensions);
         }
     }
     
