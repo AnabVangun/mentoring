@@ -10,6 +10,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
@@ -122,22 +123,25 @@ public class MainView implements Initializable {
         });
     }
     
+    @SuppressWarnings("unchecked")
+    //FIXME: the explicit cast should not be needed, and the unchecked warning as well
     private void showConfigurationPicker(){
         //TODO: refactor: emphasize structure and operations.
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/mentoring/configurationSelectionView.fxml"));
-        @SuppressWarnings("unchecked")
-        //FIXME: the explicit cast should not be needed, and the unchecked warning as well
-        ConfigurationPickerView view = new ConfigurationPickerView(vm.forgeConfigurationPickerViewModel(),
-                configurationVM -> vm.getResultConfiguration((ConfigurationPickerViewModel<ResultConfiguration<Person, Person>>) configurationVM,
-                        List.of(tableViewController.getBatchMatchesViewModel(), 
-                                tableViewController.getOneAtATimeMatchesViewModel())));
-        loader.setControllerFactory(input -> view);
-        Scene scene = null;
+        Parent node = null;
         try {
-            scene = new Scene(loader.load());
+            node = loader.load();
         } catch (IOException e){
             throw new UncheckedIOException(e);
         }
+        ConfigurationPickerView test = (ConfigurationPickerView) loader.getController();
+        test.setViewModel(vm.forgeConfigurationPickerViewModel());
+        test.setValidationAction(configurationVM -> 
+                vm.getResultConfiguration(
+                        (ConfigurationPickerViewModel<ResultConfiguration<Person, Person>>) configurationVM,
+                        List.of(tableViewController.getBatchMatchesViewModel(),
+                                tableViewController.getOneAtATimeMatchesViewModel())));
+        Scene scene = new Scene(node);
         scene.getStylesheets().add(getClass().getResource("/mentoring/styles.css").toExternalForm());
         Stage configurationWindow = new Stage();
         configurationWindow.setScene(scene);
