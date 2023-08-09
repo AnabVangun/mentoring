@@ -30,7 +30,6 @@ import mentoring.viewmodel.base.FilePickerViewModel;
 import mentoring.viewmodel.datastructure.PersonType;
 
 public class MainView implements Initializable {
-    
     private final MainViewModel vm;
     private final FileChooser chooser = ViewTools.createFileChooser("Export to",
             List.of(new FileChooser.ExtensionFilter("CSV Files", "*.csv"),
@@ -57,15 +56,8 @@ public class MainView implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         RunConfiguration data = PojoRunConfiguration.TEST;
-        fillPersonTables(data);
         configureButtons(data);
         showConfigurationPicker();
-    }
-        
-    private void fillPersonTables(RunConfiguration data){
-        for (PersonType type : PersonType.values()){
-            vm.getPersons(tableViewController.getPersonViewModel(type), data, type);
-        }
     }
     
     private void configureButtons(RunConfiguration data){
@@ -123,8 +115,6 @@ public class MainView implements Initializable {
         });
     }
     
-    @SuppressWarnings("unchecked")
-    //FIXME: the explicit cast should not be needed, and the unchecked warning as well
     private void showConfigurationPicker(){
         //TODO: refactor: emphasize structure and operations.
         FXMLLoader loader = new FXMLLoader(getClass()
@@ -138,16 +128,18 @@ public class MainView implements Initializable {
         GlobalConfigurationPickerView globalConfigurationView = 
                 (GlobalConfigurationPickerView) loader.getController();
         FilePickerViewModel<List<Person>> menteeSourceVM =
-                vm.forgePersonListPickerViewModel();
+                vm.getPersonPicker(PersonType.MENTEE);
         ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> resultVM = 
-                vm.forgeResultConfigurationPickerViewModel();
+                vm.getResultConfiguration();
         globalConfigurationView.getMenteeSourceView().setViewModel(menteeSourceVM);
         globalConfigurationView.getResultConfigurationView().setViewModel(resultVM);
         globalConfigurationView.setValidationAction(() -> {
-            //TODO modify person handling to add mentees to VM here
             vm.getResultConfiguration(resultVM,
                     List.of(tableViewController.getBatchMatchesViewModel(),
                             tableViewController.getOneAtATimeMatchesViewModel()));
+            for (PersonType type : PersonType.values()){
+                vm.getPersons(tableViewController.getPersonViewModel(type), type);
+            }
         });
         Scene scene = new Scene(node);
         scene.getStylesheets().add(getClass().getResource("/mentoring/styles.css").toExternalForm());

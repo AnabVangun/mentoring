@@ -1,21 +1,23 @@
 package mentoring.viewmodel;
 
-import mentoring.viewmodel.tasks.PersonGetter;
+import mentoring.viewmodel.tasks.PersonGetterTask;
 import java.io.File;
 import java.io.FileReader;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.List;
-import mentoring.viewmodel.datastructure.PersonType;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import mentoring.concurrency.ConcurrencyHandler;
+import mentoring.configuration.PersonConfiguration;
 import mentoring.configuration.PojoPersonConfiguration;
 import mentoring.configuration.PojoResultConfiguration;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.datastructure.Person;
+import mentoring.io.PersonConfigurationParser;
 import mentoring.io.PersonFileParser;
 import mentoring.io.ResultConfigurationParser;
 import mentoring.io.datareader.YamlReader;
@@ -31,6 +33,7 @@ import mentoring.viewmodel.tasks.MultipleMatchTask;
 import mentoring.viewmodel.tasks.SingleMatchRemovalTask;
 import mentoring.viewmodel.tasks.SingleMatchTask;
 import mentoring.viewmodel.base.function.FileParser;
+import mentoring.viewmodel.datastructure.PersonType;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
@@ -45,6 +48,12 @@ public class MainViewModel {
     */
     private final ConcurrencyHandler matchMaker;
     
+    private final EnumMap<PersonType, ConfigurationPickerViewModel<PersonConfiguration>> 
+            personConfigurations = new EnumMap<>(PersonType.class);
+    private final ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> resultConfiguration;
+    private final EnumMap<PersonType, FilePickerViewModel<List<Person>>> personPickers =
+            new EnumMap<>(PersonType.class);
+    
     /**
      * Create a new {@code MainViewModel}.
      * @param executor Executor service that will receive the task to run the application.
@@ -52,19 +61,30 @@ public class MainViewModel {
     @Inject
     MainViewModel(ConcurrencyHandler concurrencyHandler){
         this.matchMaker = concurrencyHandler;
+        //TODO fix initialisation for all internal view models
+        personConfigurations.put(PersonType.MENTEE, new ConfigurationPickerViewModel<>(
+                PojoPersonConfiguration.TEST_CONFIGURATION.getConfiguration(), 
+                List.of(PojoPersonConfiguration.TEST_CONFIGURATION.getConfiguration()),
+                new FilePickerViewModel<>("", file -> null, List.of()), 
+                ConfigurationPickerViewModel.ConfigurationType.KNOWN));
+        personConfigurations.put(PersonType.MENTOR, personConfigurations.get(PersonType.MENTEE));
+        resultConfiguration = forgeResultConfigurationPickerViewModel();
+        for(PersonType type : PersonType.values()){
+            personPickers.put(type, forgePersonListPickerViewModel(type));
+        }
+        personPickers.get(PersonType.MENTOR)
+                .setCurrentFile(new File("resources\\main\\Mentor_Trivial.csv"));
     }
     
     /**
      * Get a list of persons.
      * @param resultVM the ViewModel to update with the results
-     * @param data how to get the person data and configuration
-     * @param type the type of persons to get
+     * @param type of person to load
      * @return a Future object that can be used to control the execution and completion of the task.
      */
-    public Future<?> getPersons(PersonListViewModel resultVM, RunConfiguration data,
-            PersonType type){
-        return matchMaker.submit(new PersonGetter(resultVM, data, type, 
-                fileName -> new FileReader(fileName, Charset.forName("utf-8"))));
+    public Future<?> getPersons(PersonListViewModel resultVM, PersonType type){
+        return matchMaker.submit(new PersonGetterTask(resultVM, personPickers.get(type), 
+                personConfigurations.get(type)));
     }
     
     /**
@@ -136,40 +156,69 @@ public class MainViewModel {
         return matchMaker.submit(new ConfigurationGetterTask<>(configurationVM, resultVMs));
     }
     
-    public ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> 
+    //TODO document
+    public ConfigurationPickerViewModel<ResultConfiguration<Person,Person>> getResultConfiguration(){
+        return resultConfiguration;
+    }
+    
+    //TODO document
+    public FilePickerViewModel<List<Person>> getPersonPicker(PersonType type){
+        return personPickers.get(type);
+    }
+    
+    private ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> 
             forgeResultConfigurationPickerViewModel(){
-                //TODO the viewModel should by default show the previous selected configuration, if any.
-                //Or maybe the viewModel should be forged once and be reused each time?
-                ResultConfiguration<Person, Person> configuration = 
-                        PojoResultConfiguration.NAMES_AND_SCORE.getConfiguration();
-                String defaultPath = "";
-                ConfigurationPickerViewModel.ConfigurationType type = 
-                        ConfigurationPickerViewModel.ConfigurationType.KNOWN;
-                FileParser<ResultConfiguration<Person, Person>> parser = file -> {
-                    try (FileReader reader = new FileReader(file, Charset.forName("utf-8"))){
-                        return new ResultConfigurationParser(new YamlReader()).parse(reader);
-                    }
-                };
-                List<ResultConfiguration<Person,Person>> values = 
-                        Arrays.stream(PojoResultConfiguration.values())
-                                .map(config -> config.getConfiguration())
-                                .collect(Collectors.toList());
-                List<Pair<String, List<String>>> extensions = List.of(
-                        Pair.of("YAML files", List.of("*.yaml")),
-                        Pair.of("All files", List.of("*.*")));
-                FilePickerViewModel<ResultConfiguration<Person, Person>> filePicker = 
-                        new FilePickerViewModel<>(defaultPath, parser, extensions);
-                return new ConfigurationPickerViewModel<>(configuration, values, filePicker, type);
+        //TODO refactor forgeXXPickerViewModel to emphasize structure
+        ResultConfiguration<Person, Person> configuration = 
+                PojoResultConfiguration.NAMES_AND_SCORE.getConfiguration();
+        String defaultPath = "";
+        ConfigurationPickerViewModel.ConfigurationType type = 
+                ConfigurationPickerViewModel.ConfigurationType.KNOWN;
+        FileParser<ResultConfiguration<Person, Person>> parser = file -> {
+            try (FileReader reader = new FileReader(file, Charset.forName("utf-8"))){
+                return new ResultConfigurationParser(new YamlReader()).parse(reader);
             }
+        };
+        List<ResultConfiguration<Person,Person>> values = 
+                Arrays.stream(PojoResultConfiguration.values())
+                        .map(config -> config.getConfiguration())
+                        .collect(Collectors.toList());
+        List<Pair<String, List<String>>> extensions = List.of(
+                Pair.of("YAML files", List.of("*.yaml")),
+                Pair.of("All files", List.of("*.*")));
+        FilePickerViewModel<ResultConfiguration<Person, Person>> filePicker = 
+                new FilePickerViewModel<>(defaultPath, parser, extensions);
+        return new ConfigurationPickerViewModel<>(configuration, values, filePicker, type);
+    }
             
-    public FilePickerViewModel<List<Person>> forgePersonListPickerViewModel(){
-        //TODO refactor to return the viewModel needed to initialise the full configuration panel
-        //The viewModel should by default show the previous selected configuration, if any.
+    private ConfigurationPickerViewModel<PersonConfiguration> forgeMenteeConfigurationPickerViewModel(){
+        PersonConfiguration configuration = 
+                PojoPersonConfiguration.TEST_CONFIGURATION.getConfiguration();
+        String defaultPath = "";
+        ConfigurationPickerViewModel.ConfigurationType type = 
+                ConfigurationPickerViewModel.ConfigurationType.KNOWN;
+        FileParser<PersonConfiguration> parser = file -> {
+            try (FileReader reader = new FileReader(file, Charset.forName("utf-8"))){
+                return new PersonConfigurationParser(new YamlReader()).parse(reader);
+            }
+        };
+        List<PersonConfiguration> values = 
+                Arrays.stream(PojoPersonConfiguration.values())
+                        .map(config -> config.getConfiguration())
+                        .collect(Collectors.toList());
+        List<Pair<String, List<String>>> extensions = List.of(
+                Pair.of("YAML files", List.of("*.yaml")),
+                Pair.of("All files", List.of("*.*")));
+        FilePickerViewModel<PersonConfiguration> filePicker = 
+                new FilePickerViewModel<>(defaultPath, parser, extensions);
+        return new ConfigurationPickerViewModel<>(configuration, values, filePicker, type);
+    }
+    
+    private FilePickerViewModel<List<Person>> forgePersonListPickerViewModel(PersonType type){
         String defaultPath = "";
         FileParser<List<Person>> parser = file -> {
             try (FileReader reader = new FileReader(file, Charset.forName("utf-8"))){
-                //FIXME: here, the configuration is fixed while it should be only received when validating the configuration
-                return new PersonFileParser(PojoPersonConfiguration.TEST_CONFIGURATION.getConfiguration())
+                return new PersonFileParser(personConfigurations.get(type).getConfiguration())
                         .parse(reader);
             }
         };

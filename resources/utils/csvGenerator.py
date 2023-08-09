@@ -13,8 +13,8 @@ def rowBuilder(parrain):
     return ['2021/08/17 3:32:41 PM UTC+2', 
             listPicker(names), listPicker(names), 
             (random.randrange(1970,2010) if parrain else 2020)] \
-        + [";".join(listPicker(domains) for _ in range(random.randrange(1,5)))] \
-        + [";".join(listPicker(motivations) for _ in range(random.randrange(1,3)))]\
+        + [";".join({listPicker(domains) for _ in range(random.randrange(1,5))})] \
+        + [";".join({listPicker(motivations) for _ in range(random.randrange(1,3))})]\
         + [listPicker([True, False])]
 def writeFile(path, nLines, parrain):
 	with open(path, "w", newline="", encoding='utf-8') as csvfile:
