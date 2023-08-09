@@ -2,8 +2,10 @@ package mentoring.viewmodel.base;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringProperty;
@@ -30,11 +32,18 @@ public class FilePickerViewModel<T> {
      *      description and the associated extensions, where each extension SHOULD be of the form 
      *      {@code *.<extension>}
      */
-    public  FilePickerViewModel(String defaultFilePath, FileParser<T> fileParser,
+    public FilePickerViewModel(String defaultFilePath, FileParser<T> fileParser,
             List<Pair<String, List<String>>> fileExtensions){
         this.fileParser = Objects.requireNonNull(fileParser);
-        this.fileExtensions = List.copyOf(fileExtensions);//TODO protect against modifications of the values
+        this.fileExtensions = makeUnmodifiableCopy(fileExtensions);
         setCurrentFile(getFileOrDefaultDirectory(defaultFilePath));
+    }
+    
+    private static <K, V> List<Pair<K, List<V>>> makeUnmodifiableCopy(List<Pair<K, List<V>>> input){
+        List<Pair<K, List<V>>> modifiable = input.stream()
+                .map(pair -> Pair.of(pair.getLeft(), List.copyOf(pair.getRight())))
+                .collect(Collectors.toList());
+        return Collections.unmodifiableList(modifiable);
     }
     
     private static File getFileOrDefaultDirectory(String filePath) {

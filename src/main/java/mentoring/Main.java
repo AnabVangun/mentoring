@@ -27,7 +27,6 @@ import mentoring.viewmodel.RunConfiguration;
 public class Main {
     /**
      * TODO: link GUI to code.
-     * 4. Choose mentees file
      * 5. Choose mentees configuration (file or POJO)
      * 6. Choose mentors file
      * 7. Choose mentors configuration (file or POJO)

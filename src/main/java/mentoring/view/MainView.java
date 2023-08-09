@@ -131,7 +131,7 @@ public class MainView implements Initializable {
                 vm.getPersonPicker(PersonType.MENTEE);
         ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> resultVM = 
                 vm.getResultConfiguration();
-        globalConfigurationView.getMenteeSourceView().setViewModel(menteeSourceVM);
+        globalConfigurationView.getPersonSourceView(PersonType.MENTEE).setViewModel(menteeSourceVM);
         globalConfigurationView.getResultConfigurationView().setViewModel(resultVM);
         globalConfigurationView.setValidationAction(() -> {
             vm.getResultConfiguration(resultVM,

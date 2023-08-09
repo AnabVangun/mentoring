@@ -16,6 +16,8 @@ import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel.ConfigurationType;
+import static mentoring.viewmodel.base.ConfigurationPickerViewModel.ConfigurationType.FILE;
+import static mentoring.viewmodel.base.ConfigurationPickerViewModel.ConfigurationType.KNOWN;
 
 /**
  * View responsible for selecting a configuration.
@@ -33,37 +35,46 @@ public class ConfigurationPickerView implements Initializable{
     private RadioButton fileConfigurationRadioButton;
     @FXML
     private FilePickerView fileSelectionViewController;
-    private ObjectBinding<ConfigurationType> typeOfConfigurationBinding;
     
     private final InvalidationListener fileRadioButtonSelector = observable -> 
             configurationSelectionGroup.selectToggle(fileConfigurationRadioButton);
     
-    private ConfigurationPickerViewModel<?> viewModel;
     private final Map<Toggle, ConfigurationType> configurationTypeMap = new HashMap<>();
     
     public void setViewModel(ConfigurationPickerViewModel<?> viewModel) {
         //TODO internationalise strings
-        //TODO refactor to explicit structure
-        this.viewModel = viewModel;
+        bindKnownConfigurationSelectorToViewModel(viewModel);
+        initialiseToggleGroup(viewModel.getConfigurationSelectionType().getValue());
+        bindConfigurationTypeToGui(viewModel);
+        fileSelectionViewController.setViewModel(viewModel.getFilePicker());
+    }
+    
+    private void bindKnownConfigurationSelectorToViewModel(ConfigurationPickerViewModel<?> viewModel){
         configurationSelector.setItems(viewModel.getKnownContent());
         configurationSelector.valueProperty().bindBidirectional(viewModel.getSelectedItem());
-        configurationSelector.setOnMouseClicked(event -> 
-                configurationSelectionGroup.selectToggle(knownConfigurationRadioButton));
+    }
+    
+    private void initialiseToggleGroup(ConfigurationType type){
         configurationSelectionGroup.selectToggle(
-                switch(viewModel.getConfigurationSelectionType().getValue()) {
+                switch(type) {
                     case KNOWN -> knownConfigurationRadioButton;
                     case FILE -> fileConfigurationRadioButton;
                 });
-        typeOfConfigurationBinding = forgeConfigurationTypeGetterBinding(
-                configurationSelectionGroup, configurationTypeMap);
+    }
+    
+    private void bindConfigurationTypeToGui(ConfigurationPickerViewModel<?> viewModel){
+        configurationSelector.setOnMouseClicked(event -> 
+                configurationSelectionGroup.selectToggle(knownConfigurationRadioButton));
+        fileSelectionViewController.addListener(new WeakInvalidationListener(fileRadioButtonSelector));
+        ObjectBinding<ConfigurationType> typeOfConfigurationBinding = 
+                forgeConfigurationTypeGetterBinding(
+                        configurationSelectionGroup, configurationTypeMap);
         viewModel.getConfigurationSelectionType().bind(typeOfConfigurationBinding);
-        fileSelectionViewController.setViewModel(viewModel.getFilePicker());
     }
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         configureTypeMap();
-        fileSelectionViewController.addListener(new WeakInvalidationListener(fileRadioButtonSelector));
     }
     
     private void configureTypeMap(){
@@ -78,6 +89,7 @@ public class ConfigurationPickerView implements Initializable{
             {
                 super.bind(group.selectedToggleProperty());
             }
+            
             @Override
             protected ConfigurationType computeValue(){
                 Toggle toggle = group.selectedToggleProperty().getValue();
