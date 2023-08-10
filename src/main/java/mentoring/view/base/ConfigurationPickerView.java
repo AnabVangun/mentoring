@@ -8,6 +8,9 @@ import java.util.ResourceBundle;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.beans.binding.ObjectBinding;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
@@ -36,17 +39,33 @@ public class ConfigurationPickerView implements Initializable{
     @FXML
     private FilePickerView fileSelectionViewController;
     
+    private ConfigurationPickerViewModel<?> viewModel;
+    
     private final InvalidationListener fileRadioButtonSelector = observable -> 
             configurationSelectionGroup.selectToggle(fileConfigurationRadioButton);
     
-    private final Map<Toggle, ConfigurationType> configurationTypeMap = new HashMap<>();
+    private final Map<Toggle, ConfigurationType> toggleToTypeMap = new HashMap<>();
+    private final Map<ConfigurationType, Toggle> typeToToggleMap = new HashMap<>();
+    private final BooleanProperty disableProperty = new SimpleBooleanProperty(false);
     
+    //TODO document
     public void setViewModel(ConfigurationPickerViewModel<?> viewModel) {
         //TODO internationalise strings
+        this.viewModel = viewModel;
         bindKnownConfigurationSelectorToViewModel(viewModel);
         initialiseToggleGroup(viewModel.getConfigurationSelectionType().getValue());
         bindConfigurationTypeToGui(viewModel);
         fileSelectionViewController.setViewModel(viewModel.getFilePicker());
+    }
+    
+    //TODO document
+    public ConfigurationPickerViewModel<?> getViewModel(){
+        return viewModel;
+    }
+    
+    //TODO document
+    public BooleanProperty disableProperty(){
+        return disableProperty;
     }
     
     private void bindKnownConfigurationSelectorToViewModel(ConfigurationPickerViewModel<?> viewModel){
@@ -68,18 +87,30 @@ public class ConfigurationPickerView implements Initializable{
         fileSelectionViewController.addListener(new WeakInvalidationListener(fileRadioButtonSelector));
         ObjectBinding<ConfigurationType> typeOfConfigurationBinding = 
                 forgeConfigurationTypeGetterBinding(
-                        configurationSelectionGroup, configurationTypeMap);
+                        configurationSelectionGroup, toggleToTypeMap);
+        ObjectBinding<Toggle> toggleSelectedBinding =
+                forgeToggleGetterBinding(viewModel.getConfigurationSelectionType(), typeToToggleMap);
         viewModel.getConfigurationSelectionType().bind(typeOfConfigurationBinding);
+        viewModel.getConfigurationSelectionType().addListener(event -> 
+                configurationSelectionGroup.selectToggle(toggleSelectedBinding.get()));
     }
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        configureTypeMap();
+        configureMaps();
+        configurationSelector.disableProperty().bind(disableProperty);
+        knownConfigurationRadioButton.disableProperty().bind(disableProperty);
+        fileConfigurationRadioButton.disableProperty().bind(disableProperty);
+        fileSelectionViewController.disableProperty().bind(disableProperty);
     }
     
-    private void configureTypeMap(){
-        configurationTypeMap.put(knownConfigurationRadioButton, ConfigurationType.KNOWN);
-        configurationTypeMap.put(fileConfigurationRadioButton, ConfigurationType.FILE);
+    private void configureMaps(){
+        for(Map.Entry<? extends Toggle, ConfigurationType> entry : 
+                Map.of(knownConfigurationRadioButton, ConfigurationType.KNOWN,
+                        fileConfigurationRadioButton, ConfigurationType.FILE).entrySet()){
+            toggleToTypeMap.put(entry.getKey(), entry.getValue());
+            typeToToggleMap.put(entry.getValue(), entry.getKey());
+        }
     }
     
     static ObjectBinding<ConfigurationType> forgeConfigurationTypeGetterBinding(ToggleGroup group, 
@@ -100,6 +131,31 @@ public class ConfigurationPickerView implements Initializable{
                     return map.get(toggle);
                 } else {
                     throw new UnsupportedOperationException("Toggle " + toggle.toString() +
+                            " is unknown");
+                }
+            }
+        };
+    }
+    
+    static ObjectBinding<Toggle> forgeToggleGetterBinding(Property<ConfigurationType> typeProperty, 
+            Map<ConfigurationType, Toggle> map){
+        Objects.requireNonNull(map);
+        return new ObjectBinding<>(){
+            {
+                super.bind(typeProperty);
+            }
+            
+            @Override
+            protected Toggle computeValue(){
+                ConfigurationType type = typeProperty.getValue();
+                if (type == null){
+                    throw new IllegalStateException(
+                            "Illegal state: no configuration type is selected");
+                }
+                if(map.containsKey(type)){
+                    return map.get(type);
+                } else {
+                    throw new UnsupportedOperationException("Type " + type.toString() +
                             " is unknown");
                 }
             }

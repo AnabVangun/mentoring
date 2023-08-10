@@ -2,10 +2,13 @@ package mentoring.view;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.WeakChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
 import mentoring.view.base.ConfigurationPickerView;
 import mentoring.view.base.FilePickerView;
 import mentoring.view.base.ViewTools;
@@ -43,6 +46,27 @@ public class GlobalConfigurationPickerView implements Initializable{
     private ConfigurationPickerView resultConfigurationController;
     @FXML
     private Label resultConfigurationLabel;
+    @FXML
+    private ConfigurationPickerView exportConfigurationController;
+    @FXML
+    private Label exportConfigurationLabel;
+    @FXML
+    private ToggleButton exportConfigurationToggle;
+    private final ChangeListener<Boolean> exportConfigurationToggleListener = 
+            (observable, old, current) -> {
+                if (! old && current){
+                    exportConfigurationController.getViewModel()
+                            .bind(resultConfigurationController.getViewModel());
+                    exportConfigurationController.disableProperty().set(true);
+                } else if (old && ! current){
+                    exportConfigurationController.getViewModel()
+                            .unbind(resultConfigurationController.getViewModel());
+                    exportConfigurationController.disableProperty().set(false);
+                } else {
+                    throw new IllegalStateException("Toggle " + observable 
+                            + " fired a changed event without changing");
+                }
+            };
     
     @Override
     public void initialize(URL url, ResourceBundle rb){
@@ -52,6 +76,10 @@ public class GlobalConfigurationPickerView implements Initializable{
         mentorConfigurationLabel.setText("Mentor configuration");
         matchConfigurationLabel.setText("Match configuration");
         resultConfigurationLabel.setText("Result configuration");
+        exportConfigurationLabel.setText("Export configuration");
+        exportConfigurationToggle.setText("Identical to result configuration");
+        exportConfigurationToggle.selectedProperty()
+                .addListener(new WeakChangeListener<>(exportConfigurationToggleListener));
     }
     
     /**
@@ -96,6 +124,14 @@ public class GlobalConfigurationPickerView implements Initializable{
      */
     public ConfigurationPickerView getResultConfigurationView(){
         return resultConfigurationController;
+    }
+    
+    /**
+     * Return the view used to configure how results should be exported.
+     * @return the requested view
+     */
+    public ConfigurationPickerView getExportConfigurationView(){
+        return exportConfigurationController;
     }
     
     /**

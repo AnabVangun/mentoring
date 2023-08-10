@@ -54,6 +54,7 @@ public class MainViewModel {
             personConfigurations = new EnumMap<>(PersonType.class);
     private final ConfigurationPickerViewModel<CriteriaConfiguration<Person, Person>> matchConfiguration;
     private final ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> resultConfiguration;
+    private final ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> exportConfiguration;
     private final EnumMap<PersonType, FilePickerViewModel<List<Person>>> personPickers =
             new EnumMap<>(PersonType.class);
     
@@ -66,6 +67,7 @@ public class MainViewModel {
         matchMaker = concurrencyHandler;
         matchConfiguration = forgeMatchConfigurationPickerViewModel();
         resultConfiguration = forgeResultConfigurationPickerViewModel();
+        exportConfiguration = forgeResultConfigurationPickerViewModel();
         for(PersonType type : PersonType.values()){
             personConfigurations.put(type, forgePersonConfigurationPickerViewModel());
             personPickers.put(type, forgePersonListPickerViewModel(type));
@@ -133,9 +135,8 @@ public class MainViewModel {
      */
     public Future<?> exportMatches(File outputFile,
             PersonMatchesViewModel toExportWithHeader, PersonMatchesViewModel... toExport){
-        //TODO: use a ResultConfiguration obtained from getResultConfiguration
         return matchMaker.submit(new MatchExportTask(
-                () -> new PrintWriter(outputFile, Charset.forName("utf-8")), resultConfiguration, 
+                () -> new PrintWriter(outputFile, Charset.forName("utf-8")), exportConfiguration, 
                 toExportWithHeader, toExport));
     }
     
@@ -154,6 +155,11 @@ public class MainViewModel {
     //TODO document
     public ConfigurationPickerViewModel<ResultConfiguration<Person,Person>> getResultConfiguration(){
         return resultConfiguration;
+    }
+    
+    //TODO document
+    public ConfigurationPickerViewModel<ResultConfiguration<Person,Person>> getExportConfiguration(){
+        return exportConfiguration;
     }
     
     //TODO document

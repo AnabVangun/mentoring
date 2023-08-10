@@ -134,12 +134,15 @@ public class MainView implements Initializable {
                 vm.getMatchConfiguration();
         ConfigurationPickerViewModel<ResultConfiguration<Person,Person>> resultVM = 
                 vm.getResultConfiguration();
+        ConfigurationPickerViewModel<ResultConfiguration<Person,Person>> exportVM = 
+                vm.getExportConfiguration();
         globalConfigurationView.getPersonSourceView(PersonType.MENTEE).setViewModel(menteeSourceVM);
         globalConfigurationView.getPersonConfigurationView(PersonType.MENTEE).setViewModel(menteeConfigurationVM);
         globalConfigurationView.getPersonSourceView(PersonType.MENTOR).setViewModel(mentorSourceVM);
         globalConfigurationView.getPersonConfigurationView(PersonType.MENTOR).setViewModel(mentorConfigurationVM);
         globalConfigurationView.getMatchConfigurationView().setViewModel(matchVM);
         globalConfigurationView.getResultConfigurationView().setViewModel(resultVM);
+        globalConfigurationView.getExportConfigurationView().setViewModel(exportVM);
         globalConfigurationView.setValidationAction(() -> {
             vm.getResultConfiguration(resultVM,
                     List.of(tableViewController.getBatchMatchesViewModel(),

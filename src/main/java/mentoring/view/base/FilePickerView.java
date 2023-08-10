@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -25,18 +27,21 @@ public class FilePickerView extends SimpleObservable implements Initializable {
     @FXML
     private Button fileSelectorButton;
     
-    private FilePickerViewModel<?> viewModel;
+    final private BooleanProperty disable = new SimpleBooleanProperty(false);
     private FileChooser chooser;
     
     @Override
-    public void initialize(URL url, ResourceBundle rb) {}
+    public void initialize(URL url, ResourceBundle rb) {
+        fileSelectorButton.disableProperty().bind(disable);
+        fileSelectorLabel.disableProperty().bind(disable);
+    }
     
     /**
      * Set the ViewModel used by this view to manage the File selection.
      * @param viewModel underlying ViewModel behind the view
      */
     public void setViewModel(FilePickerViewModel<?> viewModel){
-        this.viewModel = Objects.requireNonNull(viewModel);
+        Objects.requireNonNull(viewModel);
         List<FileChooser.ExtensionFilter> filters = viewModel.getStandardExtensions().stream()
                 .map(entry -> new FileChooser.ExtensionFilter(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
@@ -51,5 +56,9 @@ public class FilePickerView extends SimpleObservable implements Initializable {
                 notifyListeners();
             }
         });
+    }
+    
+    public BooleanProperty disableProperty(){
+        return disable;
     }
 }

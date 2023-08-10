@@ -1,5 +1,6 @@
 package mentoring.viewmodel.base;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,8 @@ import java.util.stream.Collectors;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.WeakChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import mentoring.configuration.Configuration;
@@ -24,6 +27,10 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
     private final Property<String> selectedItem;
     private final Property<ConfigurationType> configurationType;
     private final FilePickerViewModel<T> filePicker;
+    private final ChangeListener<File> fileBindingListener = (observable, oldValue, newValue) -> 
+                getFilePicker().setCurrentFile(newValue);
+    private final ChangeListener<File> fileBindingWeakListener = 
+            new WeakChangeListener<>(fileBindingListener);
     
     /**
      * Type of configuration to pick.
@@ -134,5 +141,23 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
      */
     public FilePickerViewModel<T> getFilePicker() {
         return this.filePicker;
+    }
+    
+    //TODO test and document
+    public void bind(ConfigurationPickerViewModel<?> o){
+        //TODO check that o is a valid candidate: it has the right type and content
+        @SuppressWarnings("unchecked")
+        //if o is not of the right type, an exception will be raised as expected
+        ConfigurationPickerViewModel<T> other = (ConfigurationPickerViewModel<T>) o;
+        configurationType.bind(other.configurationType);
+        selectedItem.bind(other.selectedItem);
+        other.filePicker.getCurrentFile().addListener(fileBindingWeakListener);
+    }
+    
+    //TODO test and document
+    public void unbind(ConfigurationPickerViewModel<?> o){
+        configurationType.unbind();
+        selectedItem.unbind();
+        o.filePicker.getCurrentFile().removeListener(fileBindingWeakListener);
     }
 }
