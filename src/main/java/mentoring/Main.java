@@ -10,11 +10,11 @@ public class Main {
     /**
      * TODO: link GUI to code.
      * 1. Handle alerting logic for when something fails with exception in one of the tasks (make common superclass)
-     * 9. Add forbid button to prevent a match between two persons.
+     * 2. Add forbid button to prevent a match between two persons.
+     * 3. Fix header of PersonListViewModel/PersonViewModel
+     * 4. make window pretty
      * 9a. Add global configuration parameters for magic numbers.
-     * 9aa. Internationalize GUI
-     * 9c. Fix header of PersonListViewModel/PersonViewModel
-     * 9d. make window pretty
+     * 9b. Internationalize GUI
      * 9e. Add save/load button to load configuration (including forbidden matches) and results from a file
      * 10. Handle concurrency TODOs
      * 10a. Handle disabled property for all buttons in MainView

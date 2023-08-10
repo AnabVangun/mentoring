@@ -16,14 +16,16 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel.ConfigurationType;
-import static mentoring.viewmodel.base.ConfigurationPickerViewModel.ConfigurationType.FILE;
-import static mentoring.viewmodel.base.ConfigurationPickerViewModel.ConfigurationType.KNOWN;
 
 /**
  * View responsible for selecting a configuration.
+ * Users of this view SHOULD call 
+ * {@link #setViewModel(mentoring.viewmodel.base.ConfigurationPickerViewModel) } before adding this
+ * view to the stage.
  */
 public class ConfigurationPickerView implements Initializable{
     //TODO: make it easy to select one of the example configurations from resources.
@@ -41,78 +43,104 @@ public class ConfigurationPickerView implements Initializable{
     
     private ConfigurationPickerViewModel<?> viewModel;
     
-    private final InvalidationListener fileRadioButtonSelector = observable -> 
-            configurationSelectionGroup.selectToggle(fileConfigurationRadioButton);
+    private InvalidationListener fileRadioButtonSelector;
+    private InvalidationListener toggleGroupSelector;
     
     private final Map<Toggle, ConfigurationType> toggleToTypeMap = new HashMap<>();
     private final Map<ConfigurationType, Toggle> typeToToggleMap = new HashMap<>();
     private final BooleanProperty disableProperty = new SimpleBooleanProperty(false);
     
-    //TODO document
-    public void setViewModel(ConfigurationPickerViewModel<?> viewModel) {
-        //TODO internationalise strings
-        this.viewModel = viewModel;
-        bindKnownConfigurationSelectorToViewModel(viewModel);
-        initialiseToggleGroup(viewModel.getConfigurationSelectionType().getValue());
-        bindConfigurationTypeToGui(viewModel);
-        fileSelectionViewController.setViewModel(viewModel.getFilePicker());
-    }
-    
-    //TODO document
-    public ConfigurationPickerViewModel<?> getViewModel(){
-        return viewModel;
-    }
-    
-    //TODO document
-    public BooleanProperty disableProperty(){
-        return disableProperty;
-    }
-    
-    private void bindKnownConfigurationSelectorToViewModel(ConfigurationPickerViewModel<?> viewModel){
-        configurationSelector.setItems(viewModel.getKnownContent());
-        configurationSelector.valueProperty().bindBidirectional(viewModel.getSelectedItem());
-    }
-    
-    private void initialiseToggleGroup(ConfigurationType type){
-        configurationSelectionGroup.selectToggle(
-                switch(type) {
-                    case KNOWN -> knownConfigurationRadioButton;
-                    case FILE -> fileConfigurationRadioButton;
-                });
-    }
-    
-    private void bindConfigurationTypeToGui(ConfigurationPickerViewModel<?> viewModel){
-        configurationSelector.setOnMouseClicked(event -> 
-                configurationSelectionGroup.selectToggle(knownConfigurationRadioButton));
-        fileSelectionViewController.addListener(new WeakInvalidationListener(fileRadioButtonSelector));
-        ObjectBinding<ConfigurationType> typeOfConfigurationBinding = 
-                forgeConfigurationTypeGetterBinding(
-                        configurationSelectionGroup, toggleToTypeMap);
-        ObjectBinding<Toggle> toggleSelectedBinding =
-                forgeToggleGetterBinding(viewModel.getConfigurationSelectionType(), typeToToggleMap);
-        viewModel.getConfigurationSelectionType().bind(typeOfConfigurationBinding);
-        viewModel.getConfigurationSelectionType().addListener(event -> 
-                configurationSelectionGroup.selectToggle(toggleSelectedBinding.get()));
-    }
-    
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        configureMaps();
+        initializeMaps();
+        makeBindingsToDisable();
+    }
+    
+    private void initializeMaps(){
+        toggleToTypeMap.put(knownConfigurationRadioButton, ConfigurationType.KNOWN);
+        toggleToTypeMap.put(fileConfigurationRadioButton, ConfigurationType.FILE);
+        
+        toggleToTypeMap.forEach((toggle, type) -> typeToToggleMap.put(type, toggle));
+    }
+    
+    private void makeBindingsToDisable(){
         configurationSelector.disableProperty().bind(disableProperty);
         knownConfigurationRadioButton.disableProperty().bind(disableProperty);
         fileConfigurationRadioButton.disableProperty().bind(disableProperty);
         fileSelectionViewController.disableProperty().bind(disableProperty);
     }
     
-    private void configureMaps(){
-        for(Map.Entry<? extends Toggle, ConfigurationType> entry : 
-                Map.of(knownConfigurationRadioButton, ConfigurationType.KNOWN,
-                        fileConfigurationRadioButton, ConfigurationType.FILE).entrySet()){
-            toggleToTypeMap.put(entry.getKey(), entry.getValue());
-            typeToToggleMap.put(entry.getValue(), entry.getKey());
-        }
+    /**
+     * Set the ViewModel underlying this model.
+     * @param viewModel the new ViewModel to use
+     */
+    public void setViewModel(ConfigurationPickerViewModel<?> viewModel) {
+        //TODO internationalise strings
+        this.viewModel = viewModel;
+        initializeListeners();
+        bindKnownConfigurationSelectorToViewModel();
+        bindConfigurationTypeSelectorToViewModel();
+        bindViewModelToUserActionOnConfigurationTypeSelector();
+        fileSelectionViewController.setViewModel(viewModel.getFilePicker());
     }
     
+    /**
+     * Get the ViewModel underlying this model.
+     * @return the ViewModel in use
+     */
+    public ConfigurationPickerViewModel<?> getViewModel(){
+        return viewModel;
+    }
+    
+    /**
+     * Defines the disabled state of this View. Setting it to true will cause this View to become 
+     * disabled.
+     * @return the requested property
+     */
+    public BooleanProperty disableProperty(){
+        return disableProperty;
+    }
+    
+    private void initializeListeners(){
+        ObjectBinding<Toggle> toggleSelectedBinding =
+                forgeToggleGetterBinding(viewModel.getConfigurationSelectionType(), typeToToggleMap);
+        toggleGroupSelector = observable -> 
+                configurationSelectionGroup.selectToggle(toggleSelectedBinding.get());
+        fileRadioButtonSelector = observable -> 
+                setConfigurationType(fileConfigurationRadioButton);
+    }
+    
+    private void bindKnownConfigurationSelectorToViewModel(){
+        configurationSelector.setItems(viewModel.getKnownContent());
+        configurationSelector.valueProperty().bindBidirectional(viewModel.getSelectedItem());
+    }
+    
+    private void bindConfigurationTypeSelectorToViewModel(){
+        viewModel.getConfigurationSelectionType()
+                .addListener(new WeakInvalidationListener(toggleGroupSelector));
+        //Set value of toggle group to that of the view model
+        toggleGroupSelector.invalidated(viewModel.getConfigurationSelectionType());
+    }
+    
+    private void bindViewModelToUserActionOnConfigurationTypeSelector(){
+        for(Toggle toggle : configurationSelectionGroup.getToggles()){
+            if(toggle instanceof ToggleButton button){
+                button.setOnAction(event -> setConfigurationType(button));
+            } else {
+                throw new IllegalStateException("Toggle group " + configurationSelectionGroup 
+                        + " contains toggles that are not buttons, found " + toggle);
+            }
+        }
+        configurationSelector.setOnMouseClicked(event -> 
+                setConfigurationType(knownConfigurationRadioButton));
+        fileSelectionViewController.addListener(new WeakInvalidationListener(fileRadioButtonSelector));
+    }
+    
+    private void setConfigurationType(Toggle toggle){
+        viewModel.getConfigurationSelectionType().setValue(toggleToTypeMap.get(toggle));
+    }
+    
+    @Deprecated
     static ObjectBinding<ConfigurationType> forgeConfigurationTypeGetterBinding(ToggleGroup group, 
             Map<Toggle, ConfigurationType> map){
         Objects.requireNonNull(map);

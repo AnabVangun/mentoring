@@ -152,6 +152,9 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
         configurationType.bind(other.configurationType);
         selectedItem.bind(other.selectedItem);
         other.filePicker.getCurrentFile().addListener(fileBindingWeakListener);
+        //Fire event once to make sure that value is up to date
+        fileBindingListener.changed(other.filePicker.getCurrentFile(), null, 
+                other.filePicker.getCurrentFile().get());
     }
     
     //TODO test and document
