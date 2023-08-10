@@ -7,7 +7,7 @@ import javafx.concurrent.Task;
 import javafx.scene.control.Alert;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.datastructure.Person;
-import mentoring.viewmodel.RunConfiguration;
+import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 
 /**
@@ -19,33 +19,30 @@ public class MatchExportTask extends Task<Void> {
     @SuppressWarnings("MismatchedReadAndWriteOfArray")
     private final PersonMatchesViewModel[] exportedVMs;
     private final WriterSupplier writerSupplier;
-    private final RunConfiguration data;
+    private final ConfigurationPickerViewModel<ResultConfiguration<Person,Person>> configurationVM;
 
     /**
      * Initialise a MatchExportTask object.
      * @param writerSupplier to supply the writer used to export the data
-     * @param data where to get data from
+     * @param configurationVM the ViewModel that will be used to get the export configuration
      * @param firstExportedVM a mandatory ViewModel containing data to export
      * @param exportedVMs optional additional ViewModels containing data to export
      */
-    public MatchExportTask(WriterSupplier writerSupplier, RunConfiguration data, 
+    public MatchExportTask(WriterSupplier writerSupplier, 
+            ConfigurationPickerViewModel<ResultConfiguration<Person,Person>> configurationVM, 
             PersonMatchesViewModel firstExportedVM, PersonMatchesViewModel... exportedVMs) {
-        Objects.requireNonNull(writerSupplier);
-        Objects.requireNonNull(data);
-        Objects.requireNonNull(firstExportedVM);
-        Objects.requireNonNull(exportedVMs);
+        this.firstExportedVM = Objects.requireNonNull(firstExportedVM);
         for (int i = 0; i < exportedVMs.length; i++) {
             Objects.requireNonNull(exportedVMs[i], "Null view model at index " + i);
         }
-        this.firstExportedVM = firstExportedVM;
         this.exportedVMs = exportedVMs;
-        this.writerSupplier = writerSupplier;
-        this.data = data;
+        this.writerSupplier = Objects.requireNonNull(writerSupplier);
+        this.configurationVM = Objects.requireNonNull(configurationVM);
     }
 
     @Override
     protected Void call() throws Exception {
-        ResultConfiguration<Person, Person> configuration = data.getResultConfiguration();
+        ResultConfiguration<Person, Person> configuration = configurationVM.getConfiguration();
         try (final Writer writer = writerSupplier.get()) {
             firstExportedVM.writeMatches(writer, configuration, true);
             for(PersonMatchesViewModel vm : exportedVMs){

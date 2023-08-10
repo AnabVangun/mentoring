@@ -1,5 +1,6 @@
 package mentoring.viewmodel.tasks;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,7 +13,7 @@ import mentoring.match.Match;
 import mentoring.match.MatchTest;
 import mentoring.match.Matches;
 import mentoring.match.MatchesTest;
-import mentoring.viewmodel.RunConfiguration;
+import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 import mentoring.viewmodel.tasks.MultipleMatchTaskTest.MultipleMatchTaskArgs;
@@ -38,7 +39,7 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
             PersonMatchesViewModel updatedVM = Mockito.mock(PersonMatchesViewModel.class);
             List<Person> mentees = args.mentees;
             List<Person> mentors = args.mentors;
-            MultipleMatchTask task = new MultipleMatchTask(updatedVM, null, args.configuration, 
+            MultipleMatchTask task = new MultipleMatchTask(updatedVM, null, args.configurationVM, 
                     mentees, mentors);
             runTask(task);
             task.succeeded();
@@ -57,7 +58,7 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
             List<Person> mentors = args.mentors;
             PersonMatchesViewModel exclusionVM = forgeExclusionVM(mentees.get(0), mentors.get(1));
             MultipleMatchTask task = new MultipleMatchTask(updatedVM, exclusionVM, 
-                    args.configuration, mentees, mentors);
+                    args.configurationVM, mentees, mentors);
             runTask(task);
             task.succeeded();
             ArgumentCaptor<Matches<Person, Person>> captor = captureSetAllArguments(updatedVM);
@@ -105,7 +106,9 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
     }
     
     static class MultipleMatchTaskArgs extends TestArgs{
-        final RunConfiguration configuration;
+        @SuppressWarnings("unchecked")
+        final ConfigurationPickerViewModel<CriteriaConfiguration<Person, Person>> configurationVM 
+                = Mockito.mock(ConfigurationPickerViewModel.class);
         final List<Person> mentees;
         final List<Person> mentors;
         
@@ -123,8 +126,11 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
                             mentee.getPropertyAs("value", Integer.class) 
                                     * mentor.getPropertyAs("value", Integer.class)), 
                     List.of());
-            configuration = Mockito.spy(RunConfiguration.class);
-            Mockito.when(configuration.getCriteriaConfiguration()).thenReturn(criteria);
+            try {
+                Mockito.when(configurationVM.getConfiguration()).thenReturn(criteria);
+            } catch (IOException e){
+                Assertions.fail("normally unreachable code", e);
+            }
         }
         
         private static Person buildIndexedPerson(int index, PersonBuilder builder){

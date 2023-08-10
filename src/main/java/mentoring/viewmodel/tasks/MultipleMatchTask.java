@@ -2,16 +2,18 @@ package mentoring.viewmodel.tasks;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javafx.concurrent.Task;
 import mentoring.configuration.CriteriaConfiguration;
 import mentoring.datastructure.Person;
+import mentoring.datastructure.PersonBuilder;
 import mentoring.match.Match;
 import mentoring.match.Matches;
 import mentoring.match.MatchesBuilder;
-import mentoring.viewmodel.RunConfiguration;
+import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 
@@ -19,28 +21,30 @@ public class MultipleMatchTask extends Task<Void> {
     
     private final PersonMatchesViewModel resultVM;
     private final PersonMatchesViewModel excludedMatchesVM;
-    private final RunConfiguration data;
+    private final ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> criteriaVM;
     private final List<Person> mentees;
     private final List<Person> mentors;
     private Matches<Person, Person> results;
 
     /**
      * Initialise a MultipleMatchTask object.
-     * @param resultVM the view model that will be updated when the task completes
+     * @param resultVM the ViewModel that will be updated when the task completes
      * @param excludedMatchesVM the optional ViewModel encapsulating matches that should be excluded
-     *      from the match-making process
-     * @param data where to get data from
+     *      from the match-making process, this argument MAY be null
+     * @param criteriaVM the ViewModel that will be used to get the configuration
      * @param mentees the list of mentees to match
      * @param mentors the list of mentors to match
      */
     public MultipleMatchTask(PersonMatchesViewModel resultVM, PersonMatchesViewModel excludedMatchesVM,
-            RunConfiguration data, List<Person> mentees, 
+            ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> criteriaVM, 
+            List<Person> mentees, 
             List<Person> mentors) {
-        this.resultVM = resultVM;
+        //TODO check in tests that constructor fail on null input like the other tasks
+        this.resultVM = Objects.requireNonNull(resultVM);
         this.excludedMatchesVM = excludedMatchesVM;
-        this.data = data;
-        this.mentees = mentees;
-        this.mentors = mentors;
+        this.criteriaVM = Objects.requireNonNull(criteriaVM);
+        this.mentees = Objects.requireNonNull(mentees);
+        this.mentors = Objects.requireNonNull(mentors);
     }
 
     @Override
@@ -56,7 +60,7 @@ public class MultipleMatchTask extends Task<Void> {
             filteredMentors = filterAvailablePerson(mentors, excludedMatchesVM.getContent(),
                 t -> t.getMentor());
         }
-        results = makeMatchesWithException(data, filteredMentees, filteredMentors);
+        results = makeMatchesWithException(criteriaVM, filteredMentees, filteredMentors);
         return null;
     }
 
@@ -75,13 +79,19 @@ public class MultipleMatchTask extends Task<Void> {
         return toFilter.stream().filter(e -> !unavailable.contains(e)).toList();
     }
 
-    private static Matches<Person, Person> makeMatchesWithException(RunConfiguration data, 
+    private static Matches<Person, Person> makeMatchesWithException(
+            ConfigurationPickerViewModel<CriteriaConfiguration<Person, Person>> criteriaVM,
             List<Person> mentees, List<Person> mentors) throws IOException {
-        Person defaultMentee = data.getDefaultMentee();
-        Person defaultMentor = data.getDefaultMentor();
+        /*FIXME: defaultMentee and defaultMentor should be configured somewhere
+        (probably in result configuration)
+        */
+        Person defaultMentee = new PersonBuilder().withProperty("Email", "")
+                .withFullName("PAS DE MENTORÉ").build();
+        Person defaultMentor = new PersonBuilder().withProperty("Email", "")
+                .withFullName("PAS DE MENTOR").build();
         //Get criteria configuration
         CriteriaConfiguration<Person, Person> criteriaConfiguration = 
-                data.getCriteriaConfiguration();
+                criteriaVM.getConfiguration();
         //Build matches
         return matchMenteesAndMentors(mentees, mentors, criteriaConfiguration, defaultMentee, 
                 defaultMentor);

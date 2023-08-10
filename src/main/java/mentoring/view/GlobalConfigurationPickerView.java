@@ -24,6 +24,22 @@ public class GlobalConfigurationPickerView implements Initializable{
     @FXML
     private Label menteeSourceLabel;
     @FXML
+    private ConfigurationPickerView menteeConfigurationController;
+    @FXML
+    private Label menteeConfigurationLabel;
+    @FXML
+    private FilePickerView mentorSourceController;
+    @FXML
+    private Label mentorSourceLabel;
+    @FXML
+    private ConfigurationPickerView mentorConfigurationController;
+    @FXML
+    private Label mentorConfigurationLabel;
+    @FXML
+    private ConfigurationPickerView matchConfigurationController;
+    @FXML
+    private Label matchConfigurationLabel;
+    @FXML
     private ConfigurationPickerView resultConfigurationController;
     @FXML
     private Label resultConfigurationLabel;
@@ -31,6 +47,10 @@ public class GlobalConfigurationPickerView implements Initializable{
     @Override
     public void initialize(URL url, ResourceBundle rb){
         menteeSourceLabel.setText("Mentee source");
+        menteeConfigurationLabel.setText("Mentee configuration");
+        mentorSourceLabel.setText("Mentor source");
+        mentorConfigurationLabel.setText("Mentor configuration");
+        matchConfigurationLabel.setText("Match configuration");
         resultConfigurationLabel.setText("Result configuration");
     }
     
@@ -42,14 +62,37 @@ public class GlobalConfigurationPickerView implements Initializable{
     public FilePickerView getPersonSourceView(PersonType type){
         return switch(type) {
             case MENTEE -> menteeSourceController;
+            case MENTOR -> mentorSourceController;
             default -> throw new UnsupportedOperationException(
                     "Person type %s not supported yet".formatted(type));
         };
     }
     
     /**
-     * Return the view used to configure how results should be displayed.
+     * Return the view used to configure how persons should be displayed.
+     * @param type of persons configured by the requested view
      * @return the requested view.
+     */
+    public ConfigurationPickerView getPersonConfigurationView(PersonType type){
+        return switch(type) {
+            case MENTEE -> menteeConfigurationController;
+            case MENTOR -> mentorConfigurationController;
+            default -> throw new UnsupportedOperationException(
+                    "Person type %s not supported yet".formatted(type));
+        };
+    }
+    
+    /**
+     * Return the view used to configure how to match the mentees and mentors.
+     * @return the requested view
+     */
+    public ConfigurationPickerView getMatchConfigurationView(){
+        return matchConfigurationController;
+    }
+    
+    /**
+     * Return the view used to configure how results should be displayed.
+     * @return the requested view
      */
     public ConfigurationPickerView getResultConfigurationView(){
         return resultConfigurationController;

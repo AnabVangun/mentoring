@@ -12,7 +12,9 @@ import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import mentoring.concurrency.ConcurrencyHandler;
+import mentoring.configuration.CriteriaConfiguration;
 import mentoring.configuration.PersonConfiguration;
+import mentoring.configuration.PojoCriteriaConfiguration;
 import mentoring.configuration.PojoPersonConfiguration;
 import mentoring.configuration.PojoResultConfiguration;
 import mentoring.configuration.ResultConfiguration;
@@ -50,6 +52,7 @@ public class MainViewModel {
     
     private final EnumMap<PersonType, ConfigurationPickerViewModel<PersonConfiguration>> 
             personConfigurations = new EnumMap<>(PersonType.class);
+    private final ConfigurationPickerViewModel<CriteriaConfiguration<Person, Person>> matchConfiguration;
     private final ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> resultConfiguration;
     private final EnumMap<PersonType, FilePickerViewModel<List<Person>>> personPickers =
             new EnumMap<>(PersonType.class);
@@ -60,20 +63,13 @@ public class MainViewModel {
      */
     @Inject
     MainViewModel(ConcurrencyHandler concurrencyHandler){
-        this.matchMaker = concurrencyHandler;
-        //TODO fix initialisation for all internal view models
-        personConfigurations.put(PersonType.MENTEE, new ConfigurationPickerViewModel<>(
-                PojoPersonConfiguration.TEST_CONFIGURATION.getConfiguration(), 
-                List.of(PojoPersonConfiguration.TEST_CONFIGURATION.getConfiguration()),
-                new FilePickerViewModel<>("", file -> null, List.of()), 
-                ConfigurationPickerViewModel.ConfigurationType.KNOWN));
-        personConfigurations.put(PersonType.MENTOR, personConfigurations.get(PersonType.MENTEE));
+        matchMaker = concurrencyHandler;
+        matchConfiguration = forgeMatchConfigurationPickerViewModel();
         resultConfiguration = forgeResultConfigurationPickerViewModel();
         for(PersonType type : PersonType.values()){
+            personConfigurations.put(type, forgePersonConfigurationPickerViewModel());
             personPickers.put(type, forgePersonListPickerViewModel(type));
         }
-        personPickers.get(PersonType.MENTOR)
-                .setCurrentFile(new File("resources\\main\\Mentor_Trivial.csv"));
     }
     
     /**
@@ -94,12 +90,12 @@ public class MainViewModel {
      * @param resultVM the ViewModel to update with the results
      * @param excludedMatchesVM the optional ViewModel containing matches that should be excluded
      *      from the match-making process
-     * @param data how to get the configuration data
      * @return a Future object that can be used to control the execution and completion of the task.
      */
     public Future<?> makeMatches(PersonListViewModel menteeVM, PersonListViewModel mentorVM,
-            PersonMatchesViewModel resultVM, PersonMatchesViewModel excludedMatchesVM, RunConfiguration data){
-        return matchMaker.submit(new MultipleMatchTask(resultVM, excludedMatchesVM, data,
+            PersonMatchesViewModel resultVM, PersonMatchesViewModel excludedMatchesVM){
+        return matchMaker.submit(new MultipleMatchTask(resultVM, excludedMatchesVM, 
+                matchConfiguration,
                 menteeVM.getUnderlyingData(),
                 mentorVM.getUnderlyingData()));
     }
@@ -109,12 +105,12 @@ public class MainViewModel {
      * @param menteeVM the ViewModel containing the mentee
      * @param mentorVM the ViewModel containing the mentor
      * @param resultVM the ViewModel to update with the results
-     * @param data how to get the configuration data
      * @return a Future object that can be used to control the execution and completion of the task.
      */
     public Future<?> makeSingleMatch(PersonViewModel menteeVM, PersonViewModel mentorVM,
-            PersonMatchesViewModel resultVM, RunConfiguration data){
-        return matchMaker.submit(new SingleMatchTask(resultVM, data, menteeVM.getPerson(), 
+            PersonMatchesViewModel resultVM){
+        return matchMaker.submit(new SingleMatchTask(resultVM, matchConfiguration, 
+                menteeVM.getPerson(), 
                 mentorVM.getPerson()));
     }
     
@@ -131,16 +127,15 @@ public class MainViewModel {
     /**
      * Export the current matches in a file.
      * @param outputFile the destination file
-     * @param data how to get the configuration data
      * @param toExportWithHeader a mandatory first ViewModel containing matches to export
      * @param toExport optional additional ViewModels containing the matches to export
      * @return a Future object that can be used to control the execution and completion of the task.
      */
-    public Future<?> exportMatches(File outputFile, RunConfiguration data, 
+    public Future<?> exportMatches(File outputFile,
             PersonMatchesViewModel toExportWithHeader, PersonMatchesViewModel... toExport){
         //TODO: use a ResultConfiguration obtained from getResultConfiguration
         return matchMaker.submit(new MatchExportTask(
-                () -> new PrintWriter(outputFile, Charset.forName("utf-8")), data, 
+                () -> new PrintWriter(outputFile, Charset.forName("utf-8")), resultConfiguration, 
                 toExportWithHeader, toExport));
     }
     
@@ -164,6 +159,16 @@ public class MainViewModel {
     //TODO document
     public FilePickerViewModel<List<Person>> getPersonPicker(PersonType type){
         return personPickers.get(type);
+    }
+    
+    //TODO document
+    public ConfigurationPickerViewModel<PersonConfiguration> getPersonConfiguration(PersonType type){
+        return personConfigurations.get(type);
+    }
+    
+    //TODO document
+    public ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> getMatchConfiguration(){
+        return matchConfiguration;
     }
     
     private ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> 
@@ -191,7 +196,7 @@ public class MainViewModel {
         return new ConfigurationPickerViewModel<>(configuration, values, filePicker, type);
     }
             
-    private ConfigurationPickerViewModel<PersonConfiguration> forgeMenteeConfigurationPickerViewModel(){
+    private ConfigurationPickerViewModel<PersonConfiguration> forgePersonConfigurationPickerViewModel(){
         PersonConfiguration configuration = 
                 PojoPersonConfiguration.TEST_CONFIGURATION.getConfiguration();
         String defaultPath = "";
@@ -210,6 +215,27 @@ public class MainViewModel {
                 Pair.of("YAML files", List.of("*.yaml")),
                 Pair.of("All files", List.of("*.*")));
         FilePickerViewModel<PersonConfiguration> filePicker = 
+                new FilePickerViewModel<>(defaultPath, parser, extensions);
+        return new ConfigurationPickerViewModel<>(configuration, values, filePicker, type);
+    }
+    
+    private ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> 
+            forgeMatchConfigurationPickerViewModel(){
+        CriteriaConfiguration<Person, Person> configuration = 
+                PojoCriteriaConfiguration.CRITERIA_CONFIGURATION;
+        String defaultPath = "";
+        ConfigurationPickerViewModel.ConfigurationType type = 
+                ConfigurationPickerViewModel.ConfigurationType.KNOWN;
+        FileParser<CriteriaConfiguration<Person, Person>> parser = file -> {
+            throw new UnsupportedOperationException("not implemented yet");
+        };
+        List<CriteriaConfiguration<Person, Person>> values = 
+                List.of(PojoCriteriaConfiguration.CRITERIA_CONFIGURATION, 
+                        PojoCriteriaConfiguration.CRITERIA_CONFIGURATION_2023_DATA);
+        List<Pair<String, List<String>>> extensions = List.of(
+                Pair.of("YAML files", List.of("*.yaml")),
+                Pair.of("All files", List.of("*.*")));
+        FilePickerViewModel<CriteriaConfiguration<Person, Person>> filePicker = 
                 new FilePickerViewModel<>(defaultPath, parser, extensions);
         return new ConfigurationPickerViewModel<>(configuration, values, filePicker, type);
     }

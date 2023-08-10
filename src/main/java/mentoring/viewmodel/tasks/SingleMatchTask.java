@@ -8,13 +8,13 @@ import mentoring.configuration.CriteriaConfiguration;
 import mentoring.datastructure.Person;
 import mentoring.match.Match;
 import mentoring.match.MatchesBuilder;
-import mentoring.viewmodel.RunConfiguration;
+import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 
 public class SingleMatchTask extends Task<Match<Person, Person>> {
     
     private final PersonMatchesViewModel resultVM;
-    private final RunConfiguration data;
+    private final ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> criteriaVM;
     private final Person mentee;
     private final Person mentor;
     private Match<Person, Person> result;
@@ -22,21 +22,22 @@ public class SingleMatchTask extends Task<Match<Person, Person>> {
     /**
      * Initialise a {@code SingleMatchTask} object.
      * @param resultVM the view model that will be updated when the task completes
-     * @param data where to get data from
+     * @param criteriaVM the ViewModel that will be used to get the configuration
      * @param mentee the mentee to match
      * @param mentor the mentor to match
      */
-    public SingleMatchTask(PersonMatchesViewModel resultVM, RunConfiguration data, Person mentee, 
-            Person mentor) {
+    public SingleMatchTask(PersonMatchesViewModel resultVM, 
+            ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> criteriaVM, 
+            Person mentee, Person mentor) {
         this.resultVM = Objects.requireNonNull(resultVM);
-        this.data = Objects.requireNonNull(data);
+        this.criteriaVM = Objects.requireNonNull(criteriaVM);
         this.mentee = Objects.requireNonNull(mentee);
         this.mentor = Objects.requireNonNull(mentor);
     }
 
     @Override
     protected Match<Person, Person> call() throws Exception {
-        result = makeMatchWithException(data, mentee, mentor);
+        result = makeMatchWithException(criteriaVM, mentee, mentor);
         return result;
     }
 
@@ -46,10 +47,12 @@ public class SingleMatchTask extends Task<Match<Person, Person>> {
         resultVM.add(result);
     }
 
-    private static Match<Person, Person> makeMatchWithException(RunConfiguration data, Person mentee,
+    private static Match<Person, Person> makeMatchWithException(
+            ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> criteriaVM, 
+            Person mentee,
             Person mentor) throws IOException {
         //Get criteria configuration
-        CriteriaConfiguration<Person, Person> criteriaConfiguration = data.getCriteriaConfiguration();
+        CriteriaConfiguration<Person, Person> criteriaConfiguration = criteriaVM.getConfiguration();
         //Build match
         return matchMenteeAndMentor(mentee, mentor, criteriaConfiguration);
     }

@@ -18,13 +18,13 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javax.inject.Inject;
+import mentoring.configuration.CriteriaConfiguration;
+import mentoring.configuration.PersonConfiguration;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.datastructure.Person;
 import mentoring.view.base.ViewTools;
 import mentoring.view.datastructure.MatchesTableView;
 import mentoring.viewmodel.MainViewModel;
-import mentoring.viewmodel.PojoRunConfiguration;
-import mentoring.viewmodel.RunConfiguration;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.base.FilePickerViewModel;
 import mentoring.viewmodel.datastructure.PersonType;
@@ -55,41 +55,36 @@ public class MainView implements Initializable {
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        RunConfiguration data = PojoRunConfiguration.TEST;
-        configureButtons(data);
+        configureButtons();
         showConfigurationPicker();
     }
     
-    private void configureButtons(RunConfiguration data){
+    private void configureButtons(){
         //TODO internationalise string
-        configureButtonToMakeMatches(runButton, "Run", data);
-        configureButtonToMakeManualMatch(addManualMatchButton, "Set as match", data);
+        configureButtonToMakeMatches(runButton, "Run");
+        configureButtonToMakeManualMatch(addManualMatchButton, "Set as match");
         configureButtonToDeleteManualMatch(deleteManualMatchButton, "Delete manual match");
-        configureButtonToExportMatches(exportButton, "Export matches", data);
+        configureButtonToExportMatches(exportButton, "Export matches");
         configureMenuItem.setText("Configure");
         configureMenuItem.setOnAction(event -> showConfigurationPicker());
     }
     
-    private void configureButtonToMakeMatches(Button button, String buttonCaption, 
-            RunConfiguration data){
+    private void configureButtonToMakeMatches(Button button, String buttonCaption){
         ViewTools.configureButton(button, buttonCaption, event -> {
             vm.makeMatches(
                     tableViewController.getPersonViewModel(PersonType.MENTEE),
                     tableViewController.getPersonViewModel(PersonType.MENTOR),
                     tableViewController.getBatchMatchesViewModel(), 
-                    tableViewController.getOneAtATimeMatchesViewModel(),
-                    data);
+                    tableViewController.getOneAtATimeMatchesViewModel());
                     });
     }
     
-    private void configureButtonToMakeManualMatch(Button button, String buttonCaption,
-            RunConfiguration data){
+    private void configureButtonToMakeManualMatch(Button button, String buttonCaption){
         ViewTools.configureButton(button, buttonCaption, event -> vm.makeSingleMatch(
                 //FIXME: protect against illegal use: no selection, confirmation for multiple selection...
                 tableViewController.getSelectedPerson(PersonType.MENTEE),
                 tableViewController.getSelectedPerson(PersonType.MENTOR), 
-                tableViewController.getOneAtATimeMatchesViewModel(), data));
-        //FIXME: manualMatchButton should only be enabled when a mentee and a mentor have been selected
+                tableViewController.getOneAtATimeMatchesViewModel()));
     }
     
     private void configureButtonToDeleteManualMatch(Button button, String buttonCaption){
@@ -98,8 +93,7 @@ public class MainView implements Initializable {
                 tableViewController.getOneAtATimeMatchesViewModel()));
     }
     
-    private void configureButtonToExportMatches(Button button, String buttonCaption, 
-            RunConfiguration data){
+    private void configureButtonToExportMatches(Button button, String buttonCaption){
         ViewTools.configureButton(button, buttonCaption, event -> {
             File outputFile = chooser.showSaveDialog(
                     ((Node) event.getSource()).getScene().getWindow());
@@ -108,7 +102,7 @@ public class MainView implements Initializable {
                 if(parent != null){
                     chooser.setInitialDirectory(parent);
                 }
-                vm.exportMatches(outputFile, data,
+                vm.exportMatches(outputFile,
                 tableViewController.getOneAtATimeMatchesViewModel(),
                 tableViewController.getBatchMatchesViewModel());
             }
@@ -117,6 +111,7 @@ public class MainView implements Initializable {
     
     private void showConfigurationPicker(){
         //TODO: refactor: emphasize structure and operations.
+        //FIXME layer issue: the view knows of model classes through getXXConfiguration
         FXMLLoader loader = new FXMLLoader(getClass()
                 .getResource("/mentoring/globalConfigurationSelectionView.fxml"));
         Parent node = null;
@@ -129,9 +124,21 @@ public class MainView implements Initializable {
                 (GlobalConfigurationPickerView) loader.getController();
         FilePickerViewModel<List<Person>> menteeSourceVM =
                 vm.getPersonPicker(PersonType.MENTEE);
-        ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> resultVM = 
+        ConfigurationPickerViewModel<PersonConfiguration> menteeConfigurationVM =
+                vm.getPersonConfiguration(PersonType.MENTEE);
+        FilePickerViewModel<List<Person>> mentorSourceVM =
+                vm.getPersonPicker(PersonType.MENTOR);
+        ConfigurationPickerViewModel<PersonConfiguration> mentorConfigurationVM =
+                vm.getPersonConfiguration(PersonType.MENTOR);
+        ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> matchVM = 
+                vm.getMatchConfiguration();
+        ConfigurationPickerViewModel<ResultConfiguration<Person,Person>> resultVM = 
                 vm.getResultConfiguration();
         globalConfigurationView.getPersonSourceView(PersonType.MENTEE).setViewModel(menteeSourceVM);
+        globalConfigurationView.getPersonConfigurationView(PersonType.MENTEE).setViewModel(menteeConfigurationVM);
+        globalConfigurationView.getPersonSourceView(PersonType.MENTOR).setViewModel(mentorSourceVM);
+        globalConfigurationView.getPersonConfigurationView(PersonType.MENTOR).setViewModel(mentorConfigurationVM);
+        globalConfigurationView.getMatchConfigurationView().setViewModel(matchVM);
         globalConfigurationView.getResultConfigurationView().setViewModel(resultVM);
         globalConfigurationView.setValidationAction(() -> {
             vm.getResultConfiguration(resultVM,

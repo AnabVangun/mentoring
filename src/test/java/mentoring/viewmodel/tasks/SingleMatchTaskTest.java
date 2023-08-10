@@ -1,5 +1,6 @@
 package mentoring.viewmodel.tasks;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
 import mentoring.configuration.CriteriaConfiguration;
@@ -7,7 +8,7 @@ import mentoring.datastructure.Person;
 import mentoring.datastructure.PersonBuilder;
 import mentoring.match.Match;
 import mentoring.match.MatchTest;
-import mentoring.viewmodel.RunConfiguration;
+import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 import mentoring.viewmodel.tasks.SingleMatchTaskTest.SingleMatchTaskArgs;
 import org.junit.jupiter.api.Assertions;
@@ -72,21 +73,24 @@ class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
         return test(Stream.of(argumentsSupplier().iterator().next()), 
                 "constructor throws NPE on null input", 
                 args -> Assertions.assertAll(
-                        assertConstructorThrowsNPE(null, args.configuration, args.mentee, args.mentor),
+                        assertConstructorThrowsNPE(null, args.configurationVM, args.mentee, args.mentor),
                         assertConstructorThrowsNPE(args.updatedVM, null, args.mentee, args.mentor),
-                        assertConstructorThrowsNPE(args.updatedVM, args.configuration, null, args.mentor),
-                        assertConstructorThrowsNPE(args.updatedVM, args.configuration, args.mentee, null)));
+                        assertConstructorThrowsNPE(args.updatedVM, args.configurationVM, null, args.mentor),
+                        assertConstructorThrowsNPE(args.updatedVM, args.configurationVM, args.mentee, null)));
     }
     
     static Executable assertConstructorThrowsNPE(PersonMatchesViewModel vm, 
-            RunConfiguration configuration, Person mentee, Person mentor){
+            ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> configuration, 
+            Person mentee, Person mentor){
         return () -> Assertions.assertThrows(NullPointerException.class, 
                 () -> new SingleMatchTask(vm, configuration, mentee, mentor));
     }
     
     static class SingleMatchTaskArgs extends TestArgs {
         final PersonMatchesViewModel updatedVM = Mockito.mock(PersonMatchesViewModel.class);
-        final RunConfiguration configuration = Mockito.mock(RunConfiguration.class);
+        @SuppressWarnings("unchecked")
+        final ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> configurationVM = 
+                Mockito.mock(ConfigurationPickerViewModel.class);
         final Person mentee;
         final Person mentor;
         final int expectedCost;
@@ -105,13 +109,17 @@ class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
             CriteriaConfiguration<Person, Person> criteriaConfiguration = 
                     Mockito.mock(CriteriaConfiguration.class);
             stubCriteriaConfiguration(criteriaConfiguration);
-            Mockito.when(configuration.getCriteriaConfiguration())
-                    .thenReturn(criteriaConfiguration);
+            try {
+                Mockito.when(configurationVM.getConfiguration())
+                        .thenReturn(criteriaConfiguration);
+            } catch (IOException e) {
+                Assertions.fail("normally unreachable code", e);
+            }
             this.expectedCost = expectedCost;
         }
         
         SingleMatchTask convert(){
-            SingleMatchTask task = new SingleMatchTask(updatedVM, configuration, mentee, mentor);
+            SingleMatchTask task = new SingleMatchTask(updatedVM, configurationVM, mentee, mentor);
             return task;
         }
         

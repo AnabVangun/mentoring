@@ -6,10 +6,10 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
+import mentoring.configuration.PojoResultConfiguration;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.datastructure.Person;
-import mentoring.viewmodel.PojoRunConfiguration;
-import mentoring.viewmodel.RunConfiguration;
+import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.tasks.MatchExportTaskTest.MatchExportTaskArgs;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 import org.junit.jupiter.api.Assertions;
@@ -36,23 +36,24 @@ class MatchExportTaskTest implements TestFramework<MatchExportTaskArgs>{
                     Class<NullPointerException> NPE = NullPointerException.class;
                     PersonMatchesViewModel[] vmsWithNull = 
                             new PersonMatchesViewModel[]{args.exportedVMs[0], null};
-                    Assertions.assertAll(assertConstructorThrowsNPE(null, args.data, args.firstExportedVM, 
+                    Assertions.assertAll(assertConstructorThrowsNPE(null, args.configurationVM, args.firstExportedVM, 
                                     args.exportedVMs),
                             assertConstructorThrowsNPE(args.supplier, null, args.firstExportedVM, 
                                     args.exportedVMs),
-                            assertConstructorThrowsNPE(args.supplier, PojoRunConfiguration.TEST, null, 
+                            assertConstructorThrowsNPE(args.supplier, args.configurationVM, null, 
                                     args.exportedVMs),
-                            assertConstructorThrowsNPE(args.supplier, PojoRunConfiguration.TEST, 
+                            assertConstructorThrowsNPE(args.supplier, args.configurationVM, 
                                     args.firstExportedVM, (PersonMatchesViewModel[]) null),
-                            assertConstructorThrowsNPE(args.supplier, PojoRunConfiguration.TEST, 
+                            assertConstructorThrowsNPE(args.supplier, args.configurationVM, 
                                     args.firstExportedVM, vmsWithNull));
                 });
     }
     
     static Executable assertConstructorThrowsNPE(MatchExportTask.WriterSupplier supplier, 
-            RunConfiguration data, PersonMatchesViewModel vm, PersonMatchesViewModel... extraVMs){
+            ConfigurationPickerViewModel<ResultConfiguration<Person,Person>> configurationVM, 
+            PersonMatchesViewModel vm, PersonMatchesViewModel... extraVMs){
         return () -> Assertions.assertThrows(NullPointerException.class, 
-                () -> new MatchExportTask(supplier, data, vm, extraVMs));
+                () -> new MatchExportTask(supplier, configurationVM, vm, extraVMs));
     }
     
     @TestFactory
@@ -126,29 +127,36 @@ class MatchExportTaskTest implements TestFramework<MatchExportTaskArgs>{
     static class MatchExportTaskArgs extends TestArgs{
         final Writer writer = Mockito.mock(Writer.class);
         final MatchExportTask.WriterSupplier supplier = () -> writer;
-        final RunConfiguration data = PojoRunConfiguration.TEST;
-        final PersonMatchesViewModel firstExportedVM;
+        @SuppressWarnings("unchecked")
+        final ConfigurationPickerViewModel<ResultConfiguration<Person,Person>> configurationVM = 
+                Mockito.mock(ConfigurationPickerViewModel.class);
+        final PersonMatchesViewModel firstExportedVM = Mockito.mock(PersonMatchesViewModel.class);
         final PersonMatchesViewModel[] exportedVMs;
         
         MatchExportTaskArgs(String testCase, int numberOfExtraVMs){
             super(testCase);
-            firstExportedVM = Mockito.mock(PersonMatchesViewModel.class);
             exportedVMs = new PersonMatchesViewModel[numberOfExtraVMs];
             for (int i = 0; i < numberOfExtraVMs; i++){
                 exportedVMs[i] = Mockito.mock(PersonMatchesViewModel.class);
+            }
+            try {
+                Mockito.when(configurationVM.getConfiguration())
+                        .thenReturn(PojoResultConfiguration.NAMES_AND_SCORE.getConfiguration());
+            } catch (IOException e){
+                Assertions.fail("normally unreachable code", e);
             }
         }
         
         ResultConfiguration<Person, Person> getResultConfiguration(){
             try {
-                return data.getResultConfiguration();
+                return configurationVM.getConfiguration();
             } catch (IOException e){
                 throw new UncheckedIOException(e);
             }
         }
         
         MatchExportTask convert(){
-            return new MatchExportTask(supplier, data, firstExportedVM, exportedVMs);
+            return new MatchExportTask(supplier, configurationVM, firstExportedVM, exportedVMs);
         }
     }
 }

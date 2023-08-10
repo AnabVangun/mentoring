@@ -124,6 +124,7 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
      * @throws IOException if the configuration must be loaded from the file but the operation fails
      */
     public T getConfiguration() throws IOException {
+        //TODO: if configuration has already been loaded and nothing has changed, return it from cache
         return configurationType.getValue().getConfiguration(this);
     }
     
