@@ -18,6 +18,7 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import mentoring.viewmodel.base.BoundableConfigurationPickerViewModel;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel.ConfigurationType;
 
@@ -48,6 +49,7 @@ public class ConfigurationPickerView implements Initializable{
     
     private final Map<Toggle, ConfigurationType> toggleToTypeMap = new HashMap<>();
     private final Map<ConfigurationType, Toggle> typeToToggleMap = new HashMap<>();
+    //TODO make disableProperty not editable from the outside
     private final BooleanProperty disableProperty = new SimpleBooleanProperty(false);
     
     @Override
@@ -188,5 +190,37 @@ public class ConfigurationPickerView implements Initializable{
                 }
             }
         };
+    }
+    
+    /**
+     * Bind this view to its twin if it has one. This view has a twin if its underlying ViewModel
+     * is a {@link BoundableConfigurationPickerViewModel}. If the operation is successful, this 
+     * view becomes disabled.
+     * @return true if the underlying ViewModel can be bounded and has been so.
+     */
+    public boolean bind(){
+        if(viewModel instanceof BoundableConfigurationPickerViewModel boundable){
+            boundable.bind();
+            disableProperty.set(true);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    /**
+     * Unbind this view from its twin if it has one. This view has a twin if its underlying 
+     * ViewModel is a {@link BoundableConfigurationPickerViewModel}. If the operation is successful, 
+     * this view becomes enabled.
+     * @return true if the underlying ViewModel can be unbounded and has been so.
+     */
+    public boolean unbind(){
+        if(viewModel instanceof BoundableConfigurationPickerViewModel boundable){
+            boundable.unbind();
+            disableProperty.set(false);
+            return true;
+        } else {
+            return false;
+        }
     }
 }

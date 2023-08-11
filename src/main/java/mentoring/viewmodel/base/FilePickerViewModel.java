@@ -39,6 +39,17 @@ public class FilePickerViewModel<T> {
         setCurrentFile(getFileOrDefaultDirectory(defaultFilePath));
     }
     
+    /**
+     * Deep-copy constructor: build a new independent instance with equal values.
+     * @param toCopy the other instance to copy
+     */
+    FilePickerViewModel(FilePickerViewModel<T> toCopy){
+        //TODO test
+        this.fileParser = toCopy.fileParser;
+        this.fileExtensions = toCopy.fileExtensions;
+        setCurrentFile(toCopy.getCurrentFile().get());
+    }
+    
     private static <K, V> List<Pair<K, List<V>>> makeUnmodifiableCopy(List<Pair<K, List<V>>> input){
         List<Pair<K, List<V>>> modifiable = input.stream()
                 .map(pair -> Pair.of(pair.getLeft(), List.copyOf(pair.getRight())))

@@ -23,6 +23,7 @@ import mentoring.io.PersonConfigurationParser;
 import mentoring.io.PersonFileParser;
 import mentoring.io.ResultConfigurationParser;
 import mentoring.io.datareader.YamlReader;
+import mentoring.viewmodel.base.BoundableConfigurationPickerViewModel;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.base.FilePickerViewModel;
 import mentoring.viewmodel.datastructure.PersonListViewModel;
@@ -67,7 +68,7 @@ public class MainViewModel {
         matchMaker = concurrencyHandler;
         matchConfiguration = forgeMatchConfigurationPickerViewModel();
         resultConfiguration = forgeResultConfigurationPickerViewModel();
-        exportConfiguration = forgeResultConfigurationPickerViewModel();
+        exportConfiguration = new BoundableConfigurationPickerViewModel<>(resultConfiguration);
         for(PersonType type : PersonType.values()){
             personConfigurations.put(type, forgePersonConfigurationPickerViewModel());
             personPickers.put(type, forgePersonListPickerViewModel(type));

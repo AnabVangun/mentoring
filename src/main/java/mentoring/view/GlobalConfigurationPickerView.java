@@ -55,13 +55,9 @@ public class GlobalConfigurationPickerView implements Initializable{
     private final ChangeListener<Boolean> exportConfigurationToggleListener = 
             (observable, old, current) -> {
                 if (! old && current){
-                    exportConfigurationController.getViewModel()
-                            .bind(resultConfigurationController.getViewModel());
-                    exportConfigurationController.disableProperty().set(true);
+                    exportConfigurationController.bind();
                 } else if (old && ! current){
-                    exportConfigurationController.getViewModel()
-                            .unbind(resultConfigurationController.getViewModel());
-                    exportConfigurationController.disableProperty().set(false);
+                    exportConfigurationController.unbind();
                 } else {
                     throw new IllegalStateException("Toggle " + observable 
                             + " fired a changed event without changing");

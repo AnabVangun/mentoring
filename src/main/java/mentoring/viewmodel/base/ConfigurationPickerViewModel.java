@@ -1,7 +1,7 @@
 package mentoring.viewmodel.base;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -10,8 +10,6 @@ import java.util.stream.Collectors;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.WeakChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import mentoring.configuration.Configuration;
@@ -22,15 +20,11 @@ import mentoring.viewmodel.base.function.ConfigurationTypeFunction;
  * @param <T> type of the configuration to pick
  */
 public class ConfigurationPickerViewModel<T extends Configuration<T>> {
-    private final Map<String, T> knownConfigurations;
-    private final ObservableList<String> items;
-    private final Property<String> selectedItem;
-    private final Property<ConfigurationType> configurationType;
-    private final FilePickerViewModel<T> filePicker;
-    private final ChangeListener<File> fileBindingListener = (observable, oldValue, newValue) -> 
-                getFilePicker().setCurrentFile(newValue);
-    private final ChangeListener<File> fileBindingWeakListener = 
-            new WeakChangeListener<>(fileBindingListener);
+    protected final Map<String, T> knownConfigurations;
+    protected final ObservableList<String> items;
+    protected final Property<String> selectedItem;
+    protected final Property<ConfigurationType> configurationType;
+    protected final FilePickerViewModel<T> filePicker;
     
     /**
      * Type of configuration to pick.
@@ -87,12 +81,25 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
                     "Default instance %s is not in the known configurations"
                     .formatted(defaultSelectedInstance, knownInstances));
         }
-        knownConfigurations = knownInstances.stream().collect(
-                Collectors.toMap(item -> item.toString(), Function.identity()));
+        knownConfigurations = Collections.unmodifiableMap(knownInstances.stream().collect(
+                Collectors.toMap(item -> item.toString(), Function.identity())));
         items = FXCollections.unmodifiableObservableList(FXCollections.observableArrayList(
                 knownInstances.stream().map(item -> item.toString()).collect(Collectors.toList())));
         selectedItem = new SimpleStringProperty(defaultSelectedInstance.toString());
         configurationType = new ReadOnlyObjectWrapper<>(Objects.requireNonNull(defaultSelection));
+    }
+    
+    /**
+     * Deep-copy constructor: build a new independent instance with equal values.
+     * @param copy the ViewModel to copy
+     */
+    protected ConfigurationPickerViewModel(ConfigurationPickerViewModel<T> copy){
+        //TODO test
+        this.filePicker = new FilePickerViewModel<>(copy.filePicker);
+        knownConfigurations = copy.knownConfigurations;
+        items = copy.items;
+        selectedItem = new SimpleStringProperty(copy.selectedItem.getValue());
+        configurationType = new ReadOnlyObjectWrapper<>(copy.configurationType.getValue());
     }
     
     /**
@@ -141,26 +148,5 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
      */
     public FilePickerViewModel<T> getFilePicker() {
         return this.filePicker;
-    }
-    
-    //TODO test and document
-    public void bind(ConfigurationPickerViewModel<?> o){
-        //TODO check that o is a valid candidate: it has the right type and content
-        @SuppressWarnings("unchecked")
-        //if o is not of the right type, an exception will be raised as expected
-        ConfigurationPickerViewModel<T> other = (ConfigurationPickerViewModel<T>) o;
-        configurationType.bind(other.configurationType);
-        selectedItem.bind(other.selectedItem);
-        other.filePicker.getCurrentFile().addListener(fileBindingWeakListener);
-        //Fire event once to make sure that value is up to date
-        fileBindingListener.changed(other.filePicker.getCurrentFile(), null, 
-                other.filePicker.getCurrentFile().get());
-    }
-    
-    //TODO test and document
-    public void unbind(ConfigurationPickerViewModel<?> o){
-        configurationType.unbind();
-        selectedItem.unbind();
-        o.filePicker.getCurrentFile().removeListener(fileBindingWeakListener);
     }
 }
