@@ -33,6 +33,19 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
                         List.of(DummyConfiguration.first.toString(), 
                                 DummyConfiguration.second.toString()),
                         ConfigurationPickerViewModel.ConfigurationType.FILE,
+                        FilePickerViewModelTest.DEFAULT_FILE_DATA.defaultFilePath()),
+                new CopyConfigurationPickerViewModelArgs("known copy configuration", 
+                        DummyConfiguration.first, DummyConfiguration.first, 
+                        List.of(DummyConfiguration.first), 
+                        List.of(DummyConfiguration.first.toString()),
+                        ConfigurationPickerViewModel.ConfigurationType.KNOWN, "foo"),
+                new CopyConfigurationPickerViewModelArgs("file copy configuration",
+                        ConfigurationPickerViewModelArgs.FILE_CONFIGURATION, 
+                        DummyConfiguration.second,
+                        List.of(DummyConfiguration.first, DummyConfiguration.second), 
+                        List.of(DummyConfiguration.first.toString(), 
+                                DummyConfiguration.second.toString()),
+                        ConfigurationPickerViewModel.ConfigurationType.FILE,
                         FilePickerViewModelTest.DEFAULT_FILE_DATA.defaultFilePath()));
     }
     
@@ -89,6 +102,19 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
     }
     
     @TestFactory
+    Stream<DynamicNode> getSelectedItem_modifiableIndependentlyForCopy(){
+        return test("getSelectedItem() is independent for a copied instance", args -> {
+            DummyConfigurationPickerViewModel baseViewModel = args.convert();
+            DummyConfigurationPickerViewModel viewModel = 
+                    new DummyConfigurationPickerViewModel(baseViewModel);
+            String baseValue = baseViewModel.getSelectedItem().getValue();
+            viewModel.getSelectedItem().setValue("foo");
+            Assertions.assertEquals(baseValue, baseViewModel.getSelectedItem().getValue(),
+                    "the base view model should be independent from the copy");
+        });
+    }
+    
+    @TestFactory
     Stream<DynamicNode> getConfigurationSelectionType_defaultInstance(){
         return test("getConfigurationSelectionType() returns the default instance before any action", args -> {
             DummyConfigurationPickerViewModel viewModel = args.convert();
@@ -122,6 +148,22 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
                     viewModel.getConfigurationSelectionType();
             expectedProperty.setValue(ConfigurationPickerViewModel.ConfigurationType.FILE);
             Assertions.assertSame(expectedProperty, viewModel.getConfigurationSelectionType());
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> getConfigurationSelectionType_modifiableIndependentlyForCopy(){
+        return test("getConfigurationSelectionType() is independent for a copied instance", args -> {
+            DummyConfigurationPickerViewModel baseViewModel = args.convert();
+            DummyConfigurationPickerViewModel viewModel = 
+                    new DummyConfigurationPickerViewModel(baseViewModel);
+            ConfigurationPickerViewModel.ConfigurationType baseValue = 
+                    baseViewModel.getConfigurationSelectionType().getValue();
+            viewModel.getConfigurationSelectionType()
+                    .setValue(ConfigurationPickerViewModel.ConfigurationType.FILE);
+            Assertions.assertEquals(baseValue,
+                    baseViewModel.getConfigurationSelectionType().getValue(),
+                    "the base view model should be independent from the copy");
         });
     }
     
@@ -179,6 +221,14 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
                 args -> Assertions.assertThrows(IllegalArgumentException.class, () -> args.convert()));
     }
     
+    @TestFactory
+    Stream<DynamicNode> copyConstructor_NPE(){
+        return test(Stream.of("unique testCase"), 
+                "copy constructor throws an exception on null input",
+                args -> Assertions.assertThrows(NullPointerException.class, 
+                        () -> new ConfigurationPickerViewModel<>(null)));
+    }
+    
     static class DummyConfigurationPickerViewModel extends 
             ConfigurationPickerViewModel<DummyConfiguration>{
         
@@ -187,6 +237,10 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
                 FilePickerViewModel<DummyConfiguration> filePicker, 
                 ConfigurationType defaultSelection) {
             super(defaultSelectedInstance, values, filePicker, defaultSelection);
+        }
+        
+        public DummyConfigurationPickerViewModel(DummyConfigurationPickerViewModel toCopy){
+            super(toCopy);
         }
     }
     
@@ -220,5 +274,21 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
         
         final static DummyConfiguration FILE_CONFIGURATION = 
                 new DummyConfiguration(FilePickerViewModelTest.DEFAULT_FILE_DATA.defaultFilePath());
+    }
+    
+    static class CopyConfigurationPickerViewModelArgs extends ConfigurationPickerViewModelArgs {
+        
+        CopyConfigurationPickerViewModelArgs(String testCase, DummyConfiguration expectedConfiguration,
+                DummyConfiguration selectedConfiguration, List<DummyConfiguration> inputValues, 
+                List<String> expectedValues, ConfigurationPickerViewModel.ConfigurationType type,
+                String filePath){
+            super(testCase, expectedConfiguration, selectedConfiguration, inputValues,
+                    expectedValues, type, filePath);
+        }
+        
+        @Override
+        DummyConfigurationPickerViewModel convert(){
+            return new DummyConfigurationPickerViewModel(super.convert());
+        }
     }
 }

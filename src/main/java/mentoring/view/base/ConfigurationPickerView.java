@@ -49,7 +49,6 @@ public class ConfigurationPickerView implements Initializable{
     
     private final Map<Toggle, ConfigurationType> toggleToTypeMap = new HashMap<>();
     private final Map<ConfigurationType, Toggle> typeToToggleMap = new HashMap<>();
-    //TODO make disableProperty not editable from the outside
     private final BooleanProperty disableProperty = new SimpleBooleanProperty(false);
     
     @Override
@@ -92,15 +91,6 @@ public class ConfigurationPickerView implements Initializable{
      */
     public ConfigurationPickerViewModel<?> getViewModel(){
         return viewModel;
-    }
-    
-    /**
-     * Defines the disabled state of this View. Setting it to true will cause this View to become 
-     * disabled.
-     * @return the requested property
-     */
-    public BooleanProperty disableProperty(){
-        return disableProperty;
     }
     
     private void initializeListeners(){

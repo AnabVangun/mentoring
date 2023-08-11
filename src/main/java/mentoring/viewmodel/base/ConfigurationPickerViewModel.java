@@ -30,8 +30,7 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
      * Type of configuration to pick.
      */
     public static enum ConfigurationType{
-        /** The configuration is already a Java object known to its class's 
-        {@link Configuration#values()}  method.*/
+        /** The configuration is already a Java object known to the ConfigurationPickerViewModel.*/
         KNOWN(ConfigurationType::getKnownConfiguration),
         /**The configuration must be parsed from a file.*/
         FILE(ConfigurationType::getConfigurationFromFile);
@@ -94,7 +93,6 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
      * @param copy the ViewModel to copy
      */
     protected ConfigurationPickerViewModel(ConfigurationPickerViewModel<T> copy){
-        //TODO test
         this.filePicker = new FilePickerViewModel<>(copy.filePicker);
         knownConfigurations = copy.knownConfigurations;
         items = copy.items;
