@@ -21,6 +21,8 @@ class FilePickerViewModelTest implements TestFramework<FilePickerViewModelArgs> 
     @Override
     public Stream<FilePickerViewModelArgs> argumentsSupplier(){
         return Stream.of(new FilePickerViewModelArgs("default file", DEFAULT_FILE_DATA, 
+                List.of(Pair.of("foo", List.of("*.foo", "*.bar")))),
+                new CopyFilePickerViewModelArgs("default file", DEFAULT_FILE_DATA, 
                 List.of(Pair.of("foo", List.of("*.foo", "*.bar")))));
     }
     
@@ -50,11 +52,27 @@ class FilePickerViewModelTest implements TestFramework<FilePickerViewModelArgs> 
     
     @TestFactory
     Stream<DynamicNode> getCurrentFile_sameReturnValue(){
-        return test("getSeCurrentFile() always return the same observable", args -> {
+        return test("getCurrentFile() always return the same observable", args -> {
             DummyFilePickerViewModel viewModel = args.convert();
             ReadOnlyObjectProperty<File> expected = viewModel.getCurrentFile();
             viewModel.setCurrentFile(new File("foo"));
             Assertions.assertSame(expected, viewModel.getCurrentFile());
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> getCurrentFile_modifiableIndependentlyForCopy(){
+        return test("getCurrentFile() is independent for a copied instance", args -> {
+            DummyFilePickerViewModel viewModel = args.convert();
+            DummyFilePickerViewModel copyViewModel = new DummyFilePickerViewModel(viewModel);
+            ReadOnlyObjectProperty<File> observable = viewModel.getCurrentFile();
+            InvalidationListener listener = Mockito.mock(InvalidationListener.class);
+            observable.addListener(listener);
+            copyViewModel.setCurrentFile(OTHER_FILE);
+            Assertions.assertAll("The base view model should not be modified by its copy",
+                    () -> Mockito.verify(listener, Mockito.never()).invalidated(observable),
+                    () -> Assertions.assertEquals(args.defaultFileData.defaultFile, 
+                            observable.getValue()));
         });
     }
     
@@ -93,6 +111,22 @@ class FilePickerViewModelTest implements TestFramework<FilePickerViewModelArgs> 
     }
     
     @TestFactory
+    Stream<DynamicNode> getCurrentFilePath_modifiableIndependentlyForCopy(){
+        return test("getCurrentFilePath() is independent for a copied instance", args -> {
+            DummyFilePickerViewModel viewModel = args.convert();
+            DummyFilePickerViewModel copyViewModel = new DummyFilePickerViewModel(viewModel);
+            ReadOnlyStringProperty observable = viewModel.getCurrentFilePath();
+            InvalidationListener listener = Mockito.mock(InvalidationListener.class);
+            observable.addListener(listener);
+            copyViewModel.setCurrentFile(OTHER_FILE);
+            Assertions.assertAll("The base view model should not be modified by its copy",
+                    () -> Mockito.verify(listener, Mockito.never()).invalidated(observable),
+                    () -> Assertions.assertEquals(args.defaultFileData.defaultFilePath, 
+                            observable.getValue()));
+        });
+    }
+    
+    @TestFactory
     Stream<DynamicNode> getCurrentFileDirectory_defaultInstance(){
         return test("getCurrentFileDirectory() returns the default directory before any action", args -> {
             DummyFilePickerViewModel viewModel = args.convert();
@@ -127,6 +161,22 @@ class FilePickerViewModelTest implements TestFramework<FilePickerViewModelArgs> 
     }
     
     @TestFactory
+    Stream<DynamicNode> getCurrentFileDirectory_modifiableIndependentlyForCopy(){
+        return test("getCurrentFileDirectory() is independent for a copied instance", args -> {
+            DummyFilePickerViewModel viewModel = args.convert();
+            DummyFilePickerViewModel copyViewModel = new DummyFilePickerViewModel(viewModel);
+            ReadOnlyObjectProperty<File> observable = viewModel.getCurrentFileDirectory();
+            InvalidationListener listener = Mockito.mock(InvalidationListener.class);
+            observable.addListener(listener);
+            copyViewModel.setCurrentFile(OTHER_FILE);
+            Assertions.assertAll("The base view model should not be modified by its copy",
+                    () -> Mockito.verify(listener, Mockito.never()).invalidated(observable),
+                    () -> Assertions.assertEquals(args.defaultFileData.defaultDirectory, 
+                            observable.getValue()));
+        });
+    }
+    
+    @TestFactory
     Stream<DynamicNode> constructor_NPE(){
         return test(Stream.of("unique test case"), "constructor throws NPE on null input", args ->
                 Assertions.assertAll(
@@ -137,13 +187,19 @@ class FilePickerViewModelTest implements TestFramework<FilePickerViewModelArgs> 
                                 () -> new DummyFilePickerViewModel(FILE_PATH, null, List.of())),
                         () -> Assertions.assertThrows(NullPointerException.class,
                                 () -> new DummyFilePickerViewModel(FILE_PATH, input -> input.toString(), 
-                                        null))));
+                                        null)),
+                        () -> Assertions.assertThrows(NullPointerException.class,
+                                () -> new DummyFilePickerViewModel(null))));
     }
     
     static class DummyFilePickerViewModel extends FilePickerViewModel<String>{
         DummyFilePickerViewModel(String defaultPath, FileParser<String> parser, 
                 List<Pair<String, List<String>>> extensions){
             super(defaultPath, parser, extensions);
+        }
+
+        DummyFilePickerViewModel(DummyFilePickerViewModel toCopy) {
+            super(toCopy);
         }
     }
     
@@ -161,6 +217,18 @@ class FilePickerViewModelTest implements TestFramework<FilePickerViewModelArgs> 
         DummyFilePickerViewModel convert(){
             return new DummyFilePickerViewModel(defaultFileData.defaultFilePath, 
                     input -> input.getName(), expectedExtensions);
+        }
+    }
+    
+    static class CopyFilePickerViewModelArgs extends FilePickerViewModelArgs {
+        CopyFilePickerViewModelArgs(String testCase, FileData defaultFileData,
+                List<Pair<String, List<String>>> extensions){
+            super(testCase, defaultFileData, extensions);
+        }
+        
+        @Override
+        DummyFilePickerViewModel convert(){
+            return new DummyFilePickerViewModel(super.convert());
         }
     }
     

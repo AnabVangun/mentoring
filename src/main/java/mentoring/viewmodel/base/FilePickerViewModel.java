@@ -24,6 +24,13 @@ public class FilePickerViewModel<T> {
     private final FileParser<T> fileParser;
     private final List<Pair<String, List<String>>> fileExtensions;
     
+    private FilePickerViewModel(File initialFile, FileParser<T> fileParser,
+            List<Pair<String, List<String>>> fileExtensions){
+        setCurrentFile(initialFile);
+        this.fileParser = fileParser;
+        this.fileExtensions = fileExtensions;
+    }
+    
     /**
      * Build a new ConfigurationPickerViewModel instance.
      * @param defaultFilePath path to a file that can be parsed, MAY be a null or empty String
@@ -34,9 +41,9 @@ public class FilePickerViewModel<T> {
      */
     public FilePickerViewModel(String defaultFilePath, FileParser<T> fileParser,
             List<Pair<String, List<String>>> fileExtensions){
-        this.fileParser = Objects.requireNonNull(fileParser);
-        this.fileExtensions = makeUnmodifiableCopy(fileExtensions);
-        setCurrentFile(getFileOrDefaultDirectory(defaultFilePath));
+        this(getFileOrDefaultDirectory(defaultFilePath), 
+                Objects.requireNonNull(fileParser),
+                makeUnmodifiableCopy(fileExtensions));
     }
     
     /**
@@ -44,10 +51,7 @@ public class FilePickerViewModel<T> {
      * @param toCopy the other instance to copy
      */
     FilePickerViewModel(FilePickerViewModel<T> toCopy){
-        //TODO test
-        this.fileParser = toCopy.fileParser;
-        this.fileExtensions = toCopy.fileExtensions;
-        setCurrentFile(toCopy.getCurrentFile().get());
+        this(toCopy.getCurrentFile().get(), toCopy.fileParser, toCopy.fileExtensions);
     }
     
     private static <K, V> List<Pair<K, List<V>>> makeUnmodifiableCopy(List<Pair<K, List<V>>> input){
@@ -62,8 +66,11 @@ public class FilePickerViewModel<T> {
     }
     
     private static File getFileOrDefaultDirectory(File file) {
-        //TODO extract default file as a configurable parameter
-        return (file == null || !file.exists()) ? new File(System.getProperty("user.home")) : file;
+        return isInvalidFile(file) ? Parameters.getDefaultDirectory() : file;
+    }
+    
+    private static boolean isInvalidFile(File file){
+        return file == null || !file.exists();
     }
 
     /**
