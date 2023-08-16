@@ -4,11 +4,10 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
 import mentoring.concurrency.ConcurrencyHandler;
 import mentoring.concurrency.ConcurrencyModule;
+import mentoring.view.base.StageBuilder;
 import mentoring.viewmodel.datastructure.PersonViewModelModule;
 
 public class MainApplication extends Application {
@@ -22,14 +21,9 @@ public class MainApplication extends Application {
     public void start(Stage stage) throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("scene.fxml"));
         loader.setControllerFactory(injector::getInstance);
-        Parent root = loader.load();
 
-        Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
-
-        stage.setTitle("Mentoring match-maker");
-        stage.setScene(scene);
-        stage.show();
+        StageBuilder builder = new StageBuilder().withTitle("Mentoring match-maker");
+        builder.build(loader.load()).show();
     }
         
     @Override

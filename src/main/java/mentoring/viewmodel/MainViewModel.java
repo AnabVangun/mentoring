@@ -143,14 +143,11 @@ public class MainViewModel {
     
     /**
      * Get a {@link ResultConfiguration}.
-     * @param configurationVM the ViewModel containing the configuration
      * @param resultVMs the ViewModels to update with the configuration
      * @return a Future object that can be used to control the execution and completion of the task.
      */
-    public Future<?> getResultConfiguration(
-            ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> configurationVM,
-            List<? extends PersonMatchesViewModel> resultVMs) {
-        return matchMaker.submit(new ConfigurationGetterTask<>(configurationVM, resultVMs));
+    public Future<?> getResultConfiguration(List<? extends PersonMatchesViewModel> resultVMs) {
+        return matchMaker.submit(new ConfigurationGetterTask<>(getResultConfiguration(), resultVMs));
     }
     
     //TODO document
