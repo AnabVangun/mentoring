@@ -12,7 +12,7 @@ import mentoring.viewmodel.base.SimpleObservable;
 import mentoring.viewmodel.base.TabularDataViewModel;
 
 /**
- * Viewmodel responsible for representing a list of {@link Person} objects.
+ * ViewModel responsible for representing a list of {@link Person} objects.
  */
 public class PersonListViewModel extends SimpleObservable 
         implements TabularDataViewModel<PersonViewModel>{
@@ -32,7 +32,9 @@ public class PersonListViewModel extends SimpleObservable
      * last call to 
      * {@link #update(mentoring.configuration.ResultConfiguration, mentoring.match.Matches) }.
      */
+    @Override
     public List<String> getHeaders(){
+        //TODO: check if lazy update actually does anything useful
         updateIfNecessary();
         return headerContent;
     }
@@ -40,6 +42,7 @@ public class PersonListViewModel extends SimpleObservable
     /**
      * Returns the content of the represented {@link Person} objects.
      */
+    @Override
     public ObservableList<PersonViewModel> getContent(){
         updateIfNecessary();
         return items;

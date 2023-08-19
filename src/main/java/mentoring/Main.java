@@ -9,11 +9,11 @@ public class Main {
     }
     /**
      * TODO: link GUI to code.
-     * 1. Handle alerting logic for when something fails with exception in one of the tasks (make common superclass)
-     * 2. Add forbid button to prevent a match between two persons.
+     * 2. Add "delete forbidden match"
+     * 2b. Handle TODOs related to forbidden matches
      * 3. Fix header of PersonListViewModel/PersonViewModel
      * 4. make window pretty
-     * 5. Fix alerting logic: Alert is a View class, not a ViewModel one.
+     * 5. Fix alerting logic: Alert is a View class, not a ViewModel one. Need to handle AbstractTask TODOs
      * 9a. Add global configuration parameters for magic numbers.
      * 9b. Internationalize GUI
      * 9e. Add save/load button to load configuration (including forbidden matches) and results from a file

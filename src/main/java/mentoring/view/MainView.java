@@ -40,6 +40,8 @@ public class MainView implements Initializable {
     @FXML
     private Button deleteManualMatchButton;
     @FXML
+    private Button addForbiddenMatchButton;
+    @FXML
     private Button exportButton;
     @FXML
     private MenuItem configureMenuItem;
@@ -60,6 +62,7 @@ public class MainView implements Initializable {
         configureButtonToMakeMatches(runButton, "Run");
         configureButtonToMakeManualMatch(addManualMatchButton, "Set as match");
         configureButtonToDeleteManualMatch(deleteManualMatchButton, "Delete manual match");
+        configureButtonToForbidMatch(addForbiddenMatchButton, "Forbid match");
         configureButtonToExportMatches(exportButton, "Export matches");
         configureMenuItem.setText("Configure");
         configureMenuItem.setOnAction(event -> showConfigurationPicker());
@@ -87,6 +90,12 @@ public class MainView implements Initializable {
         ViewTools.configureButton(button, buttonCaption, event -> vm.removeSingleMatch(
                 tableViewController.getSelectedManualMatch(), 
                 tableViewController.getOneAtATimeMatchesViewModel()));
+    }
+    
+    private void configureButtonToForbidMatch(Button button, String buttonCaption){
+        ViewTools.configureButton(button, buttonCaption, event -> vm.addForbiddenMatch(
+                tableViewController.getSelectedPerson(PersonType.MENTEE), 
+                tableViewController.getSelectedPerson(PersonType.MENTOR)));
     }
     
     private void configureButtonToExportMatches(Button button, String buttonCaption){

@@ -14,6 +14,7 @@ import mentoring.match.MatchTest;
 import mentoring.match.Matches;
 import mentoring.match.MatchesTest;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
+import mentoring.viewmodel.datastructure.ForbiddenMatchListViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 import mentoring.viewmodel.tasks.MultipleMatchTaskTest.MultipleMatchTaskArgs;
@@ -40,7 +41,7 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
             List<Person> mentees = args.mentees;
             List<Person> mentors = args.mentors;
             MultipleMatchTask task = new MultipleMatchTask(updatedVM, null, args.configurationVM, 
-                    mentees, mentors);
+                    args.forbiddenMatchVM, mentees, mentors);
             runTask(task);
             task.succeeded();
             ArgumentCaptor<Matches<Person, Person>> captor = captureSetAllArguments(updatedVM);
@@ -58,7 +59,7 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
             List<Person> mentors = args.mentors;
             PersonMatchesViewModel exclusionVM = forgeExclusionVM(mentees.get(0), mentors.get(1));
             MultipleMatchTask task = new MultipleMatchTask(updatedVM, exclusionVM, 
-                    args.configurationVM, mentees, mentors);
+                    args.configurationVM, args.forbiddenMatchVM, mentees, mentors);
             runTask(task);
             task.succeeded();
             ArgumentCaptor<Matches<Person, Person>> captor = captureSetAllArguments(updatedVM);
@@ -109,6 +110,7 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
         @SuppressWarnings("unchecked")
         final ConfigurationPickerViewModel<CriteriaConfiguration<Person, Person>> configurationVM 
                 = Mockito.mock(ConfigurationPickerViewModel.class);
+        final ForbiddenMatchListViewModel forbiddenMatchVM = new ForbiddenMatchListViewModel();
         final List<Person> mentees;
         final List<Person> mentors;
         

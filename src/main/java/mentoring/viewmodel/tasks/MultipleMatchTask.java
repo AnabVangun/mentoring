@@ -1,6 +1,8 @@
 package mentoring.viewmodel.tasks;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -16,7 +18,9 @@ import mentoring.datastructure.PersonBuilder;
 import mentoring.match.Match;
 import mentoring.match.Matches;
 import mentoring.match.MatchesBuilder;
+import mentoring.match.NecessaryCriterion;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
+import mentoring.viewmodel.datastructure.ForbiddenMatchListViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 
@@ -25,6 +29,7 @@ public class MultipleMatchTask extends AbstractTask<Void, MultipleMatchTask> {
     private final PersonMatchesViewModel resultVM;
     private final PersonMatchesViewModel excludedMatchesVM;
     private final ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> criteriaVM;
+    private final ForbiddenMatchListViewModel forbiddenMatchesVM;
     private final List<Person> mentees;
     private final List<Person> mentors;
     private Matches<Person, Person> results;
@@ -40,9 +45,11 @@ public class MultipleMatchTask extends AbstractTask<Void, MultipleMatchTask> {
      */
     public MultipleMatchTask(PersonMatchesViewModel resultVM, PersonMatchesViewModel excludedMatchesVM,
             ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> criteriaVM, 
+            ForbiddenMatchListViewModel forbiddenMatchesVM,
             List<Person> mentees, 
             List<Person> mentors) {
         //TODO check in tests that constructor fail on null input like the other tasks
+        //TODO document and test forbiddenMatchesVM
         //TODO refactor: move to View layer
         super(task -> {
             State state = task.getState();
@@ -57,6 +64,7 @@ public class MultipleMatchTask extends AbstractTask<Void, MultipleMatchTask> {
         this.resultVM = Objects.requireNonNull(resultVM);
         this.excludedMatchesVM = excludedMatchesVM;
         this.criteriaVM = Objects.requireNonNull(criteriaVM);
+        this.forbiddenMatchesVM = Objects.requireNonNull(forbiddenMatchesVM);
         this.mentees = Objects.requireNonNull(mentees);
         this.mentors = Objects.requireNonNull(mentors);
     }
@@ -74,7 +82,8 @@ public class MultipleMatchTask extends AbstractTask<Void, MultipleMatchTask> {
             filteredMentors = filterAvailablePerson(mentors, excludedMatchesVM.getContent(),
                 t -> t.getMentor());
         }
-        results = makeMatchesWithException(criteriaVM, filteredMentees, filteredMentors);
+        results = makeMatchesWithException(criteriaVM, forbiddenMatchesVM, 
+                filteredMentees, filteredMentors);
         return null;
     }
 
@@ -94,6 +103,7 @@ public class MultipleMatchTask extends AbstractTask<Void, MultipleMatchTask> {
 
     private static Matches<Person, Person> makeMatchesWithException(
             ConfigurationPickerViewModel<CriteriaConfiguration<Person, Person>> criteriaVM,
+            ForbiddenMatchListViewModel forbiddenMatchesVM,
             List<Person> mentees, List<Person> mentors) throws IOException {
         /*FIXME: defaultMentee and defaultMentor should be configured somewhere
         (probably in result configuration)
@@ -106,16 +116,21 @@ public class MultipleMatchTask extends AbstractTask<Void, MultipleMatchTask> {
         CriteriaConfiguration<Person, Person> criteriaConfiguration = 
                 criteriaVM.getConfiguration();
         //Build matches
-        return matchMenteesAndMentors(mentees, mentors, criteriaConfiguration, defaultMentee, 
+        return matchMenteesAndMentors(mentees, mentors, criteriaConfiguration, 
+                forbiddenMatchesVM.getCriterion(), defaultMentee, 
                 defaultMentor);
     }
 
     private static Matches<Person, Person> matchMenteesAndMentors(List<Person> mentees, 
-            List<Person> mentors, CriteriaConfiguration<Person, Person> criteriaConfiguration, 
+            List<Person> mentors, CriteriaConfiguration<Person, Person> criteriaConfiguration,
+            NecessaryCriterion<Person, Person> extraNecessaryCriterion,
             Person defaultMentee, Person defaultMentor) {
         MatchesBuilder<Person, Person> solver = new MatchesBuilder<>(mentees, mentors, 
                 criteriaConfiguration.getProgressiveCriteria());
-        solver.withNecessaryCriteria(criteriaConfiguration.getNecessaryCriteria())
+        Collection<NecessaryCriterion<Person,Person>> completeNecessaryCriteria =
+                new LinkedList<>(criteriaConfiguration.getNecessaryCriteria());
+        completeNecessaryCriteria.add(extraNecessaryCriterion);
+        solver.withNecessaryCriteria(completeNecessaryCriteria)
                 .withPlaceholderPersons(defaultMentee, defaultMentor);
         return solver.build();
     }

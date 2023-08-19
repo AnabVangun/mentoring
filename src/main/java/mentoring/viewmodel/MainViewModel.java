@@ -36,8 +36,10 @@ import mentoring.viewmodel.tasks.MultipleMatchTask;
 import mentoring.viewmodel.tasks.SingleMatchRemovalTask;
 import mentoring.viewmodel.tasks.SingleMatchTask;
 import mentoring.viewmodel.base.function.FileParser;
+import mentoring.viewmodel.datastructure.ForbiddenMatchListViewModel;
 import mentoring.viewmodel.datastructure.PersonType;
 import mentoring.viewmodel.tasks.AbstractTask;
+import mentoring.viewmodel.tasks.ForbiddenMatchTask;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
@@ -59,6 +61,8 @@ public class MainViewModel {
     private final ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> exportConfiguration;
     private final EnumMap<PersonType, FilePickerViewModel<List<Person>>> personPickers =
             new EnumMap<>(PersonType.class);
+    private final ForbiddenMatchListViewModel extraForbiddenMatches = 
+            new ForbiddenMatchListViewModel();
     
     /**
      * Create a new {@code MainViewModel}.
@@ -99,7 +103,7 @@ public class MainViewModel {
     public Future<?> makeMatches(PersonListViewModel menteeVM, PersonListViewModel mentorVM,
             PersonMatchesViewModel resultVM, PersonMatchesViewModel excludedMatchesVM){
         return matchMaker.submit(new MultipleMatchTask(resultVM, excludedMatchesVM, 
-                matchConfiguration,
+                matchConfiguration, extraForbiddenMatches,
                 menteeVM.getUnderlyingData(),
                 mentorVM.getUnderlyingData()));
     }
@@ -143,6 +147,11 @@ public class MainViewModel {
                 () -> new PrintWriter(outputFile, Charset.forName("utf-8")), 
                 callback, exportConfiguration, 
                 toExportWithHeader, toExport));
+    }
+    
+    public Future<?> addForbiddenMatch(PersonViewModel menteeVM, PersonViewModel mentorVM){
+        return matchMaker.submit(new ForbiddenMatchTask(extraForbiddenMatches, 
+                menteeVM.getPerson(), mentorVM.getPerson()));
     }
     
     /**
