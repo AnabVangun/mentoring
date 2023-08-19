@@ -37,6 +37,7 @@ import mentoring.viewmodel.tasks.SingleMatchRemovalTask;
 import mentoring.viewmodel.tasks.SingleMatchTask;
 import mentoring.viewmodel.base.function.FileParser;
 import mentoring.viewmodel.datastructure.PersonType;
+import mentoring.viewmodel.tasks.AbstractTask;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
@@ -130,14 +131,17 @@ public class MainViewModel {
     /**
      * Export the current matches in a file.
      * @param outputFile the destination file
+     * @param callback the method to call when the task has run
      * @param toExportWithHeader a mandatory first ViewModel containing matches to export
      * @param toExport optional additional ViewModels containing the matches to export
      * @return a Future object that can be used to control the execution and completion of the task.
      */
-    public Future<?> exportMatches(File outputFile,
+    public Future<?> exportMatches(File outputFile, 
+            AbstractTask.TaskCompletionCallback<Void, MatchExportTask> callback,
             PersonMatchesViewModel toExportWithHeader, PersonMatchesViewModel... toExport){
         return matchMaker.submit(new MatchExportTask(
-                () -> new PrintWriter(outputFile, Charset.forName("utf-8")), exportConfiguration, 
+                () -> new PrintWriter(outputFile, Charset.forName("utf-8")), 
+                callback, exportConfiguration, 
                 toExportWithHeader, toExport));
     }
     

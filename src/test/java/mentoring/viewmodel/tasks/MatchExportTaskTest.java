@@ -33,27 +33,31 @@ class MatchExportTaskTest implements TestFramework<MatchExportTaskArgs>{
     Stream<DynamicNode> exportMatches_NPE(){
         return test(Stream.of(new MatchExportTaskArgs("unique test case", 2)),
                 "call() throws an NPE on null input", args -> {
-                    Class<NullPointerException> NPE = NullPointerException.class;
                     PersonMatchesViewModel[] vmsWithNull = 
                             new PersonMatchesViewModel[]{args.exportedVMs[0], null};
-                    Assertions.assertAll(assertConstructorThrowsNPE(null, args.configurationVM, args.firstExportedVM, 
-                                    args.exportedVMs),
-                            assertConstructorThrowsNPE(args.supplier, null, args.firstExportedVM, 
-                                    args.exportedVMs),
-                            assertConstructorThrowsNPE(args.supplier, args.configurationVM, null, 
-                                    args.exportedVMs),
-                            assertConstructorThrowsNPE(args.supplier, args.configurationVM, 
-                                    args.firstExportedVM, (PersonMatchesViewModel[]) null),
-                            assertConstructorThrowsNPE(args.supplier, args.configurationVM, 
-                                    args.firstExportedVM, vmsWithNull));
+                    Assertions.assertAll(
+                            assertConstructorThrowsNPE(null, args.callback, args.configurationVM, 
+                                    args.firstExportedVM, args.exportedVMs),
+                            assertConstructorThrowsNPE(args.supplier, null, args.configurationVM, 
+                                    args.firstExportedVM, args.exportedVMs),
+                            assertConstructorThrowsNPE(args.supplier, args.callback, null, 
+                                    args.firstExportedVM, args.exportedVMs),
+                            assertConstructorThrowsNPE(args.supplier, args.callback, 
+                                    args.configurationVM, null, args.exportedVMs),
+                            assertConstructorThrowsNPE(args.supplier, args.callback, 
+                                    args.configurationVM, args.firstExportedVM, 
+                                    (PersonMatchesViewModel[]) null),
+                            assertConstructorThrowsNPE(args.supplier, args.callback,
+                                    args.configurationVM, args.firstExportedVM, vmsWithNull));
                 });
     }
     
     static Executable assertConstructorThrowsNPE(MatchExportTask.WriterSupplier supplier, 
+            AbstractTask.TaskCompletionCallback<Void, MatchExportTask> callback,
             ConfigurationPickerViewModel<ResultConfiguration<Person,Person>> configurationVM, 
             PersonMatchesViewModel vm, PersonMatchesViewModel... extraVMs){
         return () -> Assertions.assertThrows(NullPointerException.class, 
-                () -> new MatchExportTask(supplier, configurationVM, vm, extraVMs));
+                () -> new MatchExportTask(supplier, callback, configurationVM, vm, extraVMs));
     }
     
     @TestFactory
@@ -132,6 +136,7 @@ class MatchExportTaskTest implements TestFramework<MatchExportTaskArgs>{
                 Mockito.mock(ConfigurationPickerViewModel.class);
         final PersonMatchesViewModel firstExportedVM = Mockito.mock(PersonMatchesViewModel.class);
         final PersonMatchesViewModel[] exportedVMs;
+        final AbstractTask.TaskCompletionCallback<Void, MatchExportTask> callback = args -> {};
         
         MatchExportTaskArgs(String testCase, int numberOfExtraVMs){
             super(testCase);
@@ -156,7 +161,8 @@ class MatchExportTaskTest implements TestFramework<MatchExportTaskArgs>{
         }
         
         MatchExportTask convert(){
-            return new MatchExportTask(supplier, configurationVM, firstExportedVM, exportedVMs);
+            return new MatchExportTask(supplier, callback, configurationVM, firstExportedVM, 
+                    exportedVMs);
         }
     }
 }

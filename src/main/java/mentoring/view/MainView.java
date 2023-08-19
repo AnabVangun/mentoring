@@ -17,6 +17,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javax.inject.Inject;
 import mentoring.view.base.StageBuilder;
+import mentoring.view.base.TaskCompletionAlert;
 import mentoring.view.base.ViewTools;
 import mentoring.view.datastructure.MatchesTableView;
 import mentoring.viewmodel.MainViewModel;
@@ -97,7 +98,7 @@ public class MainView implements Initializable {
                 if(parent != null){
                     chooser.setInitialDirectory(parent);
                 }
-                vm.exportMatches(outputFile,
+                vm.exportMatches(outputFile, TaskCompletionAlert.MATCH_EXPORT_ALERT,
                 tableViewController.getOneAtATimeMatchesViewModel(),
                 tableViewController.getBatchMatchesViewModel());
             }
