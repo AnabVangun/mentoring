@@ -1,11 +1,10 @@
 package mentoring.viewmodel.tasks;
 
 import java.util.Objects;
-import javafx.concurrent.Task;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 
-public class SingleMatchRemovalTask extends Task<Void> {
+public class SingleMatchRemovalTask extends AbstractTask<Void, SingleMatchRemovalTask> {
     
     private final PersonMatchesViewModel resultVM;
     private final PersonMatchViewModel toRemove;
@@ -16,6 +15,8 @@ public class SingleMatchRemovalTask extends Task<Void> {
      * @param toRemove the view model representing the match to remove
      */
     public SingleMatchRemovalTask(PersonMatchesViewModel resultVM, PersonMatchViewModel toRemove) {
+        //TODO refactor: move to View layer
+        super(task -> {});
         this.resultVM = Objects.requireNonNull(resultVM);
         this.toRemove = Objects.requireNonNull(toRemove);
     }
@@ -26,9 +27,12 @@ public class SingleMatchRemovalTask extends Task<Void> {
     }
 
     @Override
-    protected void succeeded() {
-        super.succeeded();
+    protected void specificActionOnSuccess() {
         resultVM.remove(toRemove);
     }
     
+    @Override
+    protected SingleMatchRemovalTask self(){
+        return this;
+    }
 }

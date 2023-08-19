@@ -3,7 +3,10 @@ package mentoring.viewmodel.tasks;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-import javafx.concurrent.Task;
+import static javafx.concurrent.Worker.State.FAILED;
+import static javafx.concurrent.Worker.State.READY;
+import static javafx.concurrent.Worker.State.SUCCEEDED;
+import javafx.scene.control.Alert;
 import mentoring.configuration.CriteriaConfiguration;
 import mentoring.datastructure.Person;
 import mentoring.match.Match;
@@ -11,7 +14,7 @@ import mentoring.match.MatchesBuilder;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 
-public class SingleMatchTask extends Task<Match<Person, Person>> {
+public class SingleMatchTask extends AbstractTask<Match<Person, Person>, SingleMatchTask> {
     
     private final PersonMatchesViewModel resultVM;
     private final ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> criteriaVM;
@@ -29,6 +32,17 @@ public class SingleMatchTask extends Task<Match<Person, Person>> {
     public SingleMatchTask(PersonMatchesViewModel resultVM, 
             ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> criteriaVM, 
             Person mentee, Person mentor) {
+        //TODO refactor: move to View layer
+        super(task -> {
+            State state = task.getState();
+            switch(state){
+                case READY, SUCCEEDED -> {/*no-op, excluded from default*/}//FIXME READY should be deleted (it erroneously fails a test)
+                case FAILED -> new Alert(Alert.AlertType.ERROR, 
+                        task.getException().getLocalizedMessage()).show();
+                default -> new Alert(Alert.AlertType.WARNING,
+                            "Callback was called before task was finished: " + state).show();
+            }
+        });
         this.resultVM = Objects.requireNonNull(resultVM);
         this.criteriaVM = Objects.requireNonNull(criteriaVM);
         this.mentee = Objects.requireNonNull(mentee);
@@ -42,8 +56,7 @@ public class SingleMatchTask extends Task<Match<Person, Person>> {
     }
 
     @Override
-    protected void succeeded() {
-        super.succeeded();
+    protected void specificActionOnSuccess() {
         resultVM.add(result);
     }
 
@@ -67,4 +80,8 @@ public class SingleMatchTask extends Task<Match<Person, Person>> {
         return solver.buildSingleMatch(mentee, mentor);
     }
     
+    @Override
+    protected SingleMatchTask self(){
+        return this;
+    }
 }

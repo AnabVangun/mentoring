@@ -39,6 +39,10 @@ public class TaskCompletionAlert<U,V extends AbstractTask<U,V>>
     public static final TaskCompletionAlert<Void, MatchExportTask> MATCH_EXPORT_ALERT = new 
         TaskCompletionAlert<>(Map.of(
                 State.SUCCEEDED, task -> new Alert(Alert.AlertType.INFORMATION, "Export completed"),
-                State.FAILED, task -> new Alert(Alert.AlertType.ERROR, 
-                        task.getException().getLocalizedMessage())));
+                State.FAILED, forgeErrorAlert(MatchExportTask.class)));
+    
+    private static <U, V extends AbstractTask<U,V>> Function<V, Alert> forgeErrorAlert(
+            Class<V> taskType){
+        return task -> new Alert(Alert.AlertType.ERROR, task.getException().getLocalizedMessage());
+    }
 }

@@ -2,7 +2,10 @@ package mentoring.viewmodel.tasks;
 
 import java.util.List;
 import java.util.Objects;
-import javafx.concurrent.Task;
+import static javafx.concurrent.Worker.State.FAILED;
+import static javafx.concurrent.Worker.State.READY;
+import static javafx.concurrent.Worker.State.SUCCEEDED;
+import javafx.scene.control.Alert;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.Person;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
@@ -12,7 +15,7 @@ import mentoring.viewmodel.datastructure.PersonListViewModel;
 /**
  * Class used to get persons and update an input view model.
  */
-public class PersonGetterTask extends Task<List<Person>> {
+public class PersonGetterTask extends AbstractTask<List<Person>, PersonGetterTask> {
     private final PersonListViewModel resultVM;
     private PersonConfiguration personConfiguration;
     private List<Person> persons;
@@ -28,6 +31,17 @@ public class PersonGetterTask extends Task<List<Person>> {
     public PersonGetterTask(PersonListViewModel resultVM, 
             FilePickerViewModel<List<Person>> personPicker,
             ConfigurationPickerViewModel<PersonConfiguration> configurationPicker) {
+        //TODO refactor: move to View layer
+        super(task -> {
+            State state = task.getState();
+            switch(state){
+                case READY, SUCCEEDED -> {/*no-op, excluded from default*/}//FIXME READY should be deleted (it erroneously fails a test)
+                case FAILED -> new Alert(Alert.AlertType.ERROR, 
+                        task.getException().getLocalizedMessage()).show();
+                default -> new Alert(Alert.AlertType.WARNING,
+                            "Callback was called before task was finished: " + state).show();
+            }
+        });
         this.resultVM = Objects.requireNonNull(resultVM);
         this.personPicker = Objects.requireNonNull(personPicker);
         this.configurationPicker = Objects.requireNonNull(configurationPicker);
@@ -41,14 +55,12 @@ public class PersonGetterTask extends Task<List<Person>> {
     }
 
     @Override
-    protected void succeeded() {
-        super.succeeded();
+    protected void specificActionOnSuccess() {
         resultVM.update(personConfiguration, persons);
     }
     
     @Override
-    protected void failed() {
-        super.failed();
-        throw new RuntimeException("Something went wrong in task", getException());
+    protected PersonGetterTask self(){
+        return this;
     }
 }

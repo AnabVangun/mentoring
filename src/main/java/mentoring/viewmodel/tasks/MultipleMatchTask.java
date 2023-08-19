@@ -6,7 +6,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javafx.concurrent.Task;
+import static javafx.concurrent.Worker.State.FAILED;
+import static javafx.concurrent.Worker.State.READY;
+import static javafx.concurrent.Worker.State.SUCCEEDED;
+import javafx.scene.control.Alert;
 import mentoring.configuration.CriteriaConfiguration;
 import mentoring.datastructure.Person;
 import mentoring.datastructure.PersonBuilder;
@@ -17,7 +20,7 @@ import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 
-public class MultipleMatchTask extends Task<Void> {
+public class MultipleMatchTask extends AbstractTask<Void, MultipleMatchTask> {
     
     private final PersonMatchesViewModel resultVM;
     private final PersonMatchesViewModel excludedMatchesVM;
@@ -40,6 +43,17 @@ public class MultipleMatchTask extends Task<Void> {
             List<Person> mentees, 
             List<Person> mentors) {
         //TODO check in tests that constructor fail on null input like the other tasks
+        //TODO refactor: move to View layer
+        super(task -> {
+            State state = task.getState();
+            switch(state){
+                case READY, SUCCEEDED -> {/*no-op, excluded from default*/}//FIXME READY should be deleted (it erroneously fails a test)
+                case FAILED -> new Alert(Alert.AlertType.ERROR, 
+                        task.getException().getLocalizedMessage()).show();
+                default -> new Alert(Alert.AlertType.WARNING,
+                            "Callback was called before task was finished: " + state).show();
+            }
+        });
         this.resultVM = Objects.requireNonNull(resultVM);
         this.excludedMatchesVM = excludedMatchesVM;
         this.criteriaVM = Objects.requireNonNull(criteriaVM);
@@ -65,8 +79,7 @@ public class MultipleMatchTask extends Task<Void> {
     }
 
     @Override
-    protected void succeeded() {
-        super.succeeded();
+    protected void specificActionOnSuccess() {
         resultVM.setAll(results);
     }
 
@@ -105,5 +118,10 @@ public class MultipleMatchTask extends Task<Void> {
         solver.withNecessaryCriteria(criteriaConfiguration.getNecessaryCriteria())
                 .withPlaceholderPersons(defaultMentee, defaultMentor);
         return solver.build();
+    }
+    
+    @Override
+    protected MultipleMatchTask self(){
+        return this;
     }
 }
