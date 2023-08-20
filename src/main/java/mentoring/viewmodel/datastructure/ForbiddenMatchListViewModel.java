@@ -41,4 +41,18 @@ public class ForbiddenMatchListViewModel{
         return (mentee, mentor) -> (! (menteeToForbiddenMentors.containsKey(mentee)
                 && menteeToForbiddenMentors.get(mentee).contains(mentor)));
     }
+    
+    public boolean removeForbiddenMatch(ForbiddenMatchViewModel forbiddenVM){
+        Person mentee = forbiddenVM.getMentee();
+        if(! menteeToForbiddenMentors.containsKey(mentee)){
+            return false;
+        }
+        Person mentor = forbiddenVM.getMentor();
+        Set<Person> forbiddenMentors = menteeToForbiddenMentors.get(mentee);
+        boolean result = forbiddenMentors.remove(mentor);
+        if(forbiddenMentors.isEmpty()){
+            menteeToForbiddenMentors.remove(mentee);
+        }
+        return result && modifiableItems.remove(forbiddenVM);
+    }
 }

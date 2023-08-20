@@ -19,7 +19,15 @@ public class ForbiddenMatchViewModel {
         return mentee.getFullName();
     }
     
+    Person getMentee(){
+        return mentee;
+    }
+    
     public String getMentorName(){
         return mentor.getFullName();
+    }
+    
+    Person getMentor(){
+        return mentor;
     }
 }

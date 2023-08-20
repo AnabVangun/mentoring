@@ -188,6 +188,11 @@ public class MainViewModel {
         return matchConfiguration;
     }
     
+    //TODO document
+    public ForbiddenMatchListViewModel getForbiddenMatches(){
+        return extraForbiddenMatches;
+    }
+    
     private ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> 
             forgeResultConfigurationPickerViewModel(){
         //TODO refactor forgeXXPickerViewModel to emphasize structure

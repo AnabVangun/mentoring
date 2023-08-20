@@ -14,6 +14,7 @@
           <Menu mnemonicParsing="false" text="File">
             <items>
               <MenuItem fx:id="configureMenuItem" mnemonicParsing="false"/>
+              <MenuItem fx:id="forbiddenMatchesMenuItem" mnemonicParsing="false"/>
             </items>
           </Menu>
         </menus>

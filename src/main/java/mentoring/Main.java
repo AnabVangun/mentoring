@@ -9,8 +9,7 @@ public class Main {
     }
     /**
      * TODO: link GUI to code.
-     * 2. Add "delete forbidden match"
-     * 2b. Handle TODOs related to forbidden matches
+     * 2. Handle TODOs related to forbidden matches
      * 3. Fix header of PersonListViewModel/PersonViewModel
      * 4. make window pretty
      * 5. Fix alerting logic: Alert is a View class, not a ViewModel one. Need to handle AbstractTask TODOs

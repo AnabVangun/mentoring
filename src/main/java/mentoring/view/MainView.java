@@ -19,10 +19,12 @@ import javax.inject.Inject;
 import mentoring.view.base.StageBuilder;
 import mentoring.view.base.TaskCompletionAlert;
 import mentoring.view.base.ViewTools;
+import mentoring.view.datastructure.ForbiddenMatchesView;
 import mentoring.view.datastructure.MatchesTableView;
 import mentoring.viewmodel.MainViewModel;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.base.FilePickerViewModel;
+import mentoring.viewmodel.datastructure.ForbiddenMatchListViewModel;
 import mentoring.viewmodel.datastructure.PersonType;
 
 public class MainView implements Initializable {
@@ -45,6 +47,8 @@ public class MainView implements Initializable {
     private Button exportButton;
     @FXML
     private MenuItem configureMenuItem;
+    @FXML
+    private MenuItem forbiddenMatchesMenuItem;
     
     @Inject
     MainView(MainViewModel vm){
@@ -66,6 +70,8 @@ public class MainView implements Initializable {
         configureButtonToExportMatches(exportButton, "Export matches");
         configureMenuItem.setText("Configure");
         configureMenuItem.setOnAction(event -> showConfigurationPicker());
+        forbiddenMatchesMenuItem.setText("Forbidden matches");
+        forbiddenMatchesMenuItem.setOnAction(event -> showForbiddenMatches());
     }
     
     private void configureButtonToMakeMatches(Button button, String buttonCaption){
@@ -157,5 +163,23 @@ public class MainView implements Initializable {
             builder.withModality(Modality.APPLICATION_MODAL, runButton.getScene().getWindow());
         }
         builder.build(node).showAndWait();
+    }
+    
+    private void showForbiddenMatches(){
+        //TODO: refactor: emphasize structure and operations.
+        FXMLLoader loader = new FXMLLoader(getClass()
+                .getResource("/mentoring/forbiddenMatchesView.fxml"));
+        Parent node = null;
+        try {
+            node = loader.load();
+        } catch (IOException e){
+            throw new UncheckedIOException(e);
+        }
+        ForbiddenMatchesView view = 
+                (ForbiddenMatchesView) loader.getController();
+        ForbiddenMatchListViewModel forbiddenMatchesViewModel = vm.getForbiddenMatches();
+        view.setViewModel(forbiddenMatchesViewModel);
+        StageBuilder builder = new StageBuilder().withTitle("Forbidden matches");
+        builder.build(node).show();
     }
 }

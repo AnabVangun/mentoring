@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.VBox?>
+
+
+<VBox xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mentoring.view.datastructure.ForbiddenMatchesView">
+   <children>
+       <TableView fx:id="forbiddenMatchesTable" />
+       <Button fx:id="forbiddenMatchRemovalButton" mnemonicParsing="false" />
+   </children>
+</VBox>
