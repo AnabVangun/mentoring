@@ -152,11 +152,11 @@ class FilePickerViewModelTest implements TestFramework<FilePickerViewModelArgs> 
     
     @TestFactory
     Stream<DynamicNode> getCurrentFileDirectory_sameReturnValue(){
-        return test("getSeCurrentFile() always return the same observable", args -> {
+        return test("getSeCurrentFileDirectory() always return the same observable", args -> {
             DummyFilePickerViewModel viewModel = args.convert();
-            ReadOnlyObjectProperty<File> expected = viewModel.getCurrentFile();
+            ReadOnlyObjectProperty<File> expected = viewModel.getCurrentFileDirectory();
             viewModel.setCurrentFile(OTHER_FILE);
-            Assertions.assertSame(expected, viewModel.getCurrentFile());
+            Assertions.assertSame(expected, viewModel.getCurrentFileDirectory());
         });
     }
     
