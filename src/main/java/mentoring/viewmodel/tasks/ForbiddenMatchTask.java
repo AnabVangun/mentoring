@@ -9,7 +9,7 @@ import mentoring.datastructure.Person;
 import mentoring.viewmodel.datastructure.ForbiddenMatchListViewModel;
 
 /**
- * TODO document and test
+ * Class used to add forbidden matches to a {@link ForbiddenMatchListViewModel}.
  */
 public class ForbiddenMatchTask extends AbstractTask<Void, ForbiddenMatchTask>{
     private final ForbiddenMatchListViewModel viewModel;
@@ -17,7 +17,6 @@ public class ForbiddenMatchTask extends AbstractTask<Void, ForbiddenMatchTask>{
     private final Person mentor;
     
     public ForbiddenMatchTask(ForbiddenMatchListViewModel viewModel, Person mentee, Person mentor){
-        //TODO check in tests that constructor fail on null input like the other tasks
         //TODO refactor: move to View layer
         super(task -> {
             State state = task.getState();
