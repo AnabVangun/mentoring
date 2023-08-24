@@ -2,7 +2,10 @@ package mentoring.view.datastructure;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.function.BiConsumer;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -16,11 +19,10 @@ import mentoring.viewmodel.datastructure.ForbiddenMatchViewModel;
  * View responsible for displaying a {@link ForbiddenMatchListViewModel} object.
  */
 public class ForbiddenMatchesView implements Initializable{
-    //TODO document class
     @FXML
     private TableView<ForbiddenMatchViewModel> forbiddenMatchesTable;
     @FXML
-    private Button forbiddenMatchRemovalButton;
+    private Button selectedButton;
     
     @Inject
     public ForbiddenMatchesView(){}
@@ -34,13 +36,23 @@ public class ForbiddenMatchesView implements Initializable{
         TableColumn<ForbiddenMatchViewModel, String> mentorColumn = new TableColumn<>("Mentor");
         mentorColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getMentorName()));
         forbiddenMatchesTable.getColumns().setAll(menteeColumn, mentorColumn);
+        selectedButton.setText("Allow match");
     }
     
-    public void setViewModel(ForbiddenMatchListViewModel vm){
-        forbiddenMatchesTable.setItems(vm.getContent());
-        //TODO move action to ConcurrencyHandler
-        forbiddenMatchRemovalButton.setText("Allow match");
-        forbiddenMatchRemovalButton.setOnAction(event -> 
-                vm.removeForbiddenMatch(forbiddenMatchesTable.getSelectionModel().getSelectedItem()));
+    /**
+     * Set the ViewModel underlying this model.
+     * @param viewModel the new ViewModel to use
+     */
+    public void setViewModel(ForbiddenMatchListViewModel viewModel){
+        forbiddenMatchesTable.setItems(viewModel.getContent());
+    }
+    
+    /**
+     * Set the handler managing the selected item button.
+     * @param handler to attach to the selected item button
+     */
+    public void setRemovalButtonAction(BiConsumer<ActionEvent, ForbiddenMatchViewModel> handler){
+        selectedButton.setOnAction(event -> handler.accept(event, 
+                forbiddenMatchesTable.getSelectionModel().getSelectedItem()));
     }
 }

@@ -37,8 +37,10 @@ import mentoring.viewmodel.tasks.SingleMatchRemovalTask;
 import mentoring.viewmodel.tasks.SingleMatchTask;
 import mentoring.viewmodel.base.function.FileParser;
 import mentoring.viewmodel.datastructure.ForbiddenMatchListViewModel;
+import mentoring.viewmodel.datastructure.ForbiddenMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonType;
 import mentoring.viewmodel.tasks.AbstractTask;
+import mentoring.viewmodel.tasks.ForbiddenMatchRemovalTask;
 import mentoring.viewmodel.tasks.ForbiddenMatchTask;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -149,9 +151,15 @@ public class MainViewModel {
                 toExportWithHeader, toExport));
     }
     
+    //TODO document
     public Future<?> addForbiddenMatch(PersonViewModel menteeVM, PersonViewModel mentorVM){
         return matchMaker.submit(new ForbiddenMatchTask(extraForbiddenMatches, 
                 menteeVM.getPerson(), mentorVM.getPerson()));
+    }
+    
+    //TODO document
+    public Future<?> removeForbiddenMatch(ForbiddenMatchViewModel toRemove){
+        return matchMaker.submit(new ForbiddenMatchRemovalTask(extraForbiddenMatches, toRemove));
     }
     
     /**

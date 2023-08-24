@@ -8,6 +8,6 @@
 <VBox xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mentoring.view.datastructure.ForbiddenMatchesView">
    <children>
        <TableView fx:id="forbiddenMatchesTable" />
-       <Button fx:id="forbiddenMatchRemovalButton" mnemonicParsing="false" />
+       <Button fx:id="selectedButton" mnemonicParsing="false" />
    </children>
 </VBox>

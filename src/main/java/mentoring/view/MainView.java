@@ -179,6 +179,7 @@ public class MainView implements Initializable {
                 (ForbiddenMatchesView) loader.getController();
         ForbiddenMatchListViewModel forbiddenMatchesViewModel = vm.getForbiddenMatches();
         view.setViewModel(forbiddenMatchesViewModel);
+        view.setRemovalButtonAction((event, viewModel) -> vm.removeForbiddenMatch(viewModel));
         StageBuilder builder = new StageBuilder().withTitle("Forbidden matches");
         builder.build(node).show();
     }
