@@ -25,7 +25,7 @@ import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 
 public class MultipleMatchTask extends AbstractTask<Void, MultipleMatchTask> {
-    
+    //TODO this class has become too complex, refactor to simplify and refactor test class accordingly
     private final PersonMatchesViewModel resultVM;
     private final PersonMatchesViewModel excludedMatchesVM;
     private final ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> criteriaVM;
@@ -37,9 +37,10 @@ public class MultipleMatchTask extends AbstractTask<Void, MultipleMatchTask> {
     /**
      * Initialise a MultipleMatchTask object.
      * @param resultVM the ViewModel that will be updated when the task completes
-     * @param excludedMatchesVM the optional ViewModel encapsulating matches that should be excluded
+     * @param excludedMatchesVM an optional ViewModel encapsulating matches that should be excluded
      *      from the match-making process, this argument MAY be null
      * @param criteriaVM the ViewModel that will be used to get the configuration
+     * @param forbiddenMatchesVM an optional ViewModel encapsulating a list of forbidden matches
      * @param mentees the list of mentees to match
      * @param mentors the list of mentors to match
      */
@@ -48,8 +49,6 @@ public class MultipleMatchTask extends AbstractTask<Void, MultipleMatchTask> {
             ForbiddenMatchListViewModel forbiddenMatchesVM,
             List<Person> mentees, 
             List<Person> mentors) {
-        //TODO check in tests that constructor fail on null input like the other tasks
-        //TODO document and test forbiddenMatchesVM
         //TODO refactor: move to View layer
         super(task -> {
             State state = task.getState();
@@ -64,7 +63,8 @@ public class MultipleMatchTask extends AbstractTask<Void, MultipleMatchTask> {
         this.resultVM = Objects.requireNonNull(resultVM);
         this.excludedMatchesVM = excludedMatchesVM;
         this.criteriaVM = Objects.requireNonNull(criteriaVM);
-        this.forbiddenMatchesVM = Objects.requireNonNull(forbiddenMatchesVM);
+        this.forbiddenMatchesVM = Objects.requireNonNullElseGet(forbiddenMatchesVM, 
+                () -> new ForbiddenMatchListViewModel());
         this.mentees = Objects.requireNonNull(mentees);
         this.mentors = Objects.requireNonNull(mentors);
     }
