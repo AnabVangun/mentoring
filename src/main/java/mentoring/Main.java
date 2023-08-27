@@ -9,10 +9,10 @@ public class Main {
     }
     /**
      * TODO: link GUI to code.
-     * 2. Handle TODOs related to forbidden matches
      * 3. Fix header of PersonListViewModel/PersonViewModel
      * 4. make window pretty
      * 5. Fix alerting logic: Alert is a View class, not a ViewModel one. Need to handle AbstractTask TODOs
+     * 6. Handle refactoring TODOs
      * 9a. Add global configuration parameters for magic numbers.
      * 9b. Internationalize GUI
      * 9e. Add save/load button to load configuration (including forbidden matches) and results from a file

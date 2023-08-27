@@ -151,13 +151,22 @@ public class MainViewModel {
                 toExportWithHeader, toExport));
     }
     
-    //TODO document
+    /**
+     * Declare a match between a mentee and a mentor as forbidden.
+     * @param menteeVM the ViewModel encapsulating the mentee that must not be matched
+     * @param mentorVM the ViewModel encapsulating the mentor that must not be matched
+     * @return a Future object that can be used to control the execution and completion of the task.
+     */
     public Future<?> addForbiddenMatch(PersonViewModel menteeVM, PersonViewModel mentorVM){
         return matchMaker.submit(new ForbiddenMatchTask(extraForbiddenMatches, 
                 menteeVM.getPerson(), mentorVM.getPerson()));
     }
     
-    //TODO document
+    /**
+     * Declare a forbidden match between a mentee and a mentor as allowed.
+     * @param toRemove the ViewModel encapsulating the forbidden match to allow
+     * @return a Future object that can be used to control the execution and completion of the task.
+     */
     public Future<?> removeForbiddenMatch(ForbiddenMatchViewModel toRemove){
         return matchMaker.submit(new ForbiddenMatchRemovalTask(extraForbiddenMatches, toRemove));
     }
@@ -171,32 +180,54 @@ public class MainViewModel {
         return matchMaker.submit(new ConfigurationGetterTask<>(getResultConfiguration(), resultVMs));
     }
     
-    //TODO document
+    /**
+     * Get the ViewModel responsible for picking the {@link ResultConfiguration} used to display 
+     * the matches.
+     * @return a ConfigurationPickerViewModel specialised for ResultConfiguration
+     */
     public ConfigurationPickerViewModel<ResultConfiguration<Person,Person>> getResultConfiguration(){
         return resultConfiguration;
     }
     
-    //TODO document
+    /**
+     * Get the ViewModel responsible for picking the {@link ResultConfiguration} used to export
+     * the matches.
+     * @return a ConfigurationPickerViewModel specialised for ResultConfiguration
+     */
     public ConfigurationPickerViewModel<ResultConfiguration<Person,Person>> getExportConfiguration(){
         return exportConfiguration;
     }
     
-    //TODO document
+    /**
+     * Get the ViewModel responsible for picking a list of {@link Person}.
+     * @param type of persons selected by the ViewModel
+     * @return a FilePickerViewModel specialised for lists of Person
+     */
     public FilePickerViewModel<List<Person>> getPersonPicker(PersonType type){
         return personPickers.get(type);
     }
     
-    //TODO document
+    /**
+     * Get the ViewModel responsible for picking the {@link PersonConfiguration}.
+     * @param type of persons selected by the ViewModel
+     * @return a ConfigurationPickerViewModel specialised for PersonConfiguration
+     */
     public ConfigurationPickerViewModel<PersonConfiguration> getPersonConfiguration(PersonType type){
         return personConfigurations.get(type);
     }
     
-    //TODO document
+    /**
+     * Get the ViewModel responsible for picking the {@link CriteriaConfiguration}.
+     * @return a ConfigurationPickerViewModel specialised for CriteriaConfiguration
+     */
     public ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> getMatchConfiguration(){
         return matchConfiguration;
     }
     
-    //TODO document
+    /**
+     * Get the ViewModel encapsulating the list of matches declared as forbidden.
+     * @return a ViewModel encapsulating forbidden matches
+     */
     public ForbiddenMatchListViewModel getForbiddenMatches(){
         return extraForbiddenMatches;
     }
