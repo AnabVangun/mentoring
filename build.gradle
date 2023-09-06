@@ -1,16 +1,22 @@
 plugins {
     id 'org.openjfx.javafxplugin' version '0.0.13'
-    id 'org.beryx.runtime' version '1.12.7' //version 1.13 is bugged and fails to build
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 //apply plugin: 'java' //included in 'application'
 apply plugin: 'jacoco'
-//apply plugin: 'application' //included in 'org.beryx.runtime'
+apply plugin: 'application'
 
 mainClassName = 'mentoring.Main'
 version '2.0.0-alpha'
 
 repositories {
     mavenCentral()
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'mentoring.Main'
+    }
 }
 
 test {
@@ -21,11 +27,6 @@ compileJava {
 }
 compileTestJava {
     options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-}
-runtime {
-    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
-    //TODO investigate the plugins that are actually needed
-    //FIXME: the resulting .bat on Windows cannot find the JAVA_HOME system property
 }
 
 javafx {
@@ -43,6 +44,8 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
     testImplementation 'org.mockito:mockito-core:4.11.0'
     testImplementation "org.testfx:testfx-junit5:4.0.16-alpha"
+    runtimeOnly "org.openjfx:javafx-graphics:$javafx.version:win"
+    runtimeOnly "org.openjfx:javafx-graphics:$javafx.version:mac"
 }
 sourceSets {
     main {
