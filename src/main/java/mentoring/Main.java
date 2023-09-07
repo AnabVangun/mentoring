@@ -9,8 +9,8 @@ public class Main {
     }
     /**
      * TODO: link GUI to code.
-     * 3. Fix header of PersonListViewModel/PersonViewModel
      * 3a. When a match is selected, select the corresponding mentee and mentor
+     * 3aa. Allow wrapping text in columns
      * 3b. When configuration is changed, flush forbidden matches and manual matches
      * 4. make window pretty
      * 5. Fix alerting logic: Alert is a View class, not a ViewModel one. Need to handle AbstractTask TODOs

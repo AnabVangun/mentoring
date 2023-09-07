@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 
 class MultiplePropertyNameTest extends PropertyNameTest{
+    //TODO refactor: this class should not extend PropertyNameTest
     @Override
     public Stream<PropertyArgs<?,?>> argumentsSupplier() {
         return Stream.of(
@@ -58,6 +59,39 @@ class MultiplePropertyNameTest extends PropertyNameTest{
         return test("buildMap() returns the expected map", args -> 
                 Assertions.assertEquals(args.getExpectedResult(),
                         ((MultiplePropertyName) args.convert()).buildMap(args.getMapInput())));
+    }
+    
+    @Override
+    @TestFactory
+    Stream<DynamicNode> getStringRepresentation_expectedValue(){
+        return test(Stream.of(new MapPropertyArgs<>("Simple property", "propriété", "headerName", 
+                        PropertyType.STRING, PropertyType.STRING,
+                        entries -> Map.of(entries[0], entries[entries.length-1]),
+                        new String[]{"first", "second", "third"}, Map.of("first","third"))), 
+                "getStringRepresentation() returns the expected value",
+                args -> {
+                    PropertyName<?> property = args.convert();
+                    Person person = new PersonBuilder()
+                            .withPropertyMap(property.getName(), args.expectedResult).build();
+                    Assertions.assertEquals(Map.of("first", "third").toString(), 
+                            property.getStringRepresentation(person));
+                });
+    }
+    
+    @Override
+    @TestFactory
+    @SuppressWarnings("ThrowableResultIgnored")
+    Stream<DynamicNode> getStringRepresentation_NPE(){
+        return test(Stream.of(new MapPropertyArgs<>("Simple property", "propriété", "headerName", 
+                        PropertyType.STRING, PropertyType.STRING,
+                        entries -> Map.of(entries[0], entries[entries.length-1]),
+                        new String[]{"first", "second", "third"}, Map.of("first","third"))), 
+                "getStringRepresentation() returns the expected value",
+                args -> {
+                    PropertyName<?> property = args.convert();
+                    Assertions.assertThrows(NullPointerException.class, 
+                            () -> property.getStringRepresentation(null));
+                });
     }
     
     static class MapPropertyArgs<K,V> extends PropertyArgs<K, V>{

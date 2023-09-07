@@ -1,9 +1,10 @@
 package mentoring.viewmodel.datastructure;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import javafx.beans.InvalidationListener;
+import java.util.stream.Collectors;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import mentoring.configuration.PersonConfiguration;
@@ -16,14 +17,13 @@ import mentoring.viewmodel.base.TabularDataViewModel;
  */
 public class PersonListViewModel extends SimpleObservable 
         implements TabularDataViewModel<PersonViewModel>{
-    //TODO once PersonViewModel represents more than just the name, fix this initialisation.
-    private final List<String> headerContent = List.of("Name");
+    private final List<String> modifiableHeaderContent = new ArrayList<>();
+    private final List<String> headerContent = Collections.unmodifiableList(modifiableHeaderContent);
     private final ObservableList<PersonViewModel> items = 
             FXCollections.observableArrayList();
     private List<Person> pendingItems;
     private final List<Person> underlyingData = new ArrayList<>();
     private PersonConfiguration configuration = null;
-    private final List<InvalidationListener> listeners = new ArrayList<>();
     private boolean invalidated = false;
     
     /**
@@ -34,7 +34,6 @@ public class PersonListViewModel extends SimpleObservable
      */
     @Override
     public List<String> getHeaders(){
-        //TODO: check if lazy update actually does anything useful
         updateIfNecessary();
         return headerContent;
     }
@@ -49,7 +48,7 @@ public class PersonListViewModel extends SimpleObservable
     }
     
     public List<Person> getUnderlyingData(){
-        //TODO: there might be a layer issue, a viewModel should not expose data objects.
+        //TODO: there might be a layer issue, a viewModel should not publicly expose data objects.
         updateIfNecessary();
         return underlyingData;
     }
@@ -83,8 +82,15 @@ public class PersonListViewModel extends SimpleObservable
     }
     
     private void prepareHeader(PersonConfiguration configuration) {
-        //TODO: once PersonViewModel represent more than just the name, fix this method.
         this.configuration = configuration;
+        this.modifiableHeaderContent.clear();
+        this.modifiableHeaderContent.add("Name");
+        this.modifiableHeaderContent.addAll(
+                configuration.getPropertiesNames().stream().map(prop -> prop.getName())
+                        .collect(Collectors.toList()));
+        this.modifiableHeaderContent.addAll(
+                configuration.getMultiplePropertiesNames().stream().map(prop -> prop.getName())
+                        .collect(Collectors.toList()));
     }
     
     private void setUnderlyingData(List<Person> matches) {

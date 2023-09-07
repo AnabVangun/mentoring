@@ -35,4 +35,9 @@ public class SetPropertyName<K> extends MultiplePropertyName<K,Integer> {
         return input -> Arrays.stream(input).collect(Collectors.toMap(keyType::parse, 
                 args -> 0));
     }
+    
+    @Override
+    public String getStringRepresentation(Person person){
+        return person.getPropertyAsSetOf(getName(), getType().getType()).toString();
+    }
 }

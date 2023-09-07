@@ -20,9 +20,9 @@ class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyArgs<?,
                 new PropertyArgs<>("Property with empty name", "", "header_name", 
                         PropertyType.BOOLEAN),
                 new PropertyArgs<>("Property with empty headerName", "name", "", 
-                        PropertyType.STRING),
+                        PropertyType.INTEGER),
                 new PropertyArgs<>("Property with empty names", "", "", 
-                        PropertyType.INTEGER)
+                        PropertyType.BOOLEAN)
             );
     }
     
@@ -44,12 +44,14 @@ class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyArgs<?,
     }
     
     @TestFactory
+    @SuppressWarnings("AssertEqualsBetweenInconvertibleTypes")
     Stream<DynamicNode> getType(){
         return test("getType()", args -> Assertions.assertEquals(args.expectedType,
                 args.convert().getType()));
     }
     
     @TestFactory
+    @SuppressWarnings("AssertEqualsBetweenInconvertibleTypes")
     Stream<DynamicNode> equals_equalValue(){
         return test("equals() returns true on equal values", 
                 args -> Assertions.assertEquals(args.convert(), args.convert()));
@@ -85,6 +87,29 @@ class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyArgs<?,
                     PropertyName<?> property = args.convert();
                     int first = property.hashCode();
                     Assertions.assertEquals(first, property.hashCode());
+                });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> getStringRepresentation_expectedValue(){
+        return test(Stream.of(new PropertyArgs<>("specific test case", "property", "property", 
+                PropertyType.INTEGER)), "getStringRepresentation() returns the expected value",
+                args -> {
+                    PropertyName<?> property = args.convert();
+                    Person person = new PersonBuilder().withProperty(property.getName(), 3).build();
+                    Assertions.assertEquals("3", property.getStringRepresentation(person));
+                });
+    }
+    
+    @TestFactory
+    @SuppressWarnings("ThrowableResultIgnored")
+    Stream<DynamicNode> getStringRepresentation_NPE(){
+        return test(Stream.of(new PropertyArgs<>("specific test case", "property", "property", 
+                PropertyType.INTEGER)), "getStringRepresentation() returns the expected value",
+                args -> {
+                    PropertyName<?> property = args.convert();
+                    Assertions.assertThrows(NullPointerException.class, 
+                            () -> property.getStringRepresentation(null));
                 });
     }
     

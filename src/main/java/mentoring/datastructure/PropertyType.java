@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  * @param <T> class of the objects corresponding to this type.
  */
 public final class PropertyType<T> {
-    private static final Set<String> TRUE_VALUES = Set.of("oui","vrai","yes","true");
+    private static final Set<String> TRUE_VALUES = Set.of("oui","vrai","yes","true","True");
     
     public final static PropertyType<Boolean> BOOLEAN = 
             new PropertyType<>(Boolean.class, TRUE_VALUES::contains);

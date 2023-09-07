@@ -27,6 +27,7 @@ public final class PersonBuilder {
     }
     
     public <T> PersonBuilder withProperty(String property, T value){
+        //TODO T is not used, replace it with Object
         properties.put(Objects.requireNonNull(property), Objects.requireNonNull(value));
         return this;
     }

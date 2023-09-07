@@ -54,4 +54,14 @@ public class PropertyName<T> {
     public int hashCode(){
         return (name.hashCode() * 31 + headerName.hashCode()) * 31 + type.hashCode();
     }
+    
+    /**
+     * Get a String representation for the value associated with this property.
+     * @param person containing the value
+     * @return a String representation of the value
+     * @throws IllegalArgumentException if the Person does not contain the property
+     */
+    public String getStringRepresentation(Person person){
+        return person.getPropertyAs(name, type.getType()).toString();
+    }
 }

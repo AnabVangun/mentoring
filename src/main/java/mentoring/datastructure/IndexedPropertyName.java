@@ -1,5 +1,6 @@
 package mentoring.datastructure;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -40,5 +41,16 @@ public class IndexedPropertyName<K> extends MultiplePropertyName<K,Integer> {
                     }
                     return map;  
         };
+    }
+    
+    @Override
+    public String getStringRepresentation(Person person){
+        Map<K, Integer> map =  person.getPropertyAsMapOf(getName(), getType().getType(), 
+                getValueType().getType());
+        Object[] list = new Object[map.size()];
+        for(Map.Entry<K, Integer> entry : map.entrySet()){
+            list[entry.getValue()] = entry.getKey();
+        }
+        return Arrays.toString(list);
     }
 }

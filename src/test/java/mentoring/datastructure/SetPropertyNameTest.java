@@ -1,9 +1,13 @@
 package mentoring.datastructure;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DynamicNode;
+import org.junit.jupiter.api.TestFactory;
 
 class SetPropertyNameTest extends MultiplePropertyNameTest{
     @Override
@@ -23,6 +27,40 @@ class SetPropertyNameTest extends MultiplePropertyNameTest{
                 new SetPropertyArgs<>("Property with empty names", "", "", 
                         PropertyType.INTEGER, new String[]{}, Set.of())
             );
+    }
+    
+    @Override
+    @TestFactory
+    Stream<DynamicNode> getStringRepresentation_expectedValue(){
+        return test(Stream.of(
+                new SetPropertyArgs<>("specific test case", "propriété", "headerName", 
+                        PropertyType.STRING, new String[]{"value"}, Set.of("value"))), 
+                "getStringRepresentation() returns the expected value",
+                args -> {
+                    PropertyName<?> property = args.convert();
+                    Person person = new PersonBuilder()
+                            .withPropertyMap(property.getName(), args.expectedResult).build();
+                    Assertions.assertEquals(Set.of("value").toString(), 
+                            property.getStringRepresentation(person));
+                });
+    }
+    
+    @Override
+    @TestFactory
+    @SuppressWarnings("ThrowableResultIgnored")
+    Stream<DynamicNode> getStringRepresentation_NPE(){
+        Set<String> expected = new LinkedHashSet<>();
+        expected.add("first");
+        expected.add("second");
+        return test(Stream.of(
+                new SetPropertyArgs<>("Simple property", "propriété", "headerName", 
+                        PropertyType.STRING, new String[]{"first", "second"}, expected)), 
+                "getStringRepresentation() returns the expected value",
+                args -> {
+                    PropertyName<?> property = args.convert();
+                    Assertions.assertThrows(NullPointerException.class, 
+                            () -> property.getStringRepresentation(null));
+                });
     }
     
     static class SetPropertyArgs<K> extends MapPropertyArgs<K,Integer>{

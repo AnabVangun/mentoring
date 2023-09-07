@@ -1,11 +1,13 @@
 package mentoring.viewmodel.datastructure;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.IndexedPropertyName;
+import mentoring.datastructure.MultiplePropertyName;
 import mentoring.datastructure.Person;
 import mentoring.datastructure.PersonBuilder;
 import mentoring.datastructure.PropertyName;
@@ -29,7 +31,6 @@ class PersonListViewModelTest extends ObservableTest<PersonListViewModel,
     @TestFactory
     Stream<DynamicNode> update_setHeader(){
         return test("update() sets header", args -> {
-            //TODO when header is properly implemented, update test
             PersonListViewModel viewModel = new PersonListViewModel();
             viewModel.update(args.getSimpleConfiguration(), List.of());
             Assertions.assertEquals(args.expectedHeader(), viewModel.getHeaders());
@@ -39,7 +40,6 @@ class PersonListViewModelTest extends ObservableTest<PersonListViewModel,
     @TestFactory
     Stream<DynamicNode> update_setHeader_repeated(){
         return test("repeated calls to update() properly sets header", args -> {
-            //TODO when header is properly implemented, update test
             PersonListViewModel viewModel = new PersonListViewModel();
             viewModel.update(new PersonConfiguration("dummy configuration", 
                     Set.of(),
@@ -149,15 +149,19 @@ class PersonListViewModelTest extends ObservableTest<PersonListViewModel,
         }
         
         PersonConfiguration getSimpleConfiguration(){
+            Set<MultiplePropertyName<?,?>> multipleProperties = new LinkedHashSet<>();
+            multipleProperties.add(
+                    new IndexedPropertyName<>("indexed", "indexed header", PropertyType.BOOLEAN));
+            multipleProperties.add(
+                    new SetPropertyName<>("set", "set header", PropertyType.STRING));
             return new PersonConfiguration("configuration", 
                     Set.of(new PropertyName<>("simple", "simple header", PropertyType.INTEGER)), 
-                    Set.of(new IndexedPropertyName<>("indexed", "indexed header", PropertyType.BOOLEAN),
-                            new SetPropertyName<>("set", "set header", PropertyType.STRING)),
+                    multipleProperties,
                     "|", "%s", List.of("simple header"));
         }
         
         List<String> expectedHeader(){
-            return List.of("Name");
+            return List.of("Name","simple","indexed","set");
         }
         
         void assertItemsAsExpected(PersonListViewModel viewModel, List<Person> data, 

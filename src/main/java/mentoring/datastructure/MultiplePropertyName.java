@@ -9,6 +9,12 @@ import java.util.function.Function;
  * @param <V> type of the value in the key-value pairs stored in the property
  */
 public class MultiplePropertyName<K,V> extends PropertyName<K>{
+    /*FIXME: refactor MultiplePropertyName should not extend but contain a PropertyName to avoid 
+    complications with equals.
+    Do the same for MultiplePropertyNameBuilder
+    Other option: make SimplePropertyName and MultiplePropertyName be two implementations of a 
+    common PropertyName interface
+    */
     private final PropertyType<V> valueType;
     private final Function<String[], Map<K, V>> parser;
     
@@ -40,6 +46,12 @@ public class MultiplePropertyName<K,V> extends PropertyName<K>{
     /** Returns the type of the property values. */
     public PropertyType<V> getValueType(){
         return valueType;
+    }
+    
+    @Override
+    public String getStringRepresentation(Person person){
+        return person.getPropertyAsMapOf(getName(), getType().getType(), valueType.getType())
+                .toString();
     }
     
     @Override
