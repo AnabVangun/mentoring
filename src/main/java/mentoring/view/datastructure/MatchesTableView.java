@@ -106,8 +106,10 @@ public class MatchesTableView implements Initializable {
         mentorVM.addListener(new WeakInvalidationListener(mentorListener));
         matchPane.getDividers().get(0).positionProperty()
                 .bindBidirectional(personPane.getDividers().get(0).positionProperty());
-        computedTable.getSelectionModel().selectedItemProperty().addListener(matchSelectionListener);
-        manualTable.getSelectionModel().selectedItemProperty().addListener(matchSelectionListener);
+        computedTable.getSelectionModel().selectedItemProperty()
+                .addListener(new WeakInvalidationListener(matchSelectionListener));
+        manualTable.getSelectionModel().selectedItemProperty()
+                .addListener(new WeakInvalidationListener(matchSelectionListener));
     }
     
     private TableView<?> selectMatchTableToClear(PersonMatchViewModel match){
