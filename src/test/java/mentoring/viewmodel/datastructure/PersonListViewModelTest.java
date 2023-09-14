@@ -13,12 +13,15 @@ import mentoring.datastructure.PersonBuilder;
 import mentoring.datastructure.PropertyName;
 import mentoring.datastructure.PropertyType;
 import mentoring.datastructure.SetPropertyName;
+import mentoring.match.Match;
+import mentoring.match.MatchTest;
 import mentoring.viewmodel.base.ObservableTest;
 import mentoring.viewmodel.base.ObservableArgs;
 import mentoring.viewmodel.datastructure.PersonListViewModelTest.PersonListViewModelArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
+import org.mockito.Mockito;
 
 class PersonListViewModelTest extends ObservableTest<PersonListViewModel,
         PersonListViewModelArgs>{
@@ -130,6 +133,74 @@ class PersonListViewModelTest extends ObservableTest<PersonListViewModel,
     Stream<DynamicNode> update_notifyListeners(){
         return test("update() notifies the registered listeners", 
                 args -> assertInvalidatedEventFired(args, vm -> args.invalidate(vm)));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> getPersonViewModel_expectedResult(){
+        return test("getPersonViewModel() returns the expected result",
+                args -> {
+                    PersonListViewModel viewModel = new PersonListViewModel();
+                    PersonMatchViewModel matchVM = Mockito.mock(PersonMatchViewModel.class);
+                    PersonBuilder builder = new PersonBuilder();
+                    Person mentee = builder.withFullName("mentee").withProperty("simple", 8)
+                            .withPropertyMap("indexed", Map.of())
+                            .withPropertyMap("set", Map.of()).build();
+                    Person mentor = builder.withFullName("mentor").withProperty("simple", 3)
+                            .withPropertyMap("indexed", Map.of())
+                            .withPropertyMap("set", Map.of()).build();
+                    Match<Person, Person> match = new MatchTest.MatchArgs("", mentee, mentor, 12)
+                            .convertAs(Person.class, Person.class);
+                    Mockito.when(matchVM.getData()).thenReturn(match);
+                    viewModel.update(args.getSimpleConfiguration(), List.of(mentee, mentor));
+                    Assertions.assertAll(
+                            () -> Assertions.assertEquals(mentee,
+                                    viewModel.getPersonViewModel(matchVM, PersonType.MENTEE)
+                                            .getPerson()),
+                            () -> Assertions.assertEquals(mentor,
+                                    viewModel.getPersonViewModel(matchVM, PersonType.MENTOR)
+                                            .getPerson()));
+                });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> getPersonViewModel_nullResult(){
+        return test("getPersonViewModel() returns null when it cannot find the view model",
+                args -> {
+                    PersonListViewModel viewModel = new PersonListViewModel();
+                    PersonMatchViewModel matchVM = Mockito.mock(PersonMatchViewModel.class);
+                    PersonBuilder builder = new PersonBuilder();
+                    Person mentee = builder.withFullName("mentee").withProperty("simple", 8)
+                            .withPropertyMap("indexed", Map.of())
+                            .withPropertyMap("set", Map.of()).build();
+                    Person mentor = builder.withFullName("mentor").withProperty("simple", 3)
+                            .withPropertyMap("indexed", Map.of())
+                            .withPropertyMap("set", Map.of()).build();
+                    Match<Person, Person> match = new MatchTest.MatchArgs("", mentee, mentor, 12)
+                            .convertAs(Person.class, Person.class);
+                    Mockito.when(matchVM.getData()).thenReturn(match);
+                    Assertions.assertAll(
+                            () -> Assertions.assertNull(
+                                    viewModel.getPersonViewModel(matchVM, PersonType.MENTEE),
+                                    "mentee should be null"),
+                            () -> Assertions.assertNull(
+                                    viewModel.getPersonViewModel(matchVM, PersonType.MENTOR),
+                                    "mentor should be null"));
+                });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> getPersonViewModel_NPE(){
+        return test(Stream.of("specific test case"), "getPersonViewModel() throws an NPE on null input", 
+                args -> {
+                    PersonListViewModel viewModel = new PersonListViewModel();
+                    PersonMatchViewModel matchVM = Mockito.mock(PersonMatchViewModel.class);
+                    Class<NullPointerException> exception = NullPointerException.class;
+                    Assertions.assertAll(
+                            () -> Assertions.assertThrows(exception, () -> 
+                                    viewModel.getPersonViewModel(null, PersonType.MENTEE)),
+                            () -> Assertions.assertThrows(exception, () ->
+                                    viewModel.getPersonViewModel(matchVM, null)));
+        });
     }
     
     static class PersonListViewModelArgs extends ObservableArgs<PersonListViewModel>{

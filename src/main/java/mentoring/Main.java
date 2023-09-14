@@ -9,10 +9,10 @@ public class Main {
     }
     /**
      * TODO: link GUI to code.
-     * 3a. When a match is selected, select the corresponding mentee and mentor
      * 3aa. Allow wrapping text in columns
-     * 3b. When configuration is changed, flush forbidden matches and manual matches
      * 4. make window pretty
+     * 4a. When a person is selected, unselect the selected matches
+     * 4b. When configuration is changed, flush forbidden matches and manual matches
      * 5. Fix alerting logic: Alert is a View class, not a ViewModel one. Need to handle AbstractTask TODOs
      * 6. Handle refactoring TODOs
      * 9a. Add global configuration parameters for magic numbers.

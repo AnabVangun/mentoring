@@ -45,4 +45,18 @@ public class TabularDataViewTools {
                 propertiesGetter.call(p).get(header)));
         table.getColumns().add(column);
     }
+    
+    /**
+     * Select an item in a TableView and scroll to it.
+     * @param <E> the type of data to display in the table
+     * @param table the table to update
+     * @param item to select in the table. Optional: it can be null
+     */
+    public static <E> void selectAndScrollTo(TableView<E> table, E item){
+        //TODO consider using an index instead of an item
+        table.getSelectionModel().select(item);
+        if(item != null){
+            table.scrollTo(item);
+        }
+    }
 }

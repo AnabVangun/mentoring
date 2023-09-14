@@ -4,6 +4,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.SplitPane;
@@ -42,6 +43,7 @@ public class MatchesTableView implements Initializable {
     private final InvalidationListener oneAtATimeListener;
     private final InvalidationListener menteeListener;
     private final InvalidationListener mentorListener;
+    private final InvalidationListener matchSelectionListener;
     
     @Inject
     MatchesTableView(PersonMatchesViewModel computedVM, PersonMatchesViewModel oneAtATimeVM,
@@ -58,6 +60,14 @@ public class MatchesTableView implements Initializable {
                 e -> e.getPersonData());
         mentorListener = observable -> TabularDataViewTools.updateTable(mentorTable, mentorVM, 
                 e -> e.getPersonData());
+        matchSelectionListener = observable -> {
+            @SuppressWarnings("unchecked")
+            PersonMatchViewModel match = ((ReadOnlyObjectProperty<PersonMatchViewModel>) observable)
+                    .get();
+            if(match != null){
+                selectPersons(match, selectMatchTableToClear(match));
+            }
+        };
     }
     
     /**
@@ -96,6 +106,29 @@ public class MatchesTableView implements Initializable {
         mentorVM.addListener(new WeakInvalidationListener(mentorListener));
         matchPane.getDividers().get(0).positionProperty()
                 .bindBidirectional(personPane.getDividers().get(0).positionProperty());
+        computedTable.getSelectionModel().selectedItemProperty().addListener(matchSelectionListener);
+        manualTable.getSelectionModel().selectedItemProperty().addListener(matchSelectionListener);
+    }
+    
+    private TableView<?> selectMatchTableToClear(PersonMatchViewModel match){
+        //if match was from computedTable, unselect manualTable, and the other way around
+        if(match == computedTable.getSelectionModel().selectedItemProperty().get()){
+            return manualTable;
+        } else {
+            return computedTable;
+        }
+    }
+    
+    private void selectPersons(PersonMatchViewModel match, TableView<?> tableToClear){
+        PersonViewModel selectedMentee = 
+                menteeVM.getPersonViewModel(match, PersonType.MENTEE);
+        TabularDataViewTools.selectAndScrollTo(menteeTable, selectedMentee);
+        PersonViewModel selectedMentor = 
+                mentorVM.getPersonViewModel(match, PersonType.MENTOR);
+        TabularDataViewTools.selectAndScrollTo(mentorTable, selectedMentor);
+        if(tableToClear != null){
+            tableToClear.getSelectionModel().clearSelection();
+        }
     }
     
     /**

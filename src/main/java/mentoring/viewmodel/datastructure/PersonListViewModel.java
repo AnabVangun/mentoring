@@ -9,6 +9,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.Person;
+import mentoring.match.Match;
 import mentoring.viewmodel.base.SimpleObservable;
 import mentoring.viewmodel.base.TabularDataViewModel;
 
@@ -103,5 +104,28 @@ public class PersonListViewModel extends SimpleObservable
         for (Person person : underlyingData){
             items.add(new PersonViewModel(configuration, person));
         }
+    }
+    
+    /**
+     * Get the PersonViewModel contained in this list corresponding to the requested person.
+     * @param match ViewModel containing the requested person
+     * @param type of person to get from the match
+     * @return the PersonViewModel corresponding to the requested person or null if the person is 
+     * not in this list
+     */
+    public PersonViewModel getPersonViewModel(PersonMatchViewModel match, PersonType type){
+        Match<Person, Person> actualMatch = match.getData();
+        Person person = switch(type){
+            case MENTEE -> actualMatch.getMentee();
+            case MENTOR -> actualMatch.getMentor();
+        };
+        PersonViewModel result = null;
+        for (PersonViewModel vm : getContent()) {
+            if (vm.getPerson().equals(person)){
+                result = vm;
+                break;
+            }
+        }
+        return result;
     }
 }

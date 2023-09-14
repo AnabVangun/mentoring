@@ -96,6 +96,43 @@ class TabularDataViewToolsTest implements TestFramework<TabularDataViewToolsArgs
     }
     
     @TestFactory
+    Stream<DynamicNode> selectAndScroll_selectExpectedItem(){
+        return test("selectAndScroll() properly selects the expected item", args -> {
+            TableView<String> view = new TableView<>();
+            List<String> headers = List.of("first", "second");
+            List<String> items = List.of("foo", "bar");
+            TabularDataViewTools.updateTable(view, forgeViewModel(headers, items), 
+                    forgeGetterProperty(headers));
+            TabularDataViewTools.selectAndScrollTo(view, "bar");
+            Assertions.assertEquals("bar", view.getSelectionModel().getSelectedItem());
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> selectAndScroll_clearPreviousSelection(){
+        return test("selectAndScroll() properly clears the previous selection", args -> {
+            TableView<String> view = new TableView<>();
+            List<String> headers = List.of("first", "second");
+            List<String> items = List.of("foo", "bar");
+            TabularDataViewTools.updateTable(view, forgeViewModel(headers, items), 
+                    forgeGetterProperty(headers));
+            view.getSelectionModel().select("foo");
+            TabularDataViewTools.selectAndScrollTo(view, "bar");
+            Assertions.assertEquals(List.of("bar"), view.getSelectionModel().getSelectedItems());
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> selectAndScroll_scroll(){
+        return test("selectAndScroll() scrolls to show the new selection", args -> {
+            @SuppressWarnings("unchecked")
+            TableView<String> view = Mockito.spy(TableView.class);
+            TabularDataViewTools.selectAndScrollTo(view, "foo");
+            Mockito.verify(view).scrollTo("foo");
+        });
+    }
+    
+    @TestFactory
     Stream<DynamicNode> updateTable_NPE(){
         return test("updateTable() throws NPEs on null input", args -> {
             TableView<String> view = new TableView<>();
@@ -113,6 +150,13 @@ class TabularDataViewToolsTest implements TestFramework<TabularDataViewToolsArgs
             TabularDataViewModel<E> viewModel, Function<E, Map<String, String>> propertyGetter) {
         return () -> Assertions.assertThrows(NullPointerException.class, 
                 () -> TabularDataViewTools.updateTable(table, viewModel, propertyGetter));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> selectAndScroll_NPE(){
+        return test("selectAndScroll() throws an NPE on null view", args ->
+                Assertions.assertThrows(NullPointerException.class,
+                        () -> TabularDataViewTools.selectAndScrollTo(null, "foo")));
     }
     
     static record TabularDataViewToolsArgs(String testCase){
