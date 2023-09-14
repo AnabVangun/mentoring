@@ -40,7 +40,7 @@ public class TabularDataViewTools {
     
     private static <E> void addColumn(TableView<E> table, String header, 
             Callback<TableColumn.CellDataFeatures<E, String>, Map<String, String>> propertiesGetter){
-        TableColumn<E, String> column = new TableColumn<>(header);
+        TableColumn<E, String> column = new WrappableTableColumn<>(header);
         column.setCellValueFactory(p -> new SimpleStringProperty(
                 propertiesGetter.call(p).get(header)));
         table.getColumns().add(column);

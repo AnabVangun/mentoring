@@ -9,12 +9,12 @@ public class Main {
     }
     /**
      * TODO: link GUI to code.
-     * 3aa. Allow wrapping text in columns
-     * 4. make window pretty
+     * 1. make configuration window pretty: avoid button overlap and properly group items
      * 4a. When a person is selected, unselect the selected matches
      * 4b. When configuration is changed, flush forbidden matches and manual matches
      * 5. Fix alerting logic: Alert is a View class, not a ViewModel one. Need to handle AbstractTask TODOs
      * 6. Handle refactoring TODOs
+     * 7. Add an indicator for when "Run" should be clicked
      * 9a. Add global configuration parameters for magic numbers.
      * 9b. Internationalize GUI
      * 9e. Add save/load button to load configuration (including forbidden matches) and results from a file
