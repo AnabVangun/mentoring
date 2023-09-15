@@ -19,7 +19,7 @@
           </Menu>
         </menus>
       </MenuBar>
-      <fx:include fx:id="tableView" source="matchesTableView.fxml" />
+      <fx:include fx:id="tableView" source="matchesTableView.fxml" VBox.vgrow="ALWAYS" />
       <HBox>
           <children>
               <Button fx:id="runButton" />
