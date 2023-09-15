@@ -22,8 +22,11 @@ public class MainApplication extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("scene.fxml"));
         loader.setControllerFactory(injector::getInstance);
 
+        //FIXME Here, we use a StageBuilder to generate a new stage even though we have one as input
         StageBuilder builder = new StageBuilder().withTitle("Mentoring match-maker");
-        builder.build(loader.load()).show();
+        Stage shown = builder.build(loader.load());
+        shown.setMaximized(true);
+        shown.show();
     }
         
     @Override

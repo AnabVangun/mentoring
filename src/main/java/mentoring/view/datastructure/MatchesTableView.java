@@ -7,8 +7,11 @@ import javafx.beans.WeakInvalidationListener;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javax.inject.Inject;
 import mentoring.view.base.TabularDataViewTools;
 import mentoring.viewmodel.datastructure.PersonListViewModel;
@@ -34,6 +37,8 @@ public class MatchesTableView implements Initializable {
     private SplitPane personPane;
     @FXML
     private SplitPane matchPane;
+    @FXML
+    private Node parent;
     
     private final PersonMatchesViewModel batchVM;
     private final PersonMatchesViewModel oneAtATimeVM;
@@ -100,6 +105,7 @@ public class MatchesTableView implements Initializable {
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        VBox.setVgrow(parent, Priority.ALWAYS);
         batchVM.addListener(new WeakInvalidationListener(batchMatchesListener));
         oneAtATimeVM.addListener(new WeakInvalidationListener(oneAtATimeListener));
         menteeVM.addListener(new WeakInvalidationListener(menteeListener));
