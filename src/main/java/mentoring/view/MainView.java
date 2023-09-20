@@ -15,6 +15,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javax.inject.Inject;
 import mentoring.view.base.StageBuilder;
 import mentoring.view.base.TaskCompletionAlert;
@@ -162,7 +163,9 @@ public class MainView implements Initializable {
         if(runButton.getScene() != null){
             builder.withModality(Modality.APPLICATION_MODAL, runButton.getScene().getWindow());
         }
-        builder.build(node).showAndWait();
+        Stage stage = builder.build(node);
+        stage.setMaximized(true);
+        stage.showAndWait();
     }
     
     private void showForbiddenMatches(){

@@ -9,7 +9,6 @@ public class Main {
     }
     /**
      * TODO: link GUI to code.
-     * 1. make configuration window pretty: avoid button overlap and properly group items
      * 4a. When a person is selected, unselect the selected matches
      * 4b. When configuration is changed, flush forbidden matches and manual matches
      * 5. Fix alerting logic: Alert is a View class, not a ViewModel one. Need to handle AbstractTask TODOs

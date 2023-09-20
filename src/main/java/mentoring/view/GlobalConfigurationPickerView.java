@@ -20,6 +20,7 @@ import mentoring.viewmodel.datastructure.PersonType;
  */
 public class GlobalConfigurationPickerView implements Initializable{
     //TODO internationalise String
+    //TODO refactor FXML view to rationalize items
     @FXML
     private Button configurationValidationButton;
     @FXML
@@ -52,6 +53,7 @@ public class GlobalConfigurationPickerView implements Initializable{
     private Label exportConfigurationLabel;
     @FXML
     private ToggleButton exportConfigurationToggle;
+    
     private final ChangeListener<Boolean> exportConfigurationToggleListener = 
             (observable, old, current) -> {
                 if (! old && current){

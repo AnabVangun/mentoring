@@ -1,29 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.RadioButton?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="150.0" prefWidth="294.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mentoring.view.base.ConfigurationPickerView">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mentoring.view.base.ConfigurationPickerView">
    <children>
-      <HBox prefHeight="100.0" prefWidth="200.0">
+      <HBox alignment="CENTER_LEFT">
          <children>
-            <RadioButton mnemonicParsing="false" fx:id="knownConfigurationRadioButton">
+            <RadioButton fx:id="knownConfigurationRadioButton" mnemonicParsing="false">
                <toggleGroup>
                   <ToggleGroup fx:id="configurationSelectionGroup" />
                </toggleGroup>
+               <HBox.margin>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </HBox.margin>
             </RadioButton>
-            <ComboBox fx:id="configurationSelector" prefWidth="150.0" />
+            <ComboBox fx:id="configurationSelector" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="150.0">
+               <HBox.margin>
+                  <Insets right="5.0" top="5.0" />
+               </HBox.margin>
+            </ComboBox>
          </children>
       </HBox>
-      <HBox prefHeight="100.0" prefWidth="200.0">
+      <HBox alignment="CENTER_LEFT">
           <children>
-              <RadioButton mnemonicParsing="false" fx:id="fileConfigurationRadioButton" toggleGroup="$configurationSelectionGroup" />
+              <RadioButton fx:id="fileConfigurationRadioButton" mnemonicParsing="false" toggleGroup="$configurationSelectionGroup">
+               <HBox.margin>
+                  <Insets bottom="5.0" left="5.0" top="5.0" />
+               </HBox.margin></RadioButton>
               <fx:include fx:id="fileSelectionView" source="fileSelectionView.fxml" />
           </children>
       </HBox>
