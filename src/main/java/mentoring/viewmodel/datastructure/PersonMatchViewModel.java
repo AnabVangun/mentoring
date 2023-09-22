@@ -11,7 +11,7 @@ import mentoring.viewmodel.match.MatchViewModel;
 public class PersonMatchViewModel extends MatchViewModel<Person, Person>{
     
     /**
-     * Builds a new [@code PersonMatchViewModel}.
+     * Builds a new PersonMatchViewModel.
      * @param configuration used to select the attributes to represent
      * @param match to represent
      */

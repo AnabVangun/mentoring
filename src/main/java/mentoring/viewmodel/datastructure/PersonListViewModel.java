@@ -121,7 +121,7 @@ public class PersonListViewModel extends SimpleObservable
         };
         PersonViewModel result = null;
         for (PersonViewModel vm : getContent()) {
-            if (vm.getPerson().equals(person)){
+            if (vm.getData().equals(person)){
                 result = vm;
                 break;
             }

@@ -44,6 +44,7 @@ public class MatchesTableView implements Initializable {
     private final InvalidationListener menteeListener;
     private final InvalidationListener mentorListener;
     private final InvalidationListener matchSelectionListener;
+    private final InvalidationListener personSelectionListener;
     
     @Inject
     MatchesTableView(PersonMatchesViewModel computedVM, PersonMatchesViewModel oneAtATimeVM,
@@ -57,15 +58,23 @@ public class MatchesTableView implements Initializable {
         oneAtATimeListener = observable -> 
                 TabularDataViewTools.updateTable(manualTable, oneAtATimeVM, e -> e.observableMatch());
         menteeListener = observable -> TabularDataViewTools.updateTable(menteeTable, menteeVM, 
-                e -> e.getPersonData());
+                e -> e.getFormattedData());
         mentorListener = observable -> TabularDataViewTools.updateTable(mentorTable, mentorVM, 
-                e -> e.getPersonData());
+                e -> e.getFormattedData());
         matchSelectionListener = observable -> {
             @SuppressWarnings("unchecked")
             PersonMatchViewModel match = ((ReadOnlyObjectProperty<PersonMatchViewModel>) observable)
                     .get();
             if(match != null){
                 selectPersons(match, selectMatchTableToClear(match));
+            }
+        };
+        personSelectionListener = observable -> {
+            @SuppressWarnings("unchecked")
+            PersonViewModel person = ((ReadOnlyObjectProperty<PersonViewModel>) observable).get();
+            if (person != null){
+                unselectMatchInTableIfAppropriate(computedTable, person);
+                unselectMatchInTableIfAppropriate(manualTable, person);
             }
         };
     }
@@ -110,6 +119,10 @@ public class MatchesTableView implements Initializable {
                 .addListener(new WeakInvalidationListener(matchSelectionListener));
         manualTable.getSelectionModel().selectedItemProperty()
                 .addListener(new WeakInvalidationListener(matchSelectionListener));
+        menteeTable.getSelectionModel().selectedItemProperty()
+                .addListener(new WeakInvalidationListener(personSelectionListener));
+        mentorTable.getSelectionModel().selectedItemProperty()
+                .addListener(new WeakInvalidationListener(personSelectionListener));
     }
     
     private TableView<?> selectMatchTableToClear(PersonMatchViewModel match){
@@ -151,5 +164,13 @@ public class MatchesTableView implements Initializable {
      */
     public PersonMatchViewModel getSelectedManualMatch(){
         return manualTable.getSelectionModel().getSelectedItem();
+    }
+    
+    private void unselectMatchInTableIfAppropriate(TableView<PersonMatchViewModel> table, 
+            PersonViewModel person){
+        PersonMatchViewModel match = table.getSelectionModel().getSelectedItem();
+        if(match != null && !(match.containsMentee(person) || match.containsMentor(person))) {
+            table.getSelectionModel().clearSelection();
+        }
     }
 }

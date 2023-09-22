@@ -9,7 +9,6 @@ public class Main {
     }
     /**
      * TODO: link GUI to code.
-     * 4a. When a person is selected, unselect the selected matches
      * 4b. When configuration is changed, flush forbidden matches and manual matches
      * 5. Fix alerting logic: Alert is a View class, not a ViewModel one. Need to handle AbstractTask TODOs
      * 6. Handle refactoring TODOs

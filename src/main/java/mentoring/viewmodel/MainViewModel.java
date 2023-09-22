@@ -120,8 +120,8 @@ public class MainViewModel {
     public Future<?> makeSingleMatch(PersonViewModel menteeVM, PersonViewModel mentorVM,
             PersonMatchesViewModel resultVM){
         return matchMaker.submit(new SingleMatchTask(resultVM, matchConfiguration, 
-                menteeVM.getPerson(), 
-                mentorVM.getPerson()));
+                menteeVM.getData(), 
+                mentorVM.getData()));
     }
     
     /**
@@ -159,7 +159,7 @@ public class MainViewModel {
      */
     public Future<?> addForbiddenMatch(PersonViewModel menteeVM, PersonViewModel mentorVM){
         return matchMaker.submit(new ForbiddenMatchTask(extraForbiddenMatches, 
-                menteeVM.getPerson(), mentorVM.getPerson()));
+                menteeVM.getData(), mentorVM.getData()));
     }
     
     /**

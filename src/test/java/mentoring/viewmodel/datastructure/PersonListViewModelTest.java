@@ -155,10 +155,10 @@ class PersonListViewModelTest extends ObservableTest<PersonListViewModel,
                     Assertions.assertAll(
                             () -> Assertions.assertEquals(mentee,
                                     viewModel.getPersonViewModel(matchVM, PersonType.MENTEE)
-                                            .getPerson()),
+                                            .getData()),
                             () -> Assertions.assertEquals(mentor,
                                     viewModel.getPersonViewModel(matchVM, PersonType.MENTOR)
-                                            .getPerson()));
+                                            .getData()));
                 });
     }
     
@@ -239,9 +239,9 @@ class PersonListViewModelTest extends ObservableTest<PersonListViewModel,
                 PersonConfiguration configuration){
             List<PersonViewModel> toCheck = viewModel.getContent();
             List<Map<String, String>> actual = toCheck.stream()
-                    .map(element -> element.getPersonData()).toList();
+                    .map(element -> element.getFormattedData()).toList();
             List<Map<String, String>> expected = data.stream()
-                    .map(element -> new PersonViewModel(configuration, element).getPersonData())
+                    .map(element -> new PersonViewModel(configuration, element).getFormattedData())
                     .toList();
             Assertions.assertEquals(expected, actual);
         }
