@@ -382,6 +382,27 @@ class MatchesViewModelTest extends ObservableTest<
         });
     }
     
+    @TestFactory
+    Stream<DynamicNode> clear_removeContent(){
+        return test("clear() clears the content of the VM", args -> {
+            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel =
+                    args.convertAndSetContent();
+            viewModel.clear();
+            Assertions.assertTrue(viewModel.getContent().isEmpty());
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> clear_vmStillOperational(){
+        return test("clear() clears the content of the VM", args -> {
+            MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel =
+                    args.convertAndSetContent();
+            viewModel.clear();
+            viewModel.setAll(args.input);
+            assertContentAsExpected(args.expectedContent, viewModel.getContent());
+        });
+    }
+    
     static class MatchesViewModelTestArgs extends ObservableArgs<
             MatchesViewModel<String, String, MatchViewModel<String, String>>>{
         private final List<String> expectedHeader;

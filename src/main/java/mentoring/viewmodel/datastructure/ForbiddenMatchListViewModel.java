@@ -14,6 +14,7 @@ import mentoring.match.NecessaryCriterion;
  * ViewModel responsible for representing a list of forbidden matches.
  */
 public class ForbiddenMatchListViewModel{
+    //TODO concurrency: handle synchronization on menteeToForbiddenMentors
     
     private final Map<Person,Set<Person>> menteeToForbiddenMentors = new HashMap<>();
     private final ObservableList<ForbiddenMatchViewModel> modifiableItems = 
@@ -80,5 +81,13 @@ public class ForbiddenMatchListViewModel{
             menteeToForbiddenMentors.remove(mentee);
         }
         return result && modifiableItems.remove(forbiddenVM);
+    }
+    
+    /**
+     * Remove all the forbidden matches from this ViewModel.
+     */
+    public void clear(){
+        modifiableItems.clear();
+        menteeToForbiddenMentors.clear();
     }
 }

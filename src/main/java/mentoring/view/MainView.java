@@ -123,6 +123,12 @@ public class MainView implements Initializable {
     
     private void showConfigurationPicker(){
         //TODO: refactor: emphasize structure and operations.
+        /*
+        TODO: when configuration is changed, erase the current matches.
+            1. If there is anything to erase, ask for confirmation before showing the window
+            2. optionaly, if some parts of configuration can be changed without erasing the system,
+                handle it nicely
+        */
         FXMLLoader loader = new FXMLLoader(getClass()
                 .getResource("/mentoring/globalConfigurationSelectionView.fxml"));
         Parent node = null;
@@ -157,6 +163,9 @@ public class MainView implements Initializable {
             for (PersonType type : PersonType.values()){
                 vm.getPersons(tableViewController.getPersonViewModel(type), type);
             }
+            tableViewController.getOneAtATimeMatchesViewModel().clear();
+            tableViewController.getBatchMatchesViewModel().clear();
+            vm.getForbiddenMatches().clear();
         });
         
         StageBuilder builder = new StageBuilder().withTitle("Configure mentoring");

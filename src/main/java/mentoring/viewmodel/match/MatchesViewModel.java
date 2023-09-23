@@ -97,7 +97,8 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
             throw new IllegalStateException("Attempted to add match " + match + " to " + this 
                     + " before setting configuration");
         }
-        //TODO concurrency : make lazy modification
+        //TODO concurrency : evaluate if lazy modifications actually improve anything.
+        //If it does, implement lazy update here. Otherwise, remove it completely.
         updateIfNecessary();
         content.add(vmFactory.apply(configuration, match));
         notifyListeners();
@@ -189,6 +190,15 @@ public class MatchesViewModel<Mentee, Mentor, VM extends MatchViewModel<Mentee, 
         }
         Matches<Mentee, Mentor> matches = new Matches<>(tmpMatches);
         resultWriter.writeMatches(matches, writer, writeHeader);
-        
+    }
+    
+    /**
+     * Remove all matches from this ViewModel. Configuration is maintained.
+     */
+    public void clear(){
+        updateIfNecessary();
+        //TODO concurrency: handle synchronisation for this modification.
+        getContent().clear();
+        notifyListeners();
     }
 }

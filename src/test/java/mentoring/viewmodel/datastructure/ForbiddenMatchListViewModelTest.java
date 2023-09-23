@@ -207,6 +207,47 @@ class ForbiddenMatchListViewModelTest implements TestFramework<ForbiddenMatchLis
     }
     
     @TestFactory
+    Stream<DynamicNode> clear_removesAllContent(){
+        return test("clear() clears the content of the ViewModel", args -> {
+            ForbiddenMatchListViewModel vm = args.convert();
+            ObservableList<ForbiddenMatchViewModel> observable = vm.getContent();
+            InvalidationListener listener = Mockito.mock(InvalidationListener.class);
+            observable.addListener(listener);
+            PersonBuilder builder = new PersonBuilder();
+            Person mentee = builder.withFullName("mentee").build();
+            Person mentor = builder.withFullName("mentor").build();
+            vm.addForbiddenMatch(mentee, mentor);
+            vm.clear();
+            Assertions.assertAll(
+                    () -> Mockito.verify(listener, Mockito.times(2)).invalidated(observable),
+                    () -> Assertions.assertTrue(vm.getContent().isEmpty()));
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> clear_vmStillOperational(){
+        return test("clear() does not prevent the ViewModel from working again", args -> {
+            ForbiddenMatchListViewModel vm = args.convert();
+            ObservableList<ForbiddenMatchViewModel> observable = vm.getContent();
+            InvalidationListener listener = Mockito.mock(InvalidationListener.class);
+            observable.addListener(listener);
+            PersonBuilder builder = new PersonBuilder();
+            Person mentee = builder.withFullName("mentee").build();
+            Person mentor = builder.withFullName("mentor").build();
+            vm.addForbiddenMatch(mentee, mentor);
+            vm.clear();
+            boolean actuallyUpdated = vm.addForbiddenMatch(mentee, mentor);
+            ForbiddenMatchViewModel added = vm.getContent().get(0);
+            Assertions.assertAll(
+                    () -> Assertions.assertTrue(actuallyUpdated),
+                    () -> Mockito.verify(listener, Mockito.times(3)).invalidated(observable),
+                    () -> Assertions.assertEquals(1, vm.getContent().size()),
+                    () -> Assertions.assertEquals(mentee, added.getMentee()),
+                    () -> Assertions.assertEquals(mentor, added.getMentor()));
+        });
+    }
+    
+    @TestFactory
     Stream<DynamicNode> addForbidenMatch_NPE(){
         return test(Stream.of("unique test case"), "addForbiddenMatch() throws NPE on null input", args -> {
             ForbiddenMatchListViewModel vm = new ForbiddenMatchListViewModel();
