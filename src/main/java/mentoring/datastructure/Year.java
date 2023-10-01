@@ -59,6 +59,7 @@ public final class Year {
     public static enum Curriculum{
         DOCTEUR("D",-8),
         EXECUTIVE("E",-15),
+        MASTER("M",-1),
         INGENIEUR("X",0);
         final String prefix;
         final int offset;
