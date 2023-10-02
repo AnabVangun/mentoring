@@ -58,30 +58,6 @@ public final class PojoCriteriaConfiguration extends CriteriaConfiguration<Perso
                     }), List.of((mentee, mentor) -> CriteriaToolbox.logicalNotAOrB(
                             mentee.getPropertyAs(ENGLISH_PROPERTY, Boolean.class),
                             mentor.getPropertyAs(ENGLISH_PROPERTY, Boolean.class))));
-    /** Configuration used for real 2021 data. */
-    public final static PojoCriteriaConfiguration CRITERIA_CONFIGURATION_REAL_DATA =
-            new PojoCriteriaConfiguration("Criteria configuration for real data",
-                List.of((mentee, mentor) -> {
-                    return YEAR_WEIGHT 
-                        * (mentee.getPropertyAs(YEAR_PROPERTY, Integer.class) 
-                            - mentor.getPropertyAs(YEAR_PROPERTY, 
-                                    Year.class).getNormalizedYear());
-                    },
-                    (mentee, mentor) -> {
-                        Set<String> menteeActivities = 
-                                mentee.getPropertyAsSetOf(ACTIVITIES_PROPERTY, 
-                                        String.class);
-                        Set<String> mentorActivities = 
-                                mentor.getPropertyAsSetOf(ACTIVITIES_PROPERTY, 
-                                        String.class);
-                        return CriteriaToolbox.computeSetDistance(menteeActivities, 
-                                mentorActivities);
-                }),
-                List.of((mentee, mentor) ->
-                        (mentee.getPropertyAsSetOf(LANGUAGES_PROPERTY, String.class)
-                            .contains("Français")
-                            || mentor.getPropertyAs(ENGLISH_SPEAKING_PROPERTY, 
-                                    Boolean.class))));
     /** Configuration used for the preprocessed 2022 data set. */
     public final static PojoCriteriaConfiguration CRITERIA_CONFIGURATION_2023_DATA =
             new PojoCriteriaConfiguration("Criteria configuration for 2023 data",
