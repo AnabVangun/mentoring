@@ -24,7 +24,7 @@ import mentoring.viewmodel.datastructure.ForbiddenMatchListViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 
-public class MultipleMatchTask extends AbstractTask<Void, MultipleMatchTask> {
+public class MultipleMatchTask extends AbstractTask<Void> {
     //TODO this class has become too complex, refactor to simplify and refactor test class accordingly
     private final PersonMatchesViewModel resultVM;
     private final PersonMatchesViewModel excludedMatchesVM;
@@ -133,10 +133,5 @@ public class MultipleMatchTask extends AbstractTask<Void, MultipleMatchTask> {
         solver.withNecessaryCriteria(completeNecessaryCriteria)
                 .withPlaceholderPersons(defaultMentee, defaultMentor);
         return solver.build();
-    }
-    
-    @Override
-    protected MultipleMatchTask self(){
-        return this;
     }
 }

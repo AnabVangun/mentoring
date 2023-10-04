@@ -11,7 +11,7 @@ import mentoring.viewmodel.datastructure.ForbiddenMatchViewModel;
 /**
  * Class used to remove forbidden matches from a {@link ForbiddenMatchListViewModel}.
  */
-public class ForbiddenMatchRemovalTask extends AbstractTask<Void, ForbiddenMatchRemovalTask>{
+public class ForbiddenMatchRemovalTask extends AbstractTask<Void>{
     private final ForbiddenMatchListViewModel list;
     private final ForbiddenMatchViewModel toRemove;
     
@@ -40,10 +40,5 @@ public class ForbiddenMatchRemovalTask extends AbstractTask<Void, ForbiddenMatch
     @Override
     public void specificActionOnSuccess(){
         list.removeForbiddenMatch(toRemove);
-    }
-    
-    @Override
-    protected ForbiddenMatchRemovalTask self(){
-        return this;
     }
 }

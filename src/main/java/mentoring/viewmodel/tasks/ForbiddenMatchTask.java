@@ -11,7 +11,7 @@ import mentoring.viewmodel.datastructure.ForbiddenMatchListViewModel;
 /**
  * Class used to add forbidden matches to a {@link ForbiddenMatchListViewModel}.
  */
-public class ForbiddenMatchTask extends AbstractTask<Void, ForbiddenMatchTask>{
+public class ForbiddenMatchTask extends AbstractTask<Void>{
     private final ForbiddenMatchListViewModel viewModel;
     private final Person mentee;
     private final Person mentor;
@@ -41,10 +41,5 @@ public class ForbiddenMatchTask extends AbstractTask<Void, ForbiddenMatchTask>{
     @Override
     protected void specificActionOnSuccess(){
         viewModel.addForbiddenMatch(mentee, mentor);
-    }
-    
-    @Override
-    protected ForbiddenMatchTask self(){
-        return this;
     }
 }

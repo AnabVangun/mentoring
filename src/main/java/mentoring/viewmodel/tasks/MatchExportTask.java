@@ -11,7 +11,7 @@ import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 /**
  * Export matches to a file in a background task.
  */
-public class MatchExportTask extends AbstractTask<Void, MatchExportTask> {
+public class MatchExportTask extends AbstractTask<Void> {
     
     private final PersonMatchesViewModel firstExportedVM;
     @SuppressWarnings("MismatchedReadAndWriteOfArray")
@@ -28,7 +28,7 @@ public class MatchExportTask extends AbstractTask<Void, MatchExportTask> {
      * @param exportedVMs optional additional ViewModels containing data to export
      */
     public MatchExportTask(WriterSupplier writerSupplier, 
-            TaskCompletionCallback<Void, MatchExportTask> callback,
+            TaskCompletionCallback<Void> callback,
             ConfigurationPickerViewModel<ResultConfiguration<Person,Person>> configurationVM, 
             PersonMatchesViewModel firstExportedVM, PersonMatchesViewModel... exportedVMs) {
         super(callback);
@@ -51,11 +51,6 @@ public class MatchExportTask extends AbstractTask<Void, MatchExportTask> {
             }
         }
         return null;
-    }
-    
-    @Override
-    protected MatchExportTask self(){
-        return this;
     }
     
     public static interface WriterSupplier {

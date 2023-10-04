@@ -15,7 +15,7 @@ import mentoring.viewmodel.datastructure.PersonListViewModel;
 /**
  * Class used to get persons and update an input view model.
  */
-public class PersonGetterTask extends AbstractTask<List<Person>, PersonGetterTask> {
+public class PersonGetterTask extends AbstractTask<List<Person>> {
     private final PersonListViewModel resultVM;
     private PersonConfiguration personConfiguration;
     private List<Person> persons;
@@ -57,10 +57,5 @@ public class PersonGetterTask extends AbstractTask<List<Person>, PersonGetterTas
     @Override
     protected void specificActionOnSuccess() {
         resultVM.update(personConfiguration, persons);
-    }
-    
-    @Override
-    protected PersonGetterTask self(){
-        return this;
     }
 }

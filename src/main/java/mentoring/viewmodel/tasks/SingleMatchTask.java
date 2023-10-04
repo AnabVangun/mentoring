@@ -14,7 +14,7 @@ import mentoring.match.MatchesBuilder;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 
-public class SingleMatchTask extends AbstractTask<Match<Person, Person>, SingleMatchTask> {
+public class SingleMatchTask extends AbstractTask<Match<Person, Person>> {
     
     private final PersonMatchesViewModel resultVM;
     private final ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> criteriaVM;
@@ -78,10 +78,5 @@ public class SingleMatchTask extends AbstractTask<Match<Person, Person>, SingleM
                 criteriaConfiguration.getProgressiveCriteria());
         solver.withNecessaryCriteria(criteriaConfiguration.getNecessaryCriteria());
         return solver.buildSingleMatch(mentee, mentor);
-    }
-    
-    @Override
-    protected SingleMatchTask self(){
-        return this;
     }
 }

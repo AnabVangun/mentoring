@@ -53,7 +53,7 @@ class MatchExportTaskTest implements TestFramework<MatchExportTaskArgs>{
     }
     
     static Executable assertConstructorThrowsNPE(MatchExportTask.WriterSupplier supplier, 
-            AbstractTask.TaskCompletionCallback<Void, MatchExportTask> callback,
+            AbstractTask.TaskCompletionCallback<Void> callback,
             ConfigurationPickerViewModel<ResultConfiguration<Person,Person>> configurationVM, 
             PersonMatchesViewModel vm, PersonMatchesViewModel... extraVMs){
         return () -> Assertions.assertThrows(NullPointerException.class, 
@@ -136,7 +136,7 @@ class MatchExportTaskTest implements TestFramework<MatchExportTaskArgs>{
                 Mockito.mock(ConfigurationPickerViewModel.class);
         final PersonMatchesViewModel firstExportedVM = Mockito.mock(PersonMatchesViewModel.class);
         final PersonMatchesViewModel[] exportedVMs;
-        final AbstractTask.TaskCompletionCallback<Void, MatchExportTask> callback = args -> {};
+        final AbstractTask.TaskCompletionCallback<Void> callback = args -> {};
         
         MatchExportTaskArgs(String testCase, int numberOfExtraVMs){
             super(testCase);

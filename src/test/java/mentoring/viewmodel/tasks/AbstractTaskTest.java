@@ -86,7 +86,7 @@ class AbstractTaskTest implements TestFramework<AbstractTaskArgs>{
     static class AbstractTaskArgs extends TestArgs {
         final DummyTask task;
         @SuppressWarnings("unchecked")
-        final TaskCompletionCallback<Void, DummyTask> callback = 
+        final TaskCompletionCallback<Void> callback = 
                 Mockito.mock(TaskCompletionCallback.class);
         
         AbstractTaskArgs(String testCase, boolean success){
@@ -95,12 +95,12 @@ class AbstractTaskTest implements TestFramework<AbstractTaskArgs>{
         }
     }
     
-    static class DummyTask extends AbstractTask<Void, DummyTask> {
+    static class DummyTask extends AbstractTask<Void> {
         final boolean success;
         boolean onSuccessCalled = false;
         boolean onFailureCalled = false;
 
-        public DummyTask(TaskCompletionCallback<Void, DummyTask> callback, boolean success) {
+        public DummyTask(TaskCompletionCallback<Void> callback, boolean success) {
             super(callback);
             this.success = success;
         }
@@ -121,11 +121,6 @@ class AbstractTaskTest implements TestFramework<AbstractTaskArgs>{
                 throw new RuntimeException("failed");
             }
             return null;
-        }
-        
-        @Override
-        protected DummyTask self(){
-            return this;
         }
         
         void runTerminalMethod(){

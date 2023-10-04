@@ -18,7 +18,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javax.inject.Inject;
 import mentoring.view.base.StageBuilder;
-import mentoring.view.base.TaskCompletionAlert;
+import mentoring.view.base.TaskCompletionAlertFactory;
 import mentoring.view.base.ViewTools;
 import mentoring.view.datastructure.ForbiddenMatchesView;
 import mentoring.view.datastructure.MatchesTableView;
@@ -114,9 +114,13 @@ public class MainView implements Initializable {
                 if(parent != null){
                     chooser.setInitialDirectory(parent);
                 }
-                vm.exportMatches(outputFile, TaskCompletionAlert.MATCH_EXPORT_ALERT,
-                tableViewController.getOneAtATimeMatchesViewModel(),
-                tableViewController.getBatchMatchesViewModel());
+                vm.exportMatches(outputFile, 
+                        TaskCompletionAlertFactory.alertOnSuccessAndFailure(Void.class, 
+                                //TODO internationalise string
+                                () -> "Export completed in file %s".formatted(outputFile.getAbsolutePath()), 
+                                except -> except.getLocalizedMessage()),
+                        tableViewController.getOneAtATimeMatchesViewModel(),
+                        tableViewController.getBatchMatchesViewModel());
             }
         });
     }

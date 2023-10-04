@@ -4,7 +4,7 @@ import java.util.Objects;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 
-public class SingleMatchRemovalTask extends AbstractTask<Void, SingleMatchRemovalTask> {
+public class SingleMatchRemovalTask extends AbstractTask<Void> {
     
     private final PersonMatchesViewModel resultVM;
     private final PersonMatchViewModel toRemove;
@@ -29,10 +29,5 @@ public class SingleMatchRemovalTask extends AbstractTask<Void, SingleMatchRemova
     @Override
     protected void specificActionOnSuccess() {
         resultVM.remove(toRemove);
-    }
-    
-    @Override
-    protected SingleMatchRemovalTask self(){
-        return this;
     }
 }

@@ -11,8 +11,7 @@ import mentoring.viewmodel.base.ConfigurationPickerViewModel;
  * Class used to get a {@link Configuration} instance and update ViewModels.
  * @param <T> type of configuration to get
  */
-public class ConfigurationGetterTask<T extends Configuration<T>> 
-        extends AbstractTask<T, ConfigurationGetterTask<T>> {
+public class ConfigurationGetterTask<T extends Configuration<T>> extends AbstractTask<T> {
     private final ConfigurationPickerViewModel<T> configurationVM;
     private final List<ConfigurableViewModel<T>> resultVMs;
     private T configuration;
@@ -45,10 +44,5 @@ public class ConfigurationGetterTask<T extends Configuration<T>>
         for (ConfigurableViewModel<T> vm : resultVMs){
             vm.setConfiguration(configuration);
         }
-    }
-    
-    @Override
-    protected ConfigurationGetterTask<T> self(){
-        return this;
     }
 }
