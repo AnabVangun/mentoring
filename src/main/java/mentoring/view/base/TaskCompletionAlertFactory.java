@@ -12,7 +12,6 @@ import mentoring.viewmodel.tasks.AbstractTask.TaskCompletionCallback;
  * <p> This class is thread-safe.
  */
 public final class TaskCompletionAlertFactory {
-    //TODO remove returnType from the static methods
     
     private TaskCompletionAlertFactory(){
         throw new UnsupportedOperationException("static factory should not be instantiated");
@@ -20,18 +19,15 @@ public final class TaskCompletionAlertFactory {
     
     /**
      * Build a TaskCompletionCallback that alerts the user when the task succeeds or fails.
-     * @param <T> return type of the accepted tasks
-     * @param returnType return type of the accepted tasks
      * @param successMessageProvider method to generate the message to display to the user if the
      *      task succeeds
      * @param failureMessageGenerator method to generate the message to display to the user if the
      *      task fails
      * @return the configured TaskCompletionCallback.
      */
-    public static <T> TaskCompletionCallback<T> alertOnSuccessAndFailure(Class<T> returnType,
+    public static TaskCompletionCallback<Object> alertOnSuccessAndFailure(
             Supplier<String> successMessageProvider, 
             Function<Throwable, String> failureMessageGenerator){
-        Objects.requireNonNull(returnType);
         Objects.requireNonNull(successMessageProvider);
         Objects.requireNonNull(failureMessageGenerator);
         return task -> {
@@ -50,15 +46,12 @@ public final class TaskCompletionAlertFactory {
     
     /**
      * Build a TaskCompletionCallback that alerts the user when the task succeeds or fails.
-     * @param <T> return type of the accepted tasks
-     * @param returnType return type of the accepted tasks
      * @param failureMessageGenerator method to generate the message to display to the user if the
      *      task fails
      * @return the configured TaskCompletionCallback.
      */
-    public static <T> TaskCompletionCallback<T> alertOnFailure(Class<T> returnType,
+    public static TaskCompletionCallback<Object> alertOnFailure(
             Function<Throwable, String> failureMessageGenerator){
-        Objects.requireNonNull(returnType);
         Objects.requireNonNull(failureMessageGenerator);
         return task -> {
             State state = task.getState();

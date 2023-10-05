@@ -28,7 +28,7 @@ public class MatchExportTask extends AbstractTask<Void> {
      * @param exportedVMs optional additional ViewModels containing data to export
      */
     public MatchExportTask(WriterSupplier writerSupplier, 
-            TaskCompletionCallback<Void> callback,
+            TaskCompletionCallback<? super Void> callback,
             ConfigurationPickerViewModel<ResultConfiguration<Person,Person>> configurationVM, 
             PersonMatchesViewModel firstExportedVM, PersonMatchesViewModel... exportedVMs) {
         super(callback);

@@ -34,8 +34,8 @@ class TaskCompletionAlertFactoryTest implements TestFramework<TaskCompletionAler
     @TestFactory
     Stream<DynamicNode> alertOnFailure_alert(FxRobot robot){
         return test(Stream.of("specific test case"), "alertOnFailure() alert the user on task failure", args -> {
-            TaskCompletionCallback<Void> callback = 
-                    TaskCompletionAlertFactory.alertOnFailure(Void.class, except -> "foo");
+            TaskCompletionCallback<Object> callback = 
+                    TaskCompletionAlertFactory.alertOnFailure(except -> "foo");
             @SuppressWarnings("unchecked")
             AbstractTask<Void> task = Mockito.mock(AbstractTask.class);
             /* TODO: actually implement test: check that an alert window appears and its label
@@ -53,26 +53,18 @@ class TaskCompletionAlertFactoryTest implements TestFramework<TaskCompletionAler
         return test(Stream.of("unique test case"), "alertOnSuccessAndFailure throws NPE", args ->
             Assertions.assertAll(
                     () -> assertThrowsNPE(
-                            () -> TaskCompletionAlertFactory.alertOnSuccessAndFailure(null,
-                                    () -> "foo", except -> "bar")),
+                            () -> TaskCompletionAlertFactory.alertOnSuccessAndFailure(null, 
+                                    except -> "bar")),
                     () -> assertThrowsNPE(
-                            () -> TaskCompletionAlertFactory.alertOnSuccessAndFailure(Void.class, 
-                                    null, except -> "bar")),
-                    () -> assertThrowsNPE(
-                            () -> TaskCompletionAlertFactory.alertOnSuccessAndFailure(String.class, 
-                                    () -> "foo", null))
+                            () -> TaskCompletionAlertFactory.alertOnSuccessAndFailure(() -> "foo", 
+                                    null))
             ));
     }
     
     @TestFactory
     Stream<DynamicNode> alertOnFailure_NPE(){
         return test(Stream.of("unique test case"), "alertOnFailure throws NPE", args ->
-            Assertions.assertAll(
-                    () -> assertThrowsNPE(
-                            () -> TaskCompletionAlertFactory.alertOnFailure(null, except -> "bar")),
-                    () -> assertThrowsNPE(
-                            () -> TaskCompletionAlertFactory.alertOnFailure(String.class, null))
-            ));
+            assertThrowsNPE(() -> TaskCompletionAlertFactory.alertOnFailure(null)));
     }
     
     static void assertThrowsNPE(Executable executable){

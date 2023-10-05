@@ -15,21 +15,19 @@ public abstract class AbstractTask<T> extends Task<T> {
     
     /**
      * Interface for the callback method called when a task completes or fails.
-     * @param <U> the type of value returned by the task.
+     * @param <V> the type of value returned by the task.
      */
     @FunctionalInterface
-    public static interface TaskCompletionCallback<U> 
-            extends Consumer<AbstractTask<U>>{}
-    //TODO allow an abstractTask to have a TaskCompletionCallback<?>
+    public static interface TaskCompletionCallback<V> extends Consumer<AbstractTask<? extends V>>{}
     
-    private final TaskCompletionCallback<T> callback;
+    private final TaskCompletionCallback<? super T> callback;
     
     /**
      * Build a new instance.
      * @param callback method that will be called when the task completes (either successfully or 
      *      not).
      */
-    protected AbstractTask(TaskCompletionCallback<T> callback){
+    protected AbstractTask(TaskCompletionCallback<? super T> callback){
         this.callback = Objects.requireNonNull(callback);
     }
     

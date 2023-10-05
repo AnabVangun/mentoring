@@ -143,7 +143,7 @@ public class MainViewModel {
      * @return a Future object that can be used to control the execution and completion of the task.
      */
     public Future<?> exportMatches(File outputFile, 
-            AbstractTask.TaskCompletionCallback<Void> callback,
+            AbstractTask.TaskCompletionCallback<? super Void> callback,
             PersonMatchesViewModel toExportWithHeader, PersonMatchesViewModel... toExport){
         return matchMaker.submit(new MatchExportTask(
                 () -> new PrintWriter(outputFile, Charset.forName("utf-8")), 

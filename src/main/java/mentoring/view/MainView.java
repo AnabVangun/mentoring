@@ -115,9 +115,10 @@ public class MainView implements Initializable {
                     chooser.setInitialDirectory(parent);
                 }
                 vm.exportMatches(outputFile, 
-                        TaskCompletionAlertFactory.alertOnSuccessAndFailure(Void.class, 
+                        TaskCompletionAlertFactory.alertOnSuccessAndFailure(
                                 //TODO internationalise string
-                                () -> "Export completed in file %s".formatted(outputFile.getAbsolutePath()), 
+                                () -> "Export completed in file %s"
+                                        .formatted(outputFile.getAbsolutePath()), 
                                 except -> except.getLocalizedMessage()),
                         tableViewController.getOneAtATimeMatchesViewModel(),
                         tableViewController.getBatchMatchesViewModel());
