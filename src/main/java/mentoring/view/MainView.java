@@ -27,6 +27,7 @@ import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.base.FilePickerViewModel;
 import mentoring.viewmodel.datastructure.ForbiddenMatchListViewModel;
 import mentoring.viewmodel.datastructure.PersonType;
+import mentoring.viewmodel.tasks.AbstractTask;
 
 public class MainView implements Initializable {
     private final MainViewModel vm;
@@ -81,7 +82,10 @@ public class MainView implements Initializable {
                     tableViewController.getPersonViewModel(PersonType.MENTEE),
                     tableViewController.getPersonViewModel(PersonType.MENTOR),
                     tableViewController.getBatchMatchesViewModel(), 
-                    tableViewController.getOneAtATimeMatchesViewModel());
+                    tableViewController.getOneAtATimeMatchesViewModel(),
+                    TaskCompletionAlertFactory.alertOnFailure(except ->
+                            //TODO internationalise string
+                            "Failed to make matches: %s".formatted(except.getLocalizedMessage())));
                     });
     }
     
@@ -90,19 +94,27 @@ public class MainView implements Initializable {
                 //FIXME: protect against illegal use: no selection, confirmation for multiple selection...
                 tableViewController.getSelectedPerson(PersonType.MENTEE),
                 tableViewController.getSelectedPerson(PersonType.MENTOR), 
-                tableViewController.getOneAtATimeMatchesViewModel()));
+                tableViewController.getOneAtATimeMatchesViewModel(),
+                TaskCompletionAlertFactory.alertOnFailure(except -> 
+                        "Failed to make manual match: %s".formatted(except))));
     }
     
     private void configureButtonToDeleteManualMatch(Button button, String buttonCaption){
         ViewTools.configureButton(button, buttonCaption, event -> vm.removeSingleMatch(
                 tableViewController.getSelectedManualMatch(), 
-                tableViewController.getOneAtATimeMatchesViewModel()));
+                tableViewController.getOneAtATimeMatchesViewModel(),
+                TaskCompletionAlertFactory.alertOnFailure(except -> 
+                        //TODO: internationalise string
+                        "Failed to remove manual match : %s".formatted(except.getLocalizedMessage()))));
     }
     
     private void configureButtonToForbidMatch(Button button, String buttonCaption){
         ViewTools.configureButton(button, buttonCaption, event -> vm.addForbiddenMatch(
                 tableViewController.getSelectedPerson(PersonType.MENTEE), 
-                tableViewController.getSelectedPerson(PersonType.MENTOR)));
+                tableViewController.getSelectedPerson(PersonType.MENTOR),
+                TaskCompletionAlertFactory.alertOnFailure(except -> 
+                        //TODO internationalise String
+                        "Failed to add match : %s".formatted(except.getLocalizedMessage()))));
     }
     
     private void configureButtonToExportMatches(Button button, String buttonCaption){
@@ -164,9 +176,17 @@ public class MainView implements Initializable {
         globalConfigurationView.getExportConfigurationView().setViewModel(exportVM);
         globalConfigurationView.setValidationAction(() -> {
             vm.getResultConfiguration(List.of(tableViewController.getBatchMatchesViewModel(),
-                            tableViewController.getOneAtATimeMatchesViewModel()));
+                            tableViewController.getOneAtATimeMatchesViewModel()),
+                    TaskCompletionAlertFactory.alertOnFailure(except -> 
+                            //TODO internationalize string
+                            "Failed to get result configuration: %s"
+                                    .formatted(except.getLocalizedMessage())));
             for (PersonType type : PersonType.values()){
-                vm.getPersons(tableViewController.getPersonViewModel(type), type);
+                vm.getPersons(tableViewController.getPersonViewModel(type), type,
+                        TaskCompletionAlertFactory.alertOnFailure(except -> 
+                                //TODO internationalise string
+                                "Failed to load %s : %s".formatted(type, 
+                                        except.getLocalizedMessage())));
             }
             tableViewController.getOneAtATimeMatchesViewModel().clear();
             tableViewController.getBatchMatchesViewModel().clear();
@@ -196,7 +216,13 @@ public class MainView implements Initializable {
                 (ForbiddenMatchesView) loader.getController();
         ForbiddenMatchListViewModel forbiddenMatchesViewModel = vm.getForbiddenMatches();
         view.setViewModel(forbiddenMatchesViewModel);
-        view.setRemovalButtonAction((event, viewModel) -> vm.removeForbiddenMatch(viewModel));
+        AbstractTask.TaskCompletionCallback<Object> callback = 
+                TaskCompletionAlertFactory.alertOnFailure(except -> 
+                        //TODO internationalise String
+                        "Failed to remove forbidden match: %s"
+                                .formatted(except.getLocalizedMessage()));
+        view.setRemovalButtonAction((event, viewModel) -> vm.removeForbiddenMatch(viewModel,
+                callback));
         StageBuilder builder = new StageBuilder().withTitle("Forbidden matches");
         builder.build(node).show();
     }

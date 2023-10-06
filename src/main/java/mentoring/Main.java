@@ -9,7 +9,6 @@ public class Main {
     }
     /**
      * TODO: link GUI to code.
-     * 5. Fix alerting logic: Alert is a View class, not a ViewModel one. Need to handle AbstractTask TODOs
      * 6. Handle refactoring TODOs
      * 7. Add an indicator for when "Run" should be clicked
      * 9a. Add global configuration parameters for magic numbers.
@@ -22,6 +21,7 @@ public class Main {
      * for person conf, missing columns in file header
      * 12. Alert if criteria configuration is not consistent with person configuration
      * 13. Choose criteria configuration (file)
+     * Rationalise tests (see ForbiddenMatchTaskTest for NPE testing)
      * 14. Modify assignmentproblem to handle cancellation and offer progress status
      * 15. Use new version of assignmentproblem to allow cancellation and display progress status
      * 16. Check good practice for storing FXML files (resources vs in packages)

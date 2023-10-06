@@ -3,10 +3,6 @@ package mentoring.viewmodel.tasks;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-import static javafx.concurrent.Worker.State.FAILED;
-import static javafx.concurrent.Worker.State.READY;
-import static javafx.concurrent.Worker.State.SUCCEEDED;
-import javafx.scene.control.Alert;
 import mentoring.configuration.CriteriaConfiguration;
 import mentoring.datastructure.Person;
 import mentoring.match.Match;
@@ -28,21 +24,13 @@ public class SingleMatchTask extends AbstractTask<Match<Person, Person>> {
      * @param criteriaVM the ViewModel that will be used to get the configuration
      * @param mentee the mentee to match
      * @param mentor the mentor to match
+     * @param callback the method to call when the task has run
      */
     public SingleMatchTask(PersonMatchesViewModel resultVM, 
             ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> criteriaVM, 
-            Person mentee, Person mentor) {
-        //TODO refactor: move to View layer
-        super(task -> {
-            State state = task.getState();
-            switch(state){
-                case READY, SUCCEEDED -> {/*no-op, excluded from default*/}//FIXME READY should be deleted (it erroneously fails a test)
-                case FAILED -> new Alert(Alert.AlertType.ERROR, 
-                        task.getException().getLocalizedMessage()).show();
-                default -> new Alert(Alert.AlertType.WARNING,
-                            "Callback was called before task was finished: " + state).show();
-            }
-        });
+            Person mentee, Person mentor, 
+            TaskCompletionCallback<? super Match<Person, Person>> callback) {
+        super(callback);
         this.resultVM = Objects.requireNonNull(resultVM);
         this.criteriaVM = Objects.requireNonNull(criteriaVM);
         this.mentee = Objects.requireNonNull(mentee);

@@ -73,17 +73,23 @@ class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
         return test(Stream.of(argumentsSupplier().iterator().next()), 
                 "constructor throws NPE on null input", 
                 args -> Assertions.assertAll(
-                        assertConstructorThrowsNPE(null, args.configurationVM, args.mentee, args.mentor),
-                        assertConstructorThrowsNPE(args.updatedVM, null, args.mentee, args.mentor),
-                        assertConstructorThrowsNPE(args.updatedVM, args.configurationVM, null, args.mentor),
-                        assertConstructorThrowsNPE(args.updatedVM, args.configurationVM, args.mentee, null)));
+                        assertConstructorThrowsNPE(null, args.configurationVM, args.mentee, 
+                                args.mentor, args.callback),
+                        assertConstructorThrowsNPE(args.updatedVM, null, args.mentee, 
+                                args.mentor, args.callback),
+                        assertConstructorThrowsNPE(args.updatedVM, args.configurationVM, null, 
+                                args.mentor, args.callback),
+                        assertConstructorThrowsNPE(args.updatedVM, args.configurationVM, args.mentee, 
+                                null, args.callback),
+                        assertConstructorThrowsNPE(args.updatedVM, args.configurationVM, args.mentee, 
+                                args.mentor, null)));
     }
     
     static Executable assertConstructorThrowsNPE(PersonMatchesViewModel vm, 
             ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> configuration, 
-            Person mentee, Person mentor){
+            Person mentee, Person mentor, AbstractTask.TaskCompletionCallback<Object> callback){
         return () -> Assertions.assertThrows(NullPointerException.class, 
-                () -> new SingleMatchTask(vm, configuration, mentee, mentor));
+                () -> new SingleMatchTask(vm, configuration, mentee, mentor, callback));
     }
     
     static class SingleMatchTaskArgs extends TestArgs {
@@ -94,6 +100,7 @@ class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
         final Person mentee;
         final Person mentor;
         final int expectedCost;
+        final AbstractTask.TaskCompletionCallback<Object> callback = task -> {};
         
         final static Person MENTEE = new PersonBuilder().withFullName("mentee").build();
         final static Person MENTOR = new PersonBuilder().withFullName("mentor").build();
@@ -119,7 +126,8 @@ class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
         }
         
         SingleMatchTask convert(){
-            SingleMatchTask task = new SingleMatchTask(updatedVM, configurationVM, mentee, mentor);
+            SingleMatchTask task = new SingleMatchTask(updatedVM, configurationVM, mentee, mentor, 
+                    callback);
             return task;
         }
         

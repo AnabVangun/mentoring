@@ -42,26 +42,28 @@ class ForbiddenMatchRemovalTaskTest implements TestFramework<ForbiddenMatchRemov
         return test(Stream.of(new ForbiddenMatchRemovalTaskArgs("specific test case")), 
                 "constructor throws an NPE on null input", args ->
                         Assertions.assertAll(
-                                assertConstructorThrowsNPE(null, args.toRemove),
-                                assertConstructorThrowsNPE(args.list, null)));
+                                assertConstructorThrowsNPE(null, args.toRemove, args.callback),
+                                assertConstructorThrowsNPE(args.list, null, args.callback),
+                                assertConstructorThrowsNPE(args.list, args.toRemove, null)));
     }
     
     private static Executable assertConstructorThrowsNPE(ForbiddenMatchListViewModel list,
-            ForbiddenMatchViewModel toRemove){
+            ForbiddenMatchViewModel toRemove, AbstractTask.TaskCompletionCallback<Object> callback){
         return () -> Assertions.assertThrows(NullPointerException.class, 
-                () -> new ForbiddenMatchRemovalTask(list, toRemove));
+                () -> new ForbiddenMatchRemovalTask(list, toRemove, callback));
     }
     
     static class ForbiddenMatchRemovalTaskArgs extends TestArgs {
         final ForbiddenMatchListViewModel list = Mockito.mock(ForbiddenMatchListViewModel.class);
         final ForbiddenMatchViewModel toRemove = Mockito.mock(ForbiddenMatchViewModel.class);
+        final AbstractTask.TaskCompletionCallback<Object> callback = task -> {};
 
         ForbiddenMatchRemovalTaskArgs(String testCase) {
             super(testCase);
         }
         
         ForbiddenMatchRemovalTask convert(){
-            return new ForbiddenMatchRemovalTask(list, toRemove);
+            return new ForbiddenMatchRemovalTask(list, toRemove, callback);
         }
     }
 }

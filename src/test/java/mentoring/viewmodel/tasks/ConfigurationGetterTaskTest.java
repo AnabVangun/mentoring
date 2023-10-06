@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 import mentoring.configuration.DummyConfiguration;
 import mentoring.viewmodel.base.ConfigurableViewModel;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
+import mentoring.viewmodel.tasks.AbstractTask.TaskCompletionCallback;
 import mentoring.viewmodel.tasks.ConfigurationGetterTaskTest.ConfigurationGetterTaskArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
@@ -55,17 +56,20 @@ class ConfigurationGetterTaskTest implements TestFramework<ConfigurationGetterTa
             List<ConfigurableViewModel<DummyConfiguration>> resultVMWithNull = new ArrayList<>();
             resultVMWithNull.add(Mockito.mock(ConfigurableViewModel.class));
             resultVMWithNull.add(null);
-            Assertions.assertAll(assertConstructorThrowsNPE(null, resultVM),
-                    assertConstructorThrowsNPE(configurationVM, null),
-                    assertConstructorThrowsNPE(configurationVM, resultVMWithNull));
+            TaskCompletionCallback<DummyConfiguration> callback = configuration -> {};
+            Assertions.assertAll(assertConstructorThrowsNPE(null, resultVM, callback),
+                    assertConstructorThrowsNPE(configurationVM, null, callback),
+                    assertConstructorThrowsNPE(configurationVM, resultVMWithNull, callback),
+                    assertConstructorThrowsNPE(configurationVM, resultVM, null));
         });
     }
     
     Executable assertConstructorThrowsNPE(
             ConfigurationPickerViewModel<DummyConfiguration> configurationVM,
-            List<ConfigurableViewModel<DummyConfiguration>> resultVM){
+            List<ConfigurableViewModel<DummyConfiguration>> resultVM,
+            TaskCompletionCallback<DummyConfiguration> callback){
         return () -> Assertions.assertThrows(NullPointerException.class, 
-                () -> new ConfigurationGetterTask<>(configurationVM, resultVM));
+                () -> new ConfigurationGetterTask<>(configurationVM, resultVM, callback));
     }
     
     DummyConfiguration callTask(ConfigurationGetterTask<DummyConfiguration> task){
@@ -84,6 +88,7 @@ class ConfigurationGetterTaskTest implements TestFramework<ConfigurationGetterTa
         final List<ConfigurableViewModel<DummyConfiguration>> resultViewModels;
         final DummyConfiguration expectedConfiguration = 
                 new DummyConfiguration("expected configuration");
+        final TaskCompletionCallback<DummyConfiguration> callback = configuration -> {};
         @SuppressWarnings("unchecked")
         ConfigurationGetterTaskArgs(String testCase, int numberOfResultVM){
             super(testCase);
@@ -101,7 +106,7 @@ class ConfigurationGetterTaskTest implements TestFramework<ConfigurationGetterTa
         }
         
         ConfigurationGetterTask<DummyConfiguration> convert(){
-            return new ConfigurationGetterTask<>(configurationVM, resultViewModels);
+            return new ConfigurationGetterTask<>(configurationVM, resultViewModels, callback);
         }
     }
 }

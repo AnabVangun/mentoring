@@ -63,16 +63,22 @@ class PersonGetterTaskTest implements TestFramework<PersonGetterTaskArgs>{
         return test(Stream.of(new PersonGetterTaskArgs("unique test case", List.of())),
                 "constructor throws an NPE on null input", 
                 args -> Assertions.assertAll(
-                        assertConstructorThrowsNPE(null, args.personPicker, args.configurationPicker),
-                        assertConstructorThrowsNPE(args.updatedVM, null, args.configurationPicker),
-                        assertConstructorThrowsNPE(args.updatedVM, args.personPicker, null)));
+                        assertConstructorThrowsNPE(null, args.personPicker, 
+                                args.configurationPicker, args.callback),
+                        assertConstructorThrowsNPE(args.updatedVM, null, 
+                                args.configurationPicker, args.callback),
+                        assertConstructorThrowsNPE(args.updatedVM, args.personPicker, 
+                                null, args.callback),
+                        assertConstructorThrowsNPE(args.updatedVM, args.personPicker, 
+                                args.configurationPicker, null)));
     }
     
     static Executable assertConstructorThrowsNPE(PersonListViewModel vm, 
             FilePickerViewModel<List<Person>> personPicker, 
-            ConfigurationPickerViewModel<PersonConfiguration> configurationPicker){
+            ConfigurationPickerViewModel<PersonConfiguration> configurationPicker,
+            AbstractTask.TaskCompletionCallback<? super List<Person>> callback){
         return () -> Assertions.assertThrows(NullPointerException.class, 
-                () -> new PersonGetterTask(vm, personPicker, configurationPicker));
+                () -> new PersonGetterTask(vm, personPicker, configurationPicker, callback));
     }
     
     static class PersonGetterTaskArgs extends TestArgs {
@@ -80,6 +86,8 @@ class PersonGetterTaskTest implements TestFramework<PersonGetterTaskArgs>{
         final List<Person> expectedResults;
         final FilePickerViewModel<List<Person>> personPicker;
         final ConfigurationPickerViewModel<PersonConfiguration> configurationPicker;
+        final AbstractTask.TaskCompletionCallback<Object> callback = task -> {};
+        
         @SuppressWarnings("unchecked")
         PersonGetterTaskArgs(String testCase, List<Person> expectedResults){
             super(testCase);
@@ -96,7 +104,7 @@ class PersonGetterTaskTest implements TestFramework<PersonGetterTaskArgs>{
         }
         
         PersonGetterTask convert(){
-            return new PersonGetterTask(updatedVM, personPicker, configurationPicker);
+            return new PersonGetterTask(updatedVM, personPicker, configurationPicker, callback);
         }
     }
 }

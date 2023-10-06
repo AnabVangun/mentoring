@@ -41,25 +41,28 @@ class SingleMatchRemovalTaskTest implements TestFramework<SingleMatchRemovalTask
     @TestFactory
     Stream<DynamicNode> removeSingleMatch_NPE(){
         return test("constructor throws an NPE on null input", args ->
-                Assertions.assertAll(assertConstructorThrowsNPE(null, args.removedVM),
-                        assertConstructorThrowsNPE(args.updatedVM, null)));
+                Assertions.assertAll(assertConstructorThrowsNPE(null, args.removedVM, args.callback),
+                        assertConstructorThrowsNPE(args.updatedVM, null, args.callback),
+                        assertConstructorThrowsNPE(args.updatedVM, args.removedVM, null)));
     }
     
     private static Executable assertConstructorThrowsNPE(PersonMatchesViewModel updatedVM,
-            PersonMatchViewModel removedVM){
+            PersonMatchViewModel removedVM, AbstractTask.TaskCompletionCallback<? super Void> callback){
         return () -> Assertions.assertThrows(NullPointerException.class,
-                () -> new SingleMatchRemovalTask(updatedVM, removedVM));
+                () -> new SingleMatchRemovalTask(updatedVM, removedVM, callback));
     }
     
     static class SingleMatchRemovalTaskArgs extends TestArgs{
         final PersonMatchesViewModel updatedVM = Mockito.mock(PersonMatchesViewModel.class);
         final PersonMatchViewModel removedVM = Mockito.mock(PersonMatchViewModel.class);
+        final AbstractTask.TaskCompletionCallback<Object> callback = task -> {};
+        
         SingleMatchRemovalTaskArgs(String testCase){
             super(testCase);
         }
         
         SingleMatchRemovalTask convert(){
-            return new SingleMatchRemovalTask(updatedVM, removedVM);
+            return new SingleMatchRemovalTask(updatedVM, removedVM, callback);
         }
     }
 }

@@ -35,28 +35,30 @@ class ForbiddenMatchTaskTest implements TestFramework<ForbiddenMatchTaskArgs>{
     
     @TestFactory
     Stream<DynamicNode> constructor_NPE(){
-        return test(Stream.of("unique test case"), "constructor throws NPE on null input", args -> {
-            ForbiddenMatchListViewModel viewModel = new ForbiddenMatchListViewModel();
-            PersonBuilder builder = new PersonBuilder();
-            Person mentee = builder.withFullName("mentee").build();
-            Person mentor = builder.withFullName("mentor").build();
-            Assertions.assertAll(
-                    () -> assertConstructorThrowsNPE(null, mentee, mentor, "null VM"),
-                    () -> assertConstructorThrowsNPE(viewModel, null, mentor, "null mentee"),
-                    () -> assertConstructorThrowsNPE(viewModel, mentee, null, "null mentor"));
-        });
+        return test(Stream.of(new ForbiddenMatchTaskArgs("unique test case")), 
+                "constructor throws NPE on null input", args -> Assertions.assertAll(
+                        () -> assertConstructorThrowsNPE(null, args.mentee, args.mentor, args.callback, 
+                                "null VM"),
+                    () -> assertConstructorThrowsNPE(args.vm, null, args.mentor, args.callback,
+                            "null mentee"),
+                    () -> assertConstructorThrowsNPE(args.vm, args.mentee, null, args.callback,
+                            "null mentor"),
+                    () -> assertConstructorThrowsNPE(args.vm, args.mentee, args.mentor, null, 
+                            "null callback")));
     }
     
     static Executable assertConstructorThrowsNPE(ForbiddenMatchListViewModel viewModel, 
-            Person mentee, Person mentor, String message){
+            Person mentee, Person mentor, AbstractTask.TaskCompletionCallback<? super Void> callback,
+            String message){
         return () -> Assertions.assertThrows(NullPointerException.class, () -> 
-                new ForbiddenMatchTask(viewModel, mentee, mentor), message);
+                new ForbiddenMatchTask(viewModel, mentee, mentor, callback), message);
     }
     
     static class ForbiddenMatchTaskArgs extends TestArgs {
         final ForbiddenMatchListViewModel vm = Mockito.mock(ForbiddenMatchListViewModel.class);
         final Person mentee;
         final Person mentor;
+        final AbstractTask.TaskCompletionCallback<Object> callback = task -> {};
         
         ForbiddenMatchTaskArgs(String testCase){
             super(testCase);
@@ -66,7 +68,7 @@ class ForbiddenMatchTaskTest implements TestFramework<ForbiddenMatchTaskArgs>{
         }
         
         ForbiddenMatchTask convert(){
-            return new ForbiddenMatchTask(vm, mentee, mentor);
+            return new ForbiddenMatchTask(vm, mentee, mentor, callback);
         }
     }
 }

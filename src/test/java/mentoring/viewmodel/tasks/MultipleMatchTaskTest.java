@@ -118,27 +118,31 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
                                 assertConstructorThrowsNPE("result VM", null, 
                                         args.excludedMatchesVM, 
                                         args.configurationVM, args.forbiddenMatchVM, 
-                                        args.mentees, args.mentors),
+                                        args.mentees, args.mentors, args.callback),
                                 () -> Assertions.assertDoesNotThrow(() -> new MultipleMatchTask(args.resultVM,
                                         null, 
                                         args.configurationVM, args.forbiddenMatchVM, 
-                                        args.mentees, args.mentors), "excluded matches VM"),
+                                        args.mentees, args.mentors, args.callback), "excluded matches VM"),
                                 assertConstructorThrowsNPE("configuration VM", args.resultVM, 
                                         args.excludedMatchesVM, 
                                         null, args.forbiddenMatchVM, 
-                                        args.mentees, args.mentors),
+                                        args.mentees, args.mentors, args.callback),
                                 () -> Assertions.assertDoesNotThrow(() -> new MultipleMatchTask(args.resultVM, 
                                         args.excludedMatchesVM, 
                                         args.configurationVM, null, 
-                                        args.mentees, args.mentors), "forbidden match VM"),
+                                        args.mentees, args.mentors, args.callback), "forbidden match VM"),
                                 assertConstructorThrowsNPE("mentees", args.resultVM, 
                                         args.excludedMatchesVM, 
                                         args.configurationVM, args.forbiddenMatchVM, 
-                                        null, args.mentors),
+                                        null, args.mentors, args.callback),
                                 assertConstructorThrowsNPE("mentors", args.resultVM, 
                                         args.excludedMatchesVM, 
                                         args.configurationVM, args.forbiddenMatchVM, 
-                                        args.mentees, null)));
+                                        args.mentees, null, args.callback),
+                                assertConstructorThrowsNPE("callback", args.resultVM, 
+                                        args.excludedMatchesVM, 
+                                        args.configurationVM, args.forbiddenMatchVM, 
+                                        args.mentees, args.mentors, null)));
     }
     
     Executable assertConstructorThrowsNPE(String label, PersonMatchesViewModel resultVM, 
@@ -146,10 +150,11 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
             ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> criteriaVM, 
             ForbiddenMatchListViewModel forbiddenMatchesVM,
             List<Person> mentees, 
-            List<Person> mentors){
+            List<Person> mentors,
+            AbstractTask.TaskCompletionCallback<? super Void> callback){
         return () -> Assertions.assertThrows(NullPointerException.class, 
                 () -> new MultipleMatchTask(resultVM, excludedMatchesVM, criteriaVM, 
-                        forbiddenMatchesVM, mentees, mentors), label);
+                        forbiddenMatchesVM, mentees, mentors, callback), label);
     }
     
     static class MultipleMatchTaskArgs extends TestArgs{
@@ -161,6 +166,7 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
         final ForbiddenMatchListViewModel forbiddenMatchVM;
         final List<Person> mentees;
         final List<Person> mentors;
+        final AbstractTask.TaskCompletionCallback<Object> callback = task -> {};
         
         MultipleMatchTaskArgs(String testCase, boolean withExclusionVM, boolean withForbiddenMatchVM){
             super(testCase);
@@ -203,7 +209,7 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
         
         MultipleMatchTask convert(){
             return new MultipleMatchTask(resultVM, excludedMatchesVM, configurationVM, 
-                    forbiddenMatchVM, mentees, mentors);
+                    forbiddenMatchVM, mentees, mentors, callback);
         }
         
         void setManualMatch(Person mentee, Person mentor){

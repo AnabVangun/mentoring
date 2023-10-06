@@ -86,11 +86,13 @@ public class MainViewModel {
      * Get a list of persons.
      * @param resultVM the ViewModel to update with the results
      * @param type of person to load
+     * @param callback the method to call when the task has run
      * @return a Future object that can be used to control the execution and completion of the task.
      */
-    public Future<?> getPersons(PersonListViewModel resultVM, PersonType type){
+    public Future<?> getPersons(PersonListViewModel resultVM, PersonType type,
+            AbstractTask.TaskCompletionCallback<? super List<Person>> callback){
         return matchMaker.submit(new PersonGetterTask(resultVM, personPickers.get(type), 
-                personConfigurations.get(type)));
+                personConfigurations.get(type), callback));
     }
     
     /**
@@ -100,14 +102,16 @@ public class MainViewModel {
      * @param resultVM the ViewModel to update with the results
      * @param excludedMatchesVM the optional ViewModel containing matches that should be excluded
      *      from the match-making process
+     * @param callback the method to call when the task has run
      * @return a Future object that can be used to control the execution and completion of the task.
      */
     public Future<?> makeMatches(PersonListViewModel menteeVM, PersonListViewModel mentorVM,
-            PersonMatchesViewModel resultVM, PersonMatchesViewModel excludedMatchesVM){
+            PersonMatchesViewModel resultVM, PersonMatchesViewModel excludedMatchesVM,
+            AbstractTask.TaskCompletionCallback<? super Void> callback){
         return matchMaker.submit(new MultipleMatchTask(resultVM, excludedMatchesVM, 
                 matchConfiguration, extraForbiddenMatches,
                 menteeVM.getUnderlyingData(),
-                mentorVM.getUnderlyingData()));
+                mentorVM.getUnderlyingData(), callback));
     }
     
     /**
@@ -115,23 +119,26 @@ public class MainViewModel {
      * @param menteeVM the ViewModel containing the mentee
      * @param mentorVM the ViewModel containing the mentor
      * @param resultVM the ViewModel to update with the results
+     * @param callback the method to call when the task has run
      * @return a Future object that can be used to control the execution and completion of the task.
      */
     public Future<?> makeSingleMatch(PersonViewModel menteeVM, PersonViewModel mentorVM,
-            PersonMatchesViewModel resultVM){
+            PersonMatchesViewModel resultVM, AbstractTask.TaskCompletionCallback<Object> callback){
         return matchMaker.submit(new SingleMatchTask(resultVM, matchConfiguration, 
-                menteeVM.getData(), 
-                mentorVM.getData()));
+                menteeVM.getData(), mentorVM.getData(), callback));
     }
     
     /**
      * Remove a match between two persons.
      * @param toRemove the ViewModel containing the match to remove
      * @param resultVM the ViewModel to update
+     * @param callback the method to call when the task has run
      * @return a Future object that can be used to control the execution and completion of the task.
      */
-    public Future<?> removeSingleMatch(PersonMatchViewModel toRemove, PersonMatchesViewModel resultVM){
-        return matchMaker.submit(new SingleMatchRemovalTask(resultVM, toRemove));
+    public Future<?> removeSingleMatch(PersonMatchViewModel toRemove, 
+            PersonMatchesViewModel resultVM, 
+            AbstractTask.TaskCompletionCallback<? super Void> callback){
+        return matchMaker.submit(new SingleMatchRemovalTask(resultVM, toRemove, callback));
     }
     
     /**
@@ -155,29 +162,37 @@ public class MainViewModel {
      * Declare a match between a mentee and a mentor as forbidden.
      * @param menteeVM the ViewModel encapsulating the mentee that must not be matched
      * @param mentorVM the ViewModel encapsulating the mentor that must not be matched
+     * @param callback the method to call when the task has run
      * @return a Future object that can be used to control the execution and completion of the task.
      */
-    public Future<?> addForbiddenMatch(PersonViewModel menteeVM, PersonViewModel mentorVM){
+    public Future<?> addForbiddenMatch(PersonViewModel menteeVM, PersonViewModel mentorVM,
+            AbstractTask.TaskCompletionCallback<? super Void> callback){
         return matchMaker.submit(new ForbiddenMatchTask(extraForbiddenMatches, 
-                menteeVM.getData(), mentorVM.getData()));
+                menteeVM.getData(), mentorVM.getData(), callback));
     }
     
     /**
      * Declare a forbidden match between a mentee and a mentor as allowed.
      * @param toRemove the ViewModel encapsulating the forbidden match to allow
+     * @param callback the method to call when the task has run
      * @return a Future object that can be used to control the execution and completion of the task.
      */
-    public Future<?> removeForbiddenMatch(ForbiddenMatchViewModel toRemove){
-        return matchMaker.submit(new ForbiddenMatchRemovalTask(extraForbiddenMatches, toRemove));
+    public Future<?> removeForbiddenMatch(ForbiddenMatchViewModel toRemove,
+            AbstractTask.TaskCompletionCallback<? super Void> callback){
+        return matchMaker.submit(new ForbiddenMatchRemovalTask(extraForbiddenMatches, toRemove,
+                callback));
     }
     
     /**
      * Get a {@link ResultConfiguration}.
      * @param resultVMs the ViewModels to update with the configuration
+     * @param callback the method to call when the task has run
      * @return a Future object that can be used to control the execution and completion of the task.
      */
-    public Future<?> getResultConfiguration(List<? extends PersonMatchesViewModel> resultVMs) {
-        return matchMaker.submit(new ConfigurationGetterTask<>(getResultConfiguration(), resultVMs));
+    public Future<?> getResultConfiguration(List<? extends PersonMatchesViewModel> resultVMs, 
+            AbstractTask.TaskCompletionCallback<Object> callback) {
+        return matchMaker.submit(new ConfigurationGetterTask<>(getResultConfiguration(), resultVMs,
+                callback));
     }
     
     /**
