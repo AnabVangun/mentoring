@@ -63,26 +63,6 @@ class AbstractTaskTest implements TestFramework<AbstractTaskArgs>{
                 Assertions.assertThrows(NullPointerException.class, () -> new DummyTask(null, true)));
     }
     
-    //TODO refactor: extract into a generic tested test tool.
-    /*
-    static List<EnumSet<AbstractTask.ALERTING_TYPE>> getAllSetsContaining(AbstractTask.ALERTING_TYPE needed){
-        List<EnumSet<AbstractTask.ALERTING_TYPE>> sets = new LinkedList<>();
-        sets.add(EnumSet.noneOf(AbstractTask.ALERTING_TYPE.class));
-        for (AbstractTask.ALERTING_TYPE type : AbstractTask.ALERTING_TYPE.values()){
-            List<EnumSet<AbstractTask.ALERTING_TYPE>> tmpSets = new LinkedList<>();
-            for (EnumSet<AbstractTask.ALERTING_TYPE> set : sets){
-                if(! type.equals(needed)){
-                    tmpSets.add(set);
-                }
-                EnumSet<AbstractTask.ALERTING_TYPE> newSet = EnumSet.copyOf(set);
-                newSet.add(type);
-                tmpSets.add(newSet);
-            }
-            sets = tmpSets;
-        }
-        return sets;
-    }*/
-    
     static class AbstractTaskArgs extends TestArgs {
         final DummyTask task;
         @SuppressWarnings("unchecked")

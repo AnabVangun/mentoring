@@ -15,6 +15,7 @@ import javafx.stage.Window;
  */
 public class StageBuilder {
     private Stage stage = new Stage();
+    final String MAIN_CSS = StageBuilder.class.getResource("/mentoring/styles.css").toExternalForm();
     /**
      * Finalise the creation of a new {@link Stage} instance. After this, the builder instance 
      * is reinitialised.
@@ -23,12 +24,22 @@ public class StageBuilder {
      */
     public Stage build(Parent root){
         Scene scene = new Scene(root);
-        //TODO extract main CSS as global parameter
-        scene.getStylesheets().add(getClass().getResource("/mentoring/styles.css").toExternalForm());
+        scene.getStylesheets().add(MAIN_CSS);
         stage.setScene(scene);
         Stage result = stage;
         stage = new Stage();
         return result;
+    }
+    
+    /**
+     * Initialise this StageBuilder with a given Stage. Optional, this method MUST be called before
+     * any other in the process of building a stage.
+     * @param stage to build upon
+     * @return this builder instance (Fluent API)
+     */
+    public StageBuilder initialise(Stage stage){
+        this.stage = stage;
+        return this;
     }
     
     /**
