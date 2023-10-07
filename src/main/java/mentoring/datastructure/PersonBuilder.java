@@ -26,8 +26,7 @@ public final class PersonBuilder {
         name = DEFAULT_NAME;
     }
     
-    public <T> PersonBuilder withProperty(String property, T value){
-        //TODO T is not used, replace it with Object
+    public PersonBuilder withProperty(String property, Object value){
         properties.put(Objects.requireNonNull(property), Objects.requireNonNull(value));
         return this;
     }

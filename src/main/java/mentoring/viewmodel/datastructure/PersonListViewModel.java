@@ -49,7 +49,6 @@ public class PersonListViewModel extends SimpleObservable
     }
     
     public List<Person> getUnderlyingData(){
-        //TODO: there might be a layer issue, a viewModel should not publicly expose data objects.
         updateIfNecessary();
         return underlyingData;
     }
