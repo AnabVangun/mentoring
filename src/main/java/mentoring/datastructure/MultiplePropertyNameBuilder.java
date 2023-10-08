@@ -6,19 +6,12 @@ package mentoring.datastructure;
  * {@link MultiplePropertyName} objects remain immutable.
  * This class is not thread-safe.
  */
-public class MultiplePropertyNameBuilder extends PropertyNameBuilder {
+public class MultiplePropertyNameBuilder extends PropertyNameBuilder<MultiplePropertyNameBuilder> {
     private AggregationType aggregation;
     private boolean aggregationSet = false;
     
     @Override
-    public MultiplePropertyNameBuilder prepare(String name, PropertyType<?> type){
-        super.prepare(name, type);
-        return this;
-    }
-    
-    @Override
-    public MultiplePropertyNameBuilder withHeaderName(String headerName){
-        super.withHeaderName(headerName);
+    protected MultiplePropertyNameBuilder getThis(){
         return this;
     }
     
@@ -42,7 +35,7 @@ public class MultiplePropertyNameBuilder extends PropertyNameBuilder {
     
     @Override
     public MultiplePropertyName<?,?> build(){
-        checkState();
+        assertIsInitialised();
         checkAggregation();
         MultiplePropertyName<?,?> property = switch(aggregation){
             case INDEXED -> new IndexedPropertyName<>(getName(), getHeaderName(), getType());

@@ -1,14 +1,14 @@
 package mentoring.datastructure;
 
 import java.util.stream.Stream;
-import mentoring.datastructure.PropertyNameBuilderTest.PropertyNameBuilderArgs;
+import mentoring.datastructure.PropertyNameBuilderTest.SimplePropertyNameBuilderArgs;
 
 class PropertyNameBuilderTest extends 
-        AbstractPropertyNameBuilderTest<PropertyNameBuilderArgs, PropertyNameBuilder>{
+        AbstractPropertyNameBuilderTest<SimplePropertyNameBuilderArgs, SimplePropertyNameBuilder>{
     //TODO refactor rename SimplePropertyNameBuilderTest
     @Override
-    public Stream<PropertyNameBuilderArgs> argumentsSupplier(){
-        return Stream.of(new PropertyNameBuilderArgs("standard case", "foo", "bar", 
+    public Stream<SimplePropertyNameBuilderArgs> argumentsSupplier(){
+        return Stream.of(new SimplePropertyNameBuilderArgs("standard case", "foo", "bar", 
                 PropertyType.SIMPLIFIED_LOWER_STRING));
     }  
 
@@ -18,15 +18,15 @@ class PropertyNameBuilderTest extends
     }
     
     
-    static class PropertyNameBuilderArgs extends AbstractPropertyNameBuilderArgs<PropertyNameBuilder>{
+    static class SimplePropertyNameBuilderArgs extends AbstractPropertyNameBuilderArgs<SimplePropertyNameBuilder>{
         
-        PropertyNameBuilderArgs(String testCase, String name, String headerName, 
+        SimplePropertyNameBuilderArgs(String testCase, String name, String headerName, 
                 PropertyType<?> type) {
             super(testCase, name, headerName, type);
         }
         
         @Override
-        protected PropertyNameBuilder convert() {
+        protected SimplePropertyNameBuilder convert() {
             return new SimplePropertyNameBuilder();
         }
         

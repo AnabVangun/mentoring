@@ -5,9 +5,9 @@ package mentoring.datastructure;
  * objects: the internal state is reinitialised after each creation to make sure that 
  * {@link SimplePropertyName} objects remain immutable.
  * This class is not thread-safe.
+ * @param <T> self-type
  */
-public abstract class PropertyNameBuilder {
-    //TODO refactor: separate what should be in SimplePropertyNameBuilder
+public abstract class PropertyNameBuilder<T extends PropertyNameBuilder<T>> {
     private String name = null;
     private String headerName = null;
     private PropertyType<?> type = null;
@@ -17,7 +17,7 @@ public abstract class PropertyNameBuilder {
      * Return the name of the future property.
      */
     protected String getName(){
-        checkState();
+        assertIsInitialised();
         return name;
     }
     
@@ -25,7 +25,7 @@ public abstract class PropertyNameBuilder {
      * Return the name of the column corresponding to the future property in CSV files.
      */
     protected String getHeaderName(){
-        checkState();
+        assertIsInitialised();
         return headerName;
     }
     
@@ -33,12 +33,11 @@ public abstract class PropertyNameBuilder {
      * Return the type of data stored in the property.
      */
     protected PropertyType<?> getType(){
-        checkState();
+        assertIsInitialised();
         return type;
     }
     
-    protected void checkState(){
-        //TODO refactor: rename assertIsInitialised
+    protected void assertIsInitialised(){
         if (! initialised){
             throw new IllegalStateException("Tried to call a method on an unitialised builder");
         }
@@ -50,17 +49,18 @@ public abstract class PropertyNameBuilder {
      * @param type of data stored in the property
      * @return this instance for use in fluent API
      */
-    public PropertyNameBuilder prepare(String name, PropertyType<?> type){
+    public T prepare(String name, PropertyType<?> type){
         reset();
         this.name = name;
         this.type = type;
         headerName = name;
         initialised = true;
-        return this;
+        return getThis();
     }
     
     /**
-     * Reset the builder state. This method should probably be overridden by subclasses.
+     * Reset the builder state. This method SHOULD be overridden by subclasses adding fields 
+     * to reset.
      */
     protected void reset(){
         initialised = false;
@@ -75,10 +75,16 @@ public abstract class PropertyNameBuilder {
      * @throws IllegalStateException when calling this method before 
      * {@link #prepare(java.lang.String, mentoring.datastructure.PropertyType) }
      */
-    public PropertyNameBuilder withHeaderName(String headerName) throws IllegalStateException{
+    public T withHeaderName(String headerName) throws IllegalStateException{
         this.headerName = headerName;
-        return this;
+        return getThis();
     }
+    
+    /**
+     * All subclasses SHOULD implement this method with a simple "return this;".
+     * @return the current object
+     */
+    protected abstract T getThis();
     
     /**
      * Build the actual property.

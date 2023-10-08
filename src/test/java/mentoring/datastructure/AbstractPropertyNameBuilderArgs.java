@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.function.Executable;
 import test.tools.TestArgs;
 
-abstract class AbstractPropertyNameBuilderArgs<T extends PropertyNameBuilder> extends TestArgs{
+abstract class AbstractPropertyNameBuilderArgs<T extends PropertyNameBuilder<T>> extends TestArgs{
     protected final String name;
     protected final String headerName;
     protected final PropertyType<?> type;

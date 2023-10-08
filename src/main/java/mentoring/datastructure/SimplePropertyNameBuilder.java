@@ -6,23 +6,16 @@ package mentoring.datastructure;
  * {@link SimplePropertyName} objects remain immutable.
  * This class is not thread-safe.
  */
-public class SimplePropertyNameBuilder extends PropertyNameBuilder{
+public class SimplePropertyNameBuilder extends PropertyNameBuilder<SimplePropertyNameBuilder>{
     
     @Override
-    public SimplePropertyNameBuilder prepare(String name, PropertyType<?> type){
-        super.prepare(name, type);
-        return this;
-    }
-    
-    @Override
-    public SimplePropertyNameBuilder withHeaderName(String headerName){
-        super.withHeaderName(headerName);
+    protected SimplePropertyNameBuilder getThis(){
         return this;
     }
     
     @Override
     public SimplePropertyName<?> build(){
-        checkState();
+        assertIsInitialised();
         SimplePropertyName<?> result = new SimplePropertyName<>(getName(), getHeaderName(), 
                 getType());
         reset();
