@@ -2,15 +2,16 @@ package mentoring.datastructure;
 
 import java.util.Map;
 import java.util.stream.Stream;
-import mentoring.datastructure.MultiplePropertyNameTest.MapPropertyArgs;
+import mentoring.datastructure.MultiplePropertyNameTest.MultiplePropertyNameArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 
-abstract class MultiplePropertyNameTest<T extends MapPropertyArgs> 
-        extends AbstractPropertyNameTest<MultiplePropertyName<?,?>, T>{
+abstract class MultiplePropertyNameTest<T extends MultiplePropertyNameArgs> 
+        extends PropertyNameTest<MultiplePropertyName<?,?>, T>{
     
     @TestFactory
+    @SuppressWarnings("AssertEqualsBetweenInconvertibleTypes")
     Stream<DynamicNode> getValueType(){
         return test("getValueType() returns the expected type", args -> 
                 Assertions.assertEquals(args.getExpectedValueType(), 
@@ -18,20 +19,20 @@ abstract class MultiplePropertyNameTest<T extends MapPropertyArgs>
     }
     
     @TestFactory
+    @SuppressWarnings("AssertEqualsBetweenInconvertibleTypes")
     Stream<DynamicNode> buildMap(){
         return test("buildMap() returns the expected map", args -> 
                 Assertions.assertEquals(args.getExpectedResult(),
                         args.convert().buildMap(args.getMapInput())));
     }
     
-    abstract static class MapPropertyArgs extends AbstractPropertyNameArgs<Object,
+    abstract static class MultiplePropertyNameArgs extends PropertyNameArgs<Object,
             MultiplePropertyName<? extends Object, ? extends Object>>{
-        //TODO refactor rename MultiplePropertyNameArgs
         final PropertyType<?> valueType;
         final String[] mapInput;
         final Map<?, ?> expectedResult;
 
-        MapPropertyArgs(String testCase, String name, String headerName, 
+        MultiplePropertyNameArgs(String testCase, String name, String headerName, 
                 PropertyType<?> keyType,
                 PropertyType<?> valueType,
                 String[] mapInput, Map<?, ?> expectedResult){

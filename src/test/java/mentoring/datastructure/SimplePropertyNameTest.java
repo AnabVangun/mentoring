@@ -1,78 +1,46 @@
 package mentoring.datastructure;
 
 import java.util.stream.Stream;
-import mentoring.datastructure.SimplePropertyNameTest.PropertyArgs;
+import mentoring.datastructure.SimplePropertyNameTest.SimplePropertyNameArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 
-class SimplePropertyNameTest extends AbstractPropertyNameTest<SimplePropertyName<?>, PropertyArgs>{
+class SimplePropertyNameTest extends PropertyNameTest<SimplePropertyName<?>, SimplePropertyNameArgs>{
 
     @Override
-    public Stream<PropertyArgs> argumentsSupplier() {
-        return Stream.of(
-                new PropertyArgs("Simple property", "propriété", "headerName", 
+    public Stream<SimplePropertyNameArgs> argumentsSupplier() {
+        return Stream.of(new SimplePropertyNameArgs("Simple property", "propriété", "headerName", 
                         PropertyType.STRING),
-                new PropertyArgs("Property with equal names", "name", "name", 
+                new SimplePropertyNameArgs("Property with equal names", "name", "name", 
                         PropertyType.INTEGER),
-                new PropertyArgs("Property with empty name", "", "header_name", 
+                new SimplePropertyNameArgs("Property with empty name", "", "header_name", 
                         PropertyType.BOOLEAN),
-                new PropertyArgs("Property with empty headerName", "name", "", 
+                new SimplePropertyNameArgs("Property with empty headerName", "name", "", 
                         PropertyType.INTEGER),
-                new PropertyArgs("Property with empty names", "", "", 
+                new SimplePropertyNameArgs("Property with empty names", "", "", 
                         PropertyType.BOOLEAN)
             );
     }
     
     @Override
-    protected PropertyArgs getDifferentArgs(){
-        return new PropertyArgs("Property with different values", "specific_foo", 
+    protected SimplePropertyNameArgs getDifferentArgs(){
+        return new SimplePropertyNameArgs("Property with different values", "specific_foo", 
                 "differentBar", PropertyType.YEAR);
     }
     
     @TestFactory
-    @SuppressWarnings("AssertEqualsBetweenInconvertibleTypes")
-    Stream<DynamicNode> equals_equalValue(){
-        return test("equals() returns true on equal values", 
-                args -> Assertions.assertEquals(args.convert(), args.convert()));
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> equals_differentValue(){
-        return test("equals returns false on different values",
-                args -> Assertions.assertNotEquals(args.convert(), getDifferentArgs().convert()));
-    }
-    
-    @TestFactory
     protected Stream<DynamicNode> equals_similarMultiplePropertyName(){
-        return test(Stream.of(
-                new PropertyArgs("specific test case", "name", "header name", PropertyType.YEAR)),
+        return test(Stream.of(new SimplePropertyNameArgs("specific test case", "name", "header name", PropertyType.YEAR)),
                 "equals returns false on similar MultiplePropertyName", 
                 args -> Assertions.assertNotEquals(args.convert(), 
                         new SetPropertyName<>("name", "header name", PropertyType.YEAR)));
     }
     
     @TestFactory
-    Stream<DynamicNode> hashCode_equalValue(){
-        return test("hashCode() returns the same value for two equal values",
-                args -> Assertions.assertEquals(args.convert().hashCode(), 
-                        args.convert().hashCode()));
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> hashCode_consistent(){
-        return test("hashCode() returns the same value when called multiple times",
-                args -> {
-                    PropertyName<?> property = args.convert();
-                    int first = property.hashCode();
-                    Assertions.assertEquals(first, property.hashCode());
-                });
-    }
-    
-    @TestFactory
     @Override
     Stream<DynamicNode> getStringRepresentation_expectedValue(){
-        return test(Stream.of(new PropertyArgs("specific test case", "property", "property", 
+        return test(Stream.of(new SimplePropertyNameArgs("specific test case", "property", "property", 
                 PropertyType.INTEGER)), "getStringRepresentation() returns the expected value",
                 args -> {
                     PropertyName<?> property = args.convert();
@@ -81,12 +49,11 @@ class SimplePropertyNameTest extends AbstractPropertyNameTest<SimplePropertyName
                 });
     }
     
-    static class PropertyArgs 
-            extends AbstractPropertyNameTest.AbstractPropertyNameArgs<Object, 
+    static class SimplePropertyNameArgs 
+            extends PropertyNameTest.PropertyNameArgs<Object, 
                     SimplePropertyName<? extends Object>>{
-        //TODO refactor rename SimplePropertyArgs
         
-        PropertyArgs(String testCase, String name, String headerName, PropertyType<? extends Object> type){
+        SimplePropertyNameArgs(String testCase, String name, String headerName, PropertyType<? extends Object> type){
             super(testCase, name, headerName, type);
         }
         

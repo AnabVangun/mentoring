@@ -1,15 +1,15 @@
 package mentoring.datastructure;
 
 import java.util.stream.Stream;
-import mentoring.datastructure.AbstractPropertyNameTest.AbstractPropertyNameArgs;
+import mentoring.datastructure.PropertyNameTest.PropertyNameArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import test.tools.TestArgs;
 import test.tools.TestFramework;
 
-abstract class AbstractPropertyNameTest<Property extends PropertyName<?>, 
-        Args extends AbstractPropertyNameArgs<?, Property>> implements TestFramework<Args>{
+abstract class PropertyNameTest<Property extends PropertyName<?>, 
+        Args extends PropertyNameArgs<?, Property>> implements TestFramework<Args>{
     
     /**
      * Return an argument with different values than those from {@link #argumentsSupplier()}.
@@ -54,13 +54,44 @@ abstract class AbstractPropertyNameTest<Property extends PropertyName<?>,
                 });
     }
     
-    abstract static class AbstractPropertyNameArgs<K, T extends PropertyName<? extends K>> 
+    
+    @TestFactory
+    @SuppressWarnings("AssertEqualsBetweenInconvertibleTypes")
+    Stream<DynamicNode> equals_equalValue(){
+        return test("equals() returns true on equal values", 
+                args -> Assertions.assertEquals(args.convert(), args.convert()));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> equals_differentValue(){
+        return test("equals returns false on different values",
+                args -> Assertions.assertNotEquals(args.convert(), getDifferentArgs().convert()));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> hashCode_equalValue(){
+        return test("hashCode() returns the same value for two equal values",
+                args -> Assertions.assertEquals(args.convert().hashCode(), 
+                        args.convert().hashCode()));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> hashCode_consistent(){
+        return test("hashCode() returns the same value when called multiple times",
+                args -> {
+                    PropertyName<?> property = args.convert();
+                    int first = property.hashCode();
+                    Assertions.assertEquals(first, property.hashCode());
+                });
+    }
+    
+    abstract static class PropertyNameArgs<K, T extends PropertyName<? extends K>> 
             extends TestArgs {
         final String name;
         final String headerName;
         final PropertyType<? extends K> expectedType;
         
-        AbstractPropertyNameArgs(String testCase, String name, String headerName, 
+        PropertyNameArgs(String testCase, String name, String headerName, 
                 PropertyType<? extends K> expectedType){
             super(testCase);
             this.name = name;

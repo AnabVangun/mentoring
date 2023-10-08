@@ -51,7 +51,7 @@ class SetPropertyNameTest extends MultiplePropertyNameTest<SetPropertyArgs> {
                 PropertyType.INTEGER, new String[]{"different input"}, Set.of("different input"));
     }
     
-    static class SetPropertyArgs extends MapPropertyArgs{
+    static class SetPropertyArgs extends MultiplePropertyNameArgs{
         SetPropertyArgs(String testCase, String name, String headerName, PropertyType<?> keyType,
                 String[] mapInput, Set<?> expectedResult){
             super(testCase, name, headerName, keyType, PropertyType.INTEGER, mapInput, 

@@ -50,7 +50,7 @@ class IndexedPropertyNameTest extends MultiplePropertyNameTest<IndexedPropertyAr
                 PropertyType.INTEGER, new String[]{"different input"}, Map.of("different input", 1));
     }
     
-    static class IndexedPropertyArgs extends MapPropertyArgs{
+    static class IndexedPropertyArgs extends MultiplePropertyNameArgs{
         IndexedPropertyArgs(String testCase, String name, String headerName, PropertyType<?> keyType,
                 String[] mapInput, Map<?, Integer> expectedResult){
             super(testCase, name, headerName, keyType, PropertyType.INTEGER, mapInput, 
