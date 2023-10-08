@@ -5,11 +5,10 @@ import mentoring.datastructure.MultiplePropertyNameBuilderTest.MultiplePropertyN
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
-import org.junit.jupiter.api.function.Executable;
 
 class MultiplePropertyNameBuilderTest extends 
         AbstractPropertyNameBuilderTest<MultiplePropertyNameBuilderArgs, MultiplePropertyNameBuilder>{
-    
+    //TODO refactor all logic between AbstractPropertyNameBuilderTest, SimplePropertyNameBuilderTest and Multiple
     @Override
     public Stream<MultiplePropertyNameBuilderArgs> argumentsSupplier(){
         return Stream.of(
@@ -61,6 +60,11 @@ class MultiplePropertyNameBuilderTest extends
             Assertions.assertSame(builder, builder.setAggregation(args.aggregation));
         });
     }
+
+    @Override
+    protected PropertyName<?> provideNewProperty(String name, String headerName, PropertyType<?> type) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
     
     static class MultiplePropertyNameBuilderArgs extends 
             AbstractPropertyNameBuilderArgs<MultiplePropertyNameBuilder>{
@@ -92,13 +96,10 @@ class MultiplePropertyNameBuilderTest extends
         protected MultiplePropertyNameBuilder readyToBuild(){
             return super.readyToBuild().setAggregation(aggregation);
         }
-        
+
         @Override
-        protected Stream<Executable> supplyAssertionsPropertyAsExpected(PropertyName<?> actual,
-                boolean withHeaderName){
-            return Stream.of(() -> Assertions.assertEquals(
-                    withHeaderName ? expectedWithHeaderName : expectedWithoutOptionalSetters, 
-                    actual));
+        protected PropertyName<?> supplyExpectedProperty(boolean withHeaderName) {
+            return withHeaderName ? expectedWithHeaderName : expectedWithoutOptionalSetters; 
         }
     }
 }

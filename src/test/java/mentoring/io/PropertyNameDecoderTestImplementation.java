@@ -10,6 +10,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import mentoring.datastructure.PropertyName;
 import mentoring.datastructure.PropertyType;
+import mentoring.datastructure.SimplePropertyName;
 import mentoring.io.PropertyNameDecoderTest.PropertyNameDecoderArgs;
 import mentoring.io.PropertyNameDecoderTestImplementation.DummyPropertyNameDecoder;
 import mentoring.io.PropertyNameDecoderTestImplementation.DummyPropertyNameDecoderArgs;
@@ -20,6 +21,7 @@ import org.mockito.Mockito;
 
 class PropertyNameDecoderTestImplementation extends PropertyNameDecoderTest<PropertyName<?>, 
         DummyPropertyNameDecoder, DummyPropertyNameDecoderArgs> {
+    //TODO refactor: reconsider all testing logic for all PropertyName-related classes
 
     @Override
     Stream<DummyPropertyNameDecoderArgs> specificallyInvalidArgumentsSupplier() {
@@ -37,7 +39,7 @@ class PropertyNameDecoderTestImplementation extends PropertyNameDecoderTest<Prop
     public Stream<DummyPropertyNameDecoderArgs> argumentsSupplier() {
         return Stream.of(new SpecificallyValidDummyPropertyNameDecoderArgs(
                 "valid property", List.of(Map.of("foo","bar")), 
-                List.of(new PropertyName<>("foo", "bar", PropertyType.BOOLEAN)), 
+                List.of(new SimplePropertyName<>("foo", "bar", PropertyType.BOOLEAN)), 
                 Set.of("foo")));
     }
     
@@ -138,7 +140,7 @@ class PropertyNameDecoderTestImplementation extends PropertyNameDecoderTest<Prop
             extends DummyPropertyNameDecoderArgs{
         private final Set<String> expectedAttributeNames;
         private final static List<PropertyName<?>> defaultProperties = 
-                List.of(new PropertyName<>("foo","bar",PropertyType.YEAR));
+                List.of(new SimplePropertyName<>("foo","bar",PropertyType.YEAR));
 
         public SpecificallyValidDummyPropertyNameDecoderArgs(String testCase, 
                 List<Map<? extends String, ? extends String>> multipleInput, 
@@ -160,7 +162,5 @@ class PropertyNameDecoderTestImplementation extends PropertyNameDecoderTest<Prop
             return new DummyPropertyNameDecoder(specificErrorsExpectedCount, expectedAttributeNames,
                     expectedProperties.iterator());
         }
-        
-        
     }
 }

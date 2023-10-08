@@ -11,11 +11,12 @@ import mentoring.datastructure.AggregationType;
 import mentoring.datastructure.MultiplePropertyName;
 import mentoring.datastructure.MultiplePropertyNameBuilder;
 import mentoring.datastructure.PropertyName;
-import mentoring.datastructure.PropertyNameBuilder;
 import mentoring.datastructure.PropertyType;
+import mentoring.datastructure.SimplePropertyName;
+import mentoring.datastructure.SimplePropertyNameBuilder;
 
 /**
- * Decoder used to build {@link PropertyName} and {@link MultiplePropertyName} objects from 
+ * Decoder used to build {@link PropertyName} objects from 
  * configuration files.
  * <p>This class should be subclassed for each type of {@link PropertyName} object that need 
  * specific parsing.
@@ -126,8 +127,8 @@ abstract class PropertyNameDecoder<E extends PropertyName<?>> {
     
 }
 
-class SimplePropertyNameDecoder extends PropertyNameDecoder<PropertyName<?>>{
-    final PropertyNameBuilder builder = new PropertyNameBuilder();
+class SimplePropertyNameDecoder extends PropertyNameDecoder<SimplePropertyName<?>>{
+    final SimplePropertyNameBuilder builder = new SimplePropertyNameBuilder();
     final static Set<String> EXPECTED_PROPERTY_ATTRIBUTES = Set.of("name", "headerName", 
             "type");
     
@@ -144,7 +145,7 @@ class SimplePropertyNameDecoder extends PropertyNameDecoder<PropertyName<?>>{
     }
 
     @Override
-    protected PropertyName<?> decodeSinglePropertyName(
+    protected SimplePropertyName<?> decodeSinglePropertyName(
             Map<? extends String, ? extends String> toDecode) {
         PropertyType<?> type = PropertyType.valueOf(toDecode.get("type"));
         return builder.prepare(toDecode.get("name"), type)

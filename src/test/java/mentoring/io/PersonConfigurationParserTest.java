@@ -13,10 +13,10 @@ import mentoring.configuration.ExtendedPersonConfigurationArgs;
 import mentoring.configuration.ExtendedPersonConfigurationTest;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.MultiplePropertyName;
-import mentoring.datastructure.PropertyName;
 import mentoring.datastructure.IndexedPropertyName;
 import mentoring.datastructure.PropertyType;
 import mentoring.datastructure.SetPropertyName;
+import mentoring.datastructure.SimplePropertyName;
 import mentoring.io.ParserTest.ParserArgs;
 import mentoring.io.PersonConfigurationParserTest.PersonConfigurationParserArgs;
 import mentoring.io.datareader.DataReader;
@@ -31,8 +31,8 @@ class PersonConfigurationParserTest implements
         return Stream.of(
                 new PersonConfigurationParserArgs("validTestConfiguration.yaml", 
                         "standard valid test",
-                        Set.of(new PropertyName<>("Anglais", "Anglais", PropertyType.BOOLEAN), 
-                                new PropertyName<>("Promotion", "Promotion", PropertyType.INTEGER)),
+                        Set.of(new SimplePropertyName<>("Anglais", "Anglais", PropertyType.BOOLEAN), 
+                                new SimplePropertyName<>("Promotion", "Promotion", PropertyType.INTEGER)),
                         Set.of(
                                 new SetPropertyName<>("Métiers", "Activités et métiers", 
                                         PropertyType.STRING),
@@ -41,7 +41,7 @@ class PersonConfigurationParserTest implements
                         ",", "%s %s (X%s)", List.of("Prénom", "Nom", "Promotion"), new YamlReader()),
                 new PersonConfigurationParserArgs("validSecondTestConfiguration.yaml", 
                         "standard second valid test",
-                        Set.of(new PropertyName<>("Anglais", "Anglais", PropertyType.YEAR)),
+                        Set.of(new SimplePropertyName<>("Anglais", "Anglais", PropertyType.YEAR)),
                         Set.of(new SetPropertyName<>("Métiers", "Métiers", 
                                 PropertyType.SIMPLIFIED_LOWER_STRING)),
                         ",", "%s", List.of("Prénom"), new YamlReader()));
@@ -92,7 +92,7 @@ class PersonConfigurationParserTest implements
     
     static record PersonConfigurationParserArgs(String filePath, 
         String configurationName,
-        Set<PropertyName<?>> propertiesNames, 
+        Set<SimplePropertyName<?>> propertiesNames, 
         Set<MultiplePropertyName<?,?>> multiplePropertiesNames, 
         String separator, String nameFormat, List<String> namePropertiesHeader, DataReader reader,
         int specificErrorsCount)
@@ -100,7 +100,7 @@ class PersonConfigurationParserTest implements
                     ParserArgs<PersonConfiguration, PersonConfigurationParser>{
         
         PersonConfigurationParserArgs(String filePath, String configurationName, 
-                Set<PropertyName<?>> propertiesNames, 
+                Set<SimplePropertyName<?>> propertiesNames, 
                 Set<MultiplePropertyName<?,?>> multiplePropertiesNames, 
                 String separator, String nameFormat, List<String> namePropertiesHeader, 
                 DataReader reader){
@@ -139,7 +139,7 @@ class PersonConfigurationParserTest implements
         }
 
         @Override
-        public Set<PropertyName<?>> getExpectedProperties() {
+        public Set<SimplePropertyName<?>> getExpectedProperties() {
             return propertiesNames;
         }
 

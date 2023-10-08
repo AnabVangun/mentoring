@@ -5,12 +5,17 @@ import mentoring.datastructure.PropertyNameBuilderTest.PropertyNameBuilderArgs;
 
 class PropertyNameBuilderTest extends 
         AbstractPropertyNameBuilderTest<PropertyNameBuilderArgs, PropertyNameBuilder>{
-    
+    //TODO refactor rename SimplePropertyNameBuilderTest
     @Override
     public Stream<PropertyNameBuilderArgs> argumentsSupplier(){
         return Stream.of(new PropertyNameBuilderArgs("standard case", "foo", "bar", 
                 PropertyType.SIMPLIFIED_LOWER_STRING));
     }  
+
+    @Override
+    protected PropertyName<?> provideNewProperty(String name, String headerName, PropertyType<?> type) {
+        return new SimplePropertyName<>(name, headerName, type);
+    }
     
     
     static class PropertyNameBuilderArgs extends AbstractPropertyNameBuilderArgs<PropertyNameBuilder>{
@@ -22,7 +27,12 @@ class PropertyNameBuilderTest extends
         
         @Override
         protected PropertyNameBuilder convert() {
-            return new PropertyNameBuilder();
+            return new SimplePropertyNameBuilder();
+        }
+        
+        @Override
+        protected PropertyName<?> supplyExpectedProperty(boolean withHeaderName){
+            return new SimplePropertyName<>(name, withHeaderName ? headerName : name, type);
         }
     }
 }

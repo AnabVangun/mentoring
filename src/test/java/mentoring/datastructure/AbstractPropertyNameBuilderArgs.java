@@ -52,9 +52,12 @@ abstract class AbstractPropertyNameBuilderArgs<T extends PropertyNameBuilder> ex
         );
     }
 
-    protected Stream<Executable> supplyAssertionsPropertyAsExpected(PropertyName<?> actual, 
+    protected final Stream<Executable> supplyAssertionsPropertyAsExpected(PropertyName<?> actual, 
             boolean withHeaderName){
         return Stream.of(() -> Assertions.assertEquals(
-                new PropertyName<>(name, withHeaderName ? headerName : name, type), actual));
+                supplyExpectedProperty(withHeaderName), actual));
     }
+    
+    //TODO refactor document
+    protected abstract PropertyName<?> supplyExpectedProperty(boolean withHeaderName);
 }

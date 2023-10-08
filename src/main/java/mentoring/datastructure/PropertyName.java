@@ -5,7 +5,7 @@ package mentoring.datastructure;
  * 
  * @param <T> the type of element stored in the property.
  */
-public class PropertyName<T> {
+public abstract class PropertyName<T> {
     private final String headerName;
     private final String name;
     private final PropertyType<T> type;
@@ -36,24 +36,13 @@ public class PropertyName<T> {
         return type;
     }
     
-    public PropertyName<T> withHeaderName(String headerName){
-        return new PropertyName<>(name, headerName, type);
-    }
-    
-    @Override
-    public boolean equals(Object o){
-        return o.getClass().equals(PropertyName.class) && attributeEquals((PropertyName) o);
-    }
-    
-    protected boolean attributeEquals(PropertyName other){
-        return name.equals(other.name) && headerName.equals(other.headerName) 
-                && type.equals(other.type);
-    }
-    
-    @Override
-    public int hashCode(){
-        return (name.hashCode() * 31 + headerName.hashCode()) * 31 + type.hashCode();
-    }
+    /**
+     * Build a new PropertyName with a different header name. All other properties are identical to
+     * the initial property.
+     * @param headerName the new header name
+     * @return a new PropertyName with the specified header name
+     */
+    public abstract PropertyName<T> withHeaderName(String headerName);
     
     /**
      * Get a String representation for the value associated with this property.
@@ -63,5 +52,23 @@ public class PropertyName<T> {
      */
     public String getStringRepresentation(Person person){
         return person.getPropertyAs(name, type.getType()).toString();
+    }
+    
+    /**
+     * Check that all attributes of the other PropertyName are identical to this one's.
+     * @param other PropertyName to compare
+     * @return true if the two PropertyName have the same attributes
+     */
+    final protected boolean attributeEquals(PropertyName other){
+        return name.equals(other.name) && headerName.equals(other.headerName) 
+                && type.equals(other.type);
+    }
+    
+    /**
+     * Compute a hash code based on the attributes of the PropertyName.
+     * @return a value that can be used as a hash code
+     */
+    final protected int attributeHashCode(){
+        return (getName().hashCode() * 31 + getHeaderName().hashCode()) * 31 + getType().hashCode();
     }
 }

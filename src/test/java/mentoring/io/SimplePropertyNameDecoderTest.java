@@ -3,12 +3,12 @@ package mentoring.io;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-import mentoring.datastructure.PropertyName;
 import mentoring.datastructure.PropertyType;
+import mentoring.datastructure.SimplePropertyName;
 import mentoring.io.PropertyNameDecoderTest.PropertyNameDecoderArgs;
 import mentoring.io.SimplePropertyNameDecoderTest.SimplePropertyNameDecoderArgs;
 
-class SimplePropertyNameDecoderTest extends PropertyNameDecoderTest<PropertyName<?>, 
+class SimplePropertyNameDecoderTest extends PropertyNameDecoderTest<SimplePropertyName<?>, 
         SimplePropertyNameDecoder, SimplePropertyNameDecoderArgs>{
 
     @Override
@@ -42,17 +42,17 @@ class SimplePropertyNameDecoderTest extends PropertyNameDecoderTest<PropertyName
                                         "type", "integer"),
                                 Map.of("name", "boolean property", "headerName", "boolean header",
                                         "type", "boolean")),
-                        List.of(new PropertyName<>("int property", "int header", PropertyType.INTEGER),
-                                new PropertyName<>("boolean property", "boolean header", 
+                        List.of(new SimplePropertyName<>("int property", "int header", PropertyType.INTEGER),
+                                new SimplePropertyName<>("boolean property", "boolean header", 
                                         PropertyType.BOOLEAN))));
     }
     
-    static class SimplePropertyNameDecoderArgs extends PropertyNameDecoderArgs<PropertyName<?>, 
+    static class SimplePropertyNameDecoderArgs extends PropertyNameDecoderArgs<SimplePropertyName<?>, 
             SimplePropertyNameDecoder>{
 
         SimplePropertyNameDecoderArgs(String testCase, 
                 List<Map<? extends String, ? extends String>> multipleInput, 
-                List<PropertyName<?>> expectedProperties) {
+                List<SimplePropertyName<?>> expectedProperties) {
             super(testCase, multipleInput, expectedProperties);
         }
         

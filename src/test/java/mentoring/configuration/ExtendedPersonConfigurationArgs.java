@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import mentoring.datastructure.MultiplePropertyName;
-import mentoring.datastructure.PropertyName;
 import mentoring.datastructure.PropertyType;
+import mentoring.datastructure.SimplePropertyName;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 
@@ -14,7 +14,7 @@ public interface ExtendedPersonConfigurationArgs extends SimplePersonConfigurati
     
     String getExpectedName();
     
-    Set<PropertyName<?>> getExpectedProperties();
+    Set<SimplePropertyName<?>> getExpectedProperties();
     
     Set<MultiplePropertyName<?,?>> getExpectedMultipleProperties();
     
@@ -42,8 +42,9 @@ public interface ExtendedPersonConfigurationArgs extends SimplePersonConfigurati
                             actual.getNameFormat(), actual.getNamePropertiesHeaderNames())));
     }
     
-    static void assertPropertiesAsExpected(Set<PropertyName<?>> expected, 
-            Set<PropertyName<?>> actual){
+    static void assertPropertiesAsExpected(Set<SimplePropertyName<?>> expected, 
+            Set<SimplePropertyName<?>> actual){
+        //TODO refactor rename assertSimplePropertiesAsExpected
         String nameSeparator = "###@###";
         Map<String, PropertyType<?>> expectedAsMap = new HashMap<>();
         expected.forEach(item -> expectedAsMap.put(

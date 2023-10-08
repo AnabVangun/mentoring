@@ -42,8 +42,8 @@ public class MultiplePropertyNameBuilder extends PropertyNameBuilder {
     
     @Override
     public MultiplePropertyName<?,?> build(){
-        checkState("build");
-        checkAggregation("build");
+        checkState();
+        checkAggregation();
         MultiplePropertyName<?,?> property = switch(aggregation){
             case INDEXED -> new IndexedPropertyName<>(getName(), getHeaderName(), getType());
             case SET -> new SetPropertyName<>(getName(), getHeaderName(), getType());
@@ -52,10 +52,11 @@ public class MultiplePropertyNameBuilder extends PropertyNameBuilder {
         return property;
     }
     
-    private void checkAggregation(String method){
+    private void checkAggregation(){
         if (! aggregationSet){
-            throw new IllegalStateException("Tried to call %s() on an unitialised builder"
-                    .formatted(method));
+            //TODO refactor rename assertAggregationTypeIsSet
+            throw new IllegalStateException(
+                    "Tried to call a method on unsufficiently initialised builder");
         }
     }
 }

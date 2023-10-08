@@ -10,9 +10,9 @@ import mentoring.datastructure.IndexedPropertyName;
 import mentoring.datastructure.MultiplePropertyName;
 import mentoring.datastructure.Person;
 import mentoring.datastructure.PersonBuilder;
-import mentoring.datastructure.PropertyName;
 import mentoring.datastructure.PropertyType;
 import mentoring.datastructure.SetPropertyName;
+import mentoring.datastructure.SimplePropertyName;
 import mentoring.match.Match;
 import mentoring.match.MatchTest;
 import mentoring.viewmodel.base.ObservableTest;
@@ -226,7 +226,7 @@ class PersonListViewModelTest extends ObservableTest<PersonListViewModel,
             multipleProperties.add(
                     new SetPropertyName<>("set", "set header", PropertyType.STRING));
             return new PersonConfiguration("configuration", 
-                    Set.of(new PropertyName<>("simple", "simple header", PropertyType.INTEGER)), 
+                    Set.of(new SimplePropertyName<>("simple", "simple header", PropertyType.INTEGER)), 
                     multipleProperties,
                     "|", "%s", List.of("simple header"));
         }

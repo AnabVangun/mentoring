@@ -49,6 +49,11 @@ public class MultiplePropertyName<K,V> extends PropertyName<K>{
     }
     
     @Override
+    public MultiplePropertyName<K,V> withHeaderName(String headerName){
+        return new MultiplePropertyName<>(getName(), headerName, getType(), valueType, parser);
+    }
+    
+    @Override
     public String getStringRepresentation(Person person){
         return person.getPropertyAsMapOf(getName(), getType().getType(), valueType.getType())
                 .toString();
@@ -62,6 +67,6 @@ public class MultiplePropertyName<K,V> extends PropertyName<K>{
     
     @Override
     public int hashCode(){
-        return (super.hashCode() * 31 + valueType.hashCode()) * 31 + parser.hashCode();
+        return (attributeHashCode() * 31 + valueType.hashCode()) * 31 + parser.hashCode();
     }
 }

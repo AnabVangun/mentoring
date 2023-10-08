@@ -8,6 +8,7 @@ import java.util.Set;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.MultiplePropertyName;
 import mentoring.datastructure.PropertyName;
+import mentoring.datastructure.SimplePropertyName;
 import mentoring.io.datareader.DataReader;
 
 /**
@@ -33,7 +34,7 @@ public final class PersonConfigurationParser extends Parser<PersonConfiguration>
     protected PersonConfiguration buildObject(Map<String, Object> data) 
             throws IllegalArgumentException {
         String configurationName = extractAttribute(data, CONFIGURATION_NAME_KEY, String.class);
-        Set<PropertyName<?>> properties = extractProperties(data, PROPERTIES_KEY, 
+        Set<SimplePropertyName<?>> properties = extractProperties(data, PROPERTIES_KEY, 
                 new SimplePropertyNameDecoder());
         Set<MultiplePropertyName<?,?>> multipleProperties = 
                 extractProperties(data, MULTIPLE_PROPERTIES_KEY, new MultiplePropertyNameDecoder());

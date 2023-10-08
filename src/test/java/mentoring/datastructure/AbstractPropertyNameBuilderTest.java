@@ -80,10 +80,13 @@ abstract class AbstractPropertyNameBuilderTest
                     builder.prepare(args.name + "_1", PropertyType.YEAR)
                             .withHeaderName(args.headerName + "_5");
                     PropertyName<?> property = builder.build();
-                    Assertions.assertEquals(new PropertyName<>(args.name + "_1", 
+                    Assertions.assertEquals(provideNewProperty(args.name + "_1", 
                             args.headerName + "_5", PropertyType.YEAR), property);
                 });
     }
+    
+    protected abstract PropertyName<?> provideNewProperty(String name, String headerName, 
+            PropertyType<?> type);
     
     @TestFactory
     Stream<DynamicNode> prepare_returnsSelf(){

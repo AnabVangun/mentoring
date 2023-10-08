@@ -1,13 +1,13 @@
 package mentoring.datastructure;
 
 /**
- * Class used to build {@link PropertyName} objects. A single builder can build several unrelated 
+ * Class used to build {@link SimplePropertyName} objects. A single builder can build several unrelated 
  * objects: the internal state is reinitialised after each creation to make sure that 
- * {@link PropertyName} objects remain immutable.
+ * {@link SimplePropertyName} objects remain immutable.
  * This class is not thread-safe.
  */
-public class PropertyNameBuilder {
-    
+public abstract class PropertyNameBuilder {
+    //TODO refactor: separate what should be in SimplePropertyNameBuilder
     private String name = null;
     private String headerName = null;
     private PropertyType<?> type = null;
@@ -17,7 +17,7 @@ public class PropertyNameBuilder {
      * Return the name of the future property.
      */
     protected String getName(){
-        checkState("getName");
+        checkState();
         return name;
     }
     
@@ -25,7 +25,7 @@ public class PropertyNameBuilder {
      * Return the name of the column corresponding to the future property in CSV files.
      */
     protected String getHeaderName(){
-        checkState("getHeaderName");
+        checkState();
         return headerName;
     }
     
@@ -33,14 +33,14 @@ public class PropertyNameBuilder {
      * Return the type of data stored in the property.
      */
     protected PropertyType<?> getType(){
-        checkState("getType");
+        checkState();
         return type;
     }
     
-    protected void checkState(String method){
+    protected void checkState(){
+        //TODO refactor: rename assertIsInitialised
         if (! initialised){
-            throw new IllegalStateException("Tried to call %s() on an unitialised builder"
-                    .formatted(method));
+            throw new IllegalStateException("Tried to call a method on an unitialised builder");
         }
     }
     
@@ -84,10 +84,5 @@ public class PropertyNameBuilder {
      * Build the actual property.
      * @return the PropertyName instance prepared by the builder.
      */
-    public PropertyName<?> build(){
-        checkState("build");
-        PropertyName<?> result = new PropertyName<>(name, headerName, type);
-        reset();
-        return result;
-    }
+    public abstract PropertyName<?> build();
 }

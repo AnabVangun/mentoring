@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import mentoring.datastructure.MultiplePropertyName;
-import mentoring.datastructure.PropertyName;
+import mentoring.datastructure.SimplePropertyName;
 import org.apache.commons.lang3.StringUtils;
 /**
  * The definition of a person's properties.
@@ -16,7 +16,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public final class PersonConfiguration extends Configuration<PersonConfiguration> {
     
-    private final Set<PropertyName<?>> properties;
+    private final Set<SimplePropertyName<?>> properties;
     private final Set<MultiplePropertyName<?,?>> multipleProperties;
     private final String separator;
     private final String nameFormat;
@@ -35,7 +35,7 @@ public final class PersonConfiguration extends Configuration<PersonConfiguration
      * of a person.
      */
     public PersonConfiguration(String configurationName,
-                Set<PropertyName<?>> properties, 
+                Set<SimplePropertyName<?>> properties, 
                 Set<MultiplePropertyName<?,?>> multipleProperties, 
                 String separator, String nameFormat,
                 List<String> namePropertiesHeaderNames){
@@ -58,15 +58,16 @@ public final class PersonConfiguration extends Configuration<PersonConfiguration
     }
     
     /**
-     * Returns the {@link PropertyName} instances describing single-valued properties.
+     * Returns the {@link SimplePropertyName} instances describing single-valued properties.
      * @return the identification of single-valued properties for this configuration
      */
-    public Set<PropertyName<?>> getPropertiesNames(){
+    public Set<SimplePropertyName<?>> getPropertiesNames(){
+        //TODO refactor rename getSimplePropertiesNames
         return properties;
     }
     
     /**
-     * Returns the {@link PropertyName} instances describing multi-valued properties. Multi-valued
+     * Returns the {@link SimplePropertyName} instances describing multi-valued properties. Multi-valued
      * properties are properties associated with collections of values.
      * @return the identification of multi-valued properties for this configuration
      */

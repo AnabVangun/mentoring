@@ -9,6 +9,7 @@ import test.tools.TestArgs;
 import test.tools.TestFramework;
 
 class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyArgs<?,?>>{
+    //TODO refactor rename SimplePropertyNameTest
 
     @Override
     public Stream<PropertyArgs<?,?>> argumentsSupplier() {
@@ -126,7 +127,7 @@ class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyArgs<?,
         }
         
         PropertyName<K> convert() {
-            return new PropertyName<>(name, headerName, expectedType);
+            return new SimplePropertyName<>(name, headerName, expectedType);
         }
 
         String getExpectedName() {
