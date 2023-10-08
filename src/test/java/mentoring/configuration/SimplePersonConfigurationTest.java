@@ -28,7 +28,7 @@ public interface SimplePersonConfigurationTest<T extends SimplePersonConfigurati
                     Collection<String> actual = 
                             configuration.getAllPropertiesHeaderNames();
                     Set<String> missing = new HashSet<>();
-                    configuration.getPropertiesNames().forEach(p -> 
+                    configuration.getSimplePropertiesNames().forEach(p -> 
                             addStringIfMissing(p.getHeaderName(), actual, p.getName(), missing));
                     configuration.getMultiplePropertiesNames().forEach(p -> 
                             addStringIfMissing(p.getHeaderName(), actual, p.getName(), missing));
@@ -54,7 +54,7 @@ public interface SimplePersonConfigurationTest<T extends SimplePersonConfigurati
                     Collection<String> actual = 
                             configuration.getAllPropertiesHeaderNames();
                     Set<String> modifiable = new HashSet<>(actual);
-                    configuration.getPropertiesNames().forEach(p -> 
+                    configuration.getSimplePropertiesNames().forEach(p -> 
                             modifiable.remove(p.getHeaderName()));
                     configuration.getMultiplePropertiesNames().forEach(p -> 
                             modifiable.remove(p.getHeaderName()));

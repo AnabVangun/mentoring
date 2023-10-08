@@ -20,7 +20,7 @@ public class PersonViewModel extends DataViewModel<Person>{
             PersonConfiguration configuration, Person person) {
         //TODO test
         Map<String, String> result = new HashMap<>();
-        for(PropertyName<?> property : configuration.getPropertiesNames()){
+        for(PropertyName<?> property : configuration.getSimplePropertiesNames()){
             result.put(property.getName(), property.getStringRepresentation(person));
         }
         for(PropertyName<?> property : configuration.getMultiplePropertiesNames()){

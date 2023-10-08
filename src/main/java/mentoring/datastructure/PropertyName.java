@@ -50,9 +50,7 @@ public abstract class PropertyName<T> {
      * @return a String representation of the value
      * @throws IllegalArgumentException if the Person does not contain the property
      */
-    public String getStringRepresentation(Person person){
-        return person.getPropertyAs(name, type.getType()).toString();
-    }
+    public abstract String getStringRepresentation(Person person);
     
     /**
      * Check that all attributes of the other PropertyName are identical to this one's.

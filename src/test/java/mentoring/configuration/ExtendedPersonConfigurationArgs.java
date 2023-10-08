@@ -28,8 +28,8 @@ public interface ExtendedPersonConfigurationArgs extends SimplePersonConfigurati
             PersonConfiguration actual){
         Assertions.assertAll("Some part of PersonConfiguration is not as expected", 
                     () -> Assertions.assertEquals(expected.getExpectedName(), actual.toString()),
-                    () -> assertPropertiesAsExpected(expected.getExpectedProperties(),
-                            actual.getPropertiesNames()),
+                    () -> assertSimplePropertiesAsExpected(expected.getExpectedProperties(),
+                            actual.getSimplePropertiesNames()),
                     () -> assertMultiplePropertiesAsExpected(expected.getExpectedMultipleProperties(),
                             actual.getMultiplePropertiesNames()),
                     () -> Assertions.assertEquals(expected.getExpectedSeparator(),
@@ -42,9 +42,8 @@ public interface ExtendedPersonConfigurationArgs extends SimplePersonConfigurati
                             actual.getNameFormat(), actual.getNamePropertiesHeaderNames())));
     }
     
-    static void assertPropertiesAsExpected(Set<SimplePropertyName<?>> expected, 
+    static void assertSimplePropertiesAsExpected(Set<SimplePropertyName<?>> expected, 
             Set<SimplePropertyName<?>> actual){
-        //TODO refactor rename assertSimplePropertiesAsExpected
         String nameSeparator = "###@###";
         Map<String, PropertyType<?>> expectedAsMap = new HashMap<>();
         expected.forEach(item -> expectedAsMap.put(

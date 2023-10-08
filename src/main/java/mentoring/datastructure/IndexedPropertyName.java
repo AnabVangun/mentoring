@@ -20,16 +20,7 @@ public class IndexedPropertyName<K> extends MultiplePropertyName<K,Integer> {
      * @param keyType expected type of the property key
      */
     public IndexedPropertyName(String name, String headerName, PropertyType<K> keyType) {
-        super(name, headerName, keyType, PropertyType.INTEGER, getParser(keyType));
-    }
-    
-    private static final Cache<PropertyType, Object> cache = Cache.buildCache(PropertyType.class, 
-            Object.class, 5, true);
-    
-    @SuppressWarnings("unchecked")
-    private static <K> Function<String[], Map<K, Integer>> getParser(PropertyType<K> keyType){
-        return (Function<String[], Map<K, Integer>>) cache.computeIfAbsent(keyType, 
-                IndexedPropertyName::computeParser);
+        super(name, headerName, keyType, PropertyType.INTEGER);
     }
     
     private static <K> Function<String[], Map<K, Integer>> computeParser(PropertyType<K> keyType){
@@ -52,5 +43,30 @@ public class IndexedPropertyName<K> extends MultiplePropertyName<K,Integer> {
             list[entry.getValue()] = entry.getKey();
         }
         return Arrays.toString(list);
+    }
+
+    @Override
+    public PropertyName<K> withHeaderName(String headerName) {
+        return new IndexedPropertyName<>(getName(), headerName, getType());
+    }
+
+    @Override
+    public Map<K, Integer> buildMap(String[] keys) {
+        Map<K, Integer> result = new HashMap<>();
+        for(int i = 0; i < keys.length; i++){
+            K parsedKey = getType().parse(keys[i]);
+            result.putIfAbsent(parsedKey, i);
+        }
+        return result;
+    }
+    
+    @Override
+    public boolean equals(Object o){
+        return o instanceof IndexedPropertyName cast && attributeEquals(cast);
+    }
+    
+    @Override
+    public int hashCode(){
+        return attributeHashCode()*31 + 1;
     }
 }

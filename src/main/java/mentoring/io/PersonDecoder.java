@@ -66,7 +66,7 @@ final class PersonDecoder {
     }
     
     private void addPropertiesToBuilder(PersonBuilder builder, String[] personData){
-        configuration.getPropertiesNames().forEach(property -> {
+        configuration.getSimplePropertiesNames().forEach(property -> {
             String stringValue = personData[propertyNameIndices.get(property.getHeaderName())];
             builder.withProperty(property.getName(), 
                     property.getType().parse(stringValue));

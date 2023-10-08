@@ -36,7 +36,7 @@ public class MultiplePropertyNameBuilder extends PropertyNameBuilder<MultiplePro
     @Override
     public MultiplePropertyName<?,?> build(){
         assertIsInitialised();
-        checkAggregation();
+        assertAggregrationTypeIsSet();
         MultiplePropertyName<?,?> property = switch(aggregation){
             case INDEXED -> new IndexedPropertyName<>(getName(), getHeaderName(), getType());
             case SET -> new SetPropertyName<>(getName(), getHeaderName(), getType());
@@ -45,9 +45,8 @@ public class MultiplePropertyNameBuilder extends PropertyNameBuilder<MultiplePro
         return property;
     }
     
-    private void checkAggregation(){
+    private void assertAggregrationTypeIsSet(){
         if (! aggregationSet){
-            //TODO refactor rename assertAggregationTypeIsSet
             throw new IllegalStateException(
                     "Tried to call a method on unsufficiently initialised builder");
         }

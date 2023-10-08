@@ -1,11 +1,10 @@
 package mentoring.datastructure;
 
 import java.util.stream.Stream;
-import mentoring.datastructure.PropertyNameBuilderTest.SimplePropertyNameBuilderArgs;
+import mentoring.datastructure.SimplePropertyNameBuilderTest.SimplePropertyNameBuilderArgs;
 
-class PropertyNameBuilderTest extends 
+class SimplePropertyNameBuilderTest extends 
         AbstractPropertyNameBuilderTest<SimplePropertyNameBuilderArgs, SimplePropertyNameBuilder>{
-    //TODO refactor rename SimplePropertyNameBuilderTest
     @Override
     public Stream<SimplePropertyNameBuilderArgs> argumentsSupplier(){
         return Stream.of(new SimplePropertyNameBuilderArgs("standard case", "foo", "bar", 

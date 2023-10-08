@@ -1,54 +1,33 @@
 package mentoring.datastructure;
 
-import java.util.Map;
 import java.util.stream.Stream;
+import mentoring.datastructure.SimplePropertyNameTest.PropertyArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
-import test.tools.TestArgs;
-import test.tools.TestFramework;
 
-class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyArgs<?,?>>{
-    //TODO refactor rename SimplePropertyNameTest
+class SimplePropertyNameTest extends AbstractPropertyNameTest<SimplePropertyName<?>, PropertyArgs>{
 
     @Override
-    public Stream<PropertyArgs<?,?>> argumentsSupplier() {
+    public Stream<PropertyArgs> argumentsSupplier() {
         return Stream.of(
-                new PropertyArgs<>("Simple property", "propriété", "headerName", 
+                new PropertyArgs("Simple property", "propriété", "headerName", 
                         PropertyType.STRING),
-                new PropertyArgs<>("Property with equal names", "name", "name", 
+                new PropertyArgs("Property with equal names", "name", "name", 
                         PropertyType.INTEGER),
-                new PropertyArgs<>("Property with empty name", "", "header_name", 
+                new PropertyArgs("Property with empty name", "", "header_name", 
                         PropertyType.BOOLEAN),
-                new PropertyArgs<>("Property with empty headerName", "name", "", 
+                new PropertyArgs("Property with empty headerName", "name", "", 
                         PropertyType.INTEGER),
-                new PropertyArgs<>("Property with empty names", "", "", 
+                new PropertyArgs("Property with empty names", "", "", 
                         PropertyType.BOOLEAN)
             );
     }
     
-    protected PropertyArgs<?,?> getDifferentArgs(){
-        return new PropertyArgs<>("Property with different values", "specific_foo", 
+    @Override
+    protected PropertyArgs getDifferentArgs(){
+        return new PropertyArgs("Property with different values", "specific_foo", 
                 "differentBar", PropertyType.YEAR);
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> getName(){
-        return test("getName()", args -> Assertions.assertEquals(args.getExpectedName(),
-                args.convert().getName()));
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> getHeaderName(){
-        return test("getHeaderName()", args -> Assertions.assertEquals(args.getExpectedHeaderName(),
-                args.convert().getHeaderName()));
-    }
-    
-    @TestFactory
-    @SuppressWarnings("AssertEqualsBetweenInconvertibleTypes")
-    Stream<DynamicNode> getType(){
-        return test("getType()", args -> Assertions.assertEquals(args.expectedType,
-                args.convert().getType()));
     }
     
     @TestFactory
@@ -67,11 +46,10 @@ class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyArgs<?,
     @TestFactory
     protected Stream<DynamicNode> equals_similarMultiplePropertyName(){
         return test(Stream.of(
-                new PropertyArgs<>("specific test case", "name", "header name", PropertyType.YEAR)),
+                new PropertyArgs("specific test case", "name", "header name", PropertyType.YEAR)),
                 "equals returns false on similar MultiplePropertyName", 
                 args -> Assertions.assertNotEquals(args.convert(), 
-                        new MultiplePropertyName<>("name", "header name", PropertyType.YEAR, 
-                                PropertyType.BOOLEAN, null)));
+                        new SetPropertyName<>("name", "header name", PropertyType.YEAR)));
     }
     
     @TestFactory
@@ -92,8 +70,9 @@ class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyArgs<?,
     }
     
     @TestFactory
+    @Override
     Stream<DynamicNode> getStringRepresentation_expectedValue(){
-        return test(Stream.of(new PropertyArgs<>("specific test case", "property", "property", 
+        return test(Stream.of(new PropertyArgs("specific test case", "property", "property", 
                 PropertyType.INTEGER)), "getStringRepresentation() returns the expected value",
                 args -> {
                     PropertyName<?> property = args.convert();
@@ -102,52 +81,18 @@ class PropertyNameTest implements TestFramework<PropertyNameTest.PropertyArgs<?,
                 });
     }
     
-    @TestFactory
-    @SuppressWarnings("ThrowableResultIgnored")
-    Stream<DynamicNode> getStringRepresentation_NPE(){
-        return test(Stream.of(new PropertyArgs<>("specific test case", "property", "property", 
-                PropertyType.INTEGER)), "getStringRepresentation() returns the expected value",
-                args -> {
-                    PropertyName<?> property = args.convert();
-                    Assertions.assertThrows(NullPointerException.class, 
-                            () -> property.getStringRepresentation(null));
-                });
-    }
-    
-    static class PropertyArgs<K,V> extends TestArgs{
-        final PropertyType<K> expectedType;
-        private final String name;
-        private final String headerName;
+    static class PropertyArgs 
+            extends AbstractPropertyNameTest.AbstractPropertyNameArgs<Object, 
+                    SimplePropertyName<? extends Object>>{
+        //TODO refactor rename SimplePropertyArgs
         
-        PropertyArgs(String testCase, String name, String headerName, PropertyType<K> type){
-            super(testCase);
-            expectedType = type;
-            this.name = name;
-            this.headerName = headerName;
+        PropertyArgs(String testCase, String name, String headerName, PropertyType<? extends Object> type){
+            super(testCase, name, headerName, type);
         }
         
-        PropertyName<K> convert() {
+        @Override
+        SimplePropertyName<? extends Object> convert() {
             return new SimplePropertyName<>(name, headerName, expectedType);
-        }
-
-        String getExpectedName() {
-            return this.name;
-        }
-
-        String getExpectedHeaderName() {
-            return this.headerName;
-        }
-        
-        PropertyType<V> getExpectedValueType(){
-            throw new UnsupportedOperationException("Method used only in MapPropertyArg objects");
-        }
-        
-        String[] getMapInput(){
-            throw new UnsupportedOperationException("Method used only in MapPropertyArg objects");
-        }
-        
-        Map<K,V> getExpectedResult(){
-            throw new UnsupportedOperationException("Method used only in MapPropertyArg objects");
         }
     }
 }

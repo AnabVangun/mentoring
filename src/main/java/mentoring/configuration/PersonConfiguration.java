@@ -61,8 +61,7 @@ public final class PersonConfiguration extends Configuration<PersonConfiguration
      * Returns the {@link SimplePropertyName} instances describing single-valued properties.
      * @return the identification of single-valued properties for this configuration
      */
-    public Set<SimplePropertyName<?>> getPropertiesNames(){
-        //TODO refactor rename getSimplePropertiesNames
+    public Set<SimplePropertyName<?>> getSimplePropertiesNames(){
         return properties;
     }
     

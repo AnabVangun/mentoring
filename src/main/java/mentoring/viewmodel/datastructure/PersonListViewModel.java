@@ -86,7 +86,7 @@ public class PersonListViewModel extends SimpleObservable
         this.modifiableHeaderContent.clear();
         this.modifiableHeaderContent.add("Name");
         this.modifiableHeaderContent.addAll(
-                configuration.getPropertiesNames().stream().map(prop -> prop.getName())
+                configuration.getSimplePropertiesNames().stream().map(prop -> prop.getName())
                         .collect(Collectors.toList()));
         this.modifiableHeaderContent.addAll(
                 configuration.getMultiplePropertiesNames().stream().map(prop -> prop.getName())
