@@ -58,7 +58,7 @@ abstract class AbstractPropertyNameBuilderTest
         return test("build() produces the expected PropertyName after calling withHeaderName()",
                 args -> {
                    PropertyName<?> property = args.readyToBuild().build();
-                   Assertions.assertAll(args.supplyAssertionsPropertyAsExpected(property, true));
+                   args.assertPropertyAsExpected(property, true);
                 });
     }
 
@@ -67,7 +67,7 @@ abstract class AbstractPropertyNameBuilderTest
         return test("build() produces the expected PropertyName without calling optional setters",
                 args -> {
                    PropertyName<?> property = args.readyToBuildWithoutOptionalParameters().build();
-                   Assertions.assertAll(args.supplyAssertionsPropertyAsExpected(property, false));
+                   args.assertPropertyAsExpected(property, false);
                 });
     }
 
