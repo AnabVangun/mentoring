@@ -21,7 +21,6 @@ import org.mockito.Mockito;
 
 class PropertyNameDecoderTestImplementation extends PropertyNameDecoderTest<PropertyName<?>, 
         DummyPropertyNameDecoder, DummyPropertyNameDecoderArgs> {
-    //TODO refactor: reconsider all testing logic for all PropertyName-related classes
 
     @Override
     Stream<DummyPropertyNameDecoderArgs> specificallyInvalidArgumentsSupplier() {

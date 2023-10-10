@@ -7,8 +7,7 @@ import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 
 class MultiplePropertyNameBuilderTest extends 
-        AbstractPropertyNameBuilderTest<MultiplePropertyNameBuilderArgs, MultiplePropertyNameBuilder>{
-    //TODO refactor all logic between AbstractPropertyNameBuilderTest, SimplePropertyNameBuilderTest and Multiple
+        PropertyNameBuilderTest<MultiplePropertyNameBuilderArgs, MultiplePropertyNameBuilder>{
     @Override
     public Stream<MultiplePropertyNameBuilderArgs> argumentsSupplier(){
         return Stream.of(
@@ -67,7 +66,7 @@ class MultiplePropertyNameBuilderTest extends
     }
     
     static class MultiplePropertyNameBuilderArgs extends 
-            AbstractPropertyNameBuilderArgs<MultiplePropertyNameBuilder>{
+            PropertyNameBuilderArgs<MultiplePropertyNameBuilder>{
         final AggregationType aggregation;
         final MultiplePropertyName<?,?> expectedWithoutOptionalSetters;
         final MultiplePropertyName<?,?> expectedWithHeaderName;

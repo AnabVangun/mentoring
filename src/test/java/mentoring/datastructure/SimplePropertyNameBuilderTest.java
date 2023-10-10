@@ -4,7 +4,7 @@ import java.util.stream.Stream;
 import mentoring.datastructure.SimplePropertyNameBuilderTest.SimplePropertyNameBuilderArgs;
 
 class SimplePropertyNameBuilderTest extends 
-        AbstractPropertyNameBuilderTest<SimplePropertyNameBuilderArgs, SimplePropertyNameBuilder>{
+        PropertyNameBuilderTest<SimplePropertyNameBuilderArgs, SimplePropertyNameBuilder>{
     @Override
     public Stream<SimplePropertyNameBuilderArgs> argumentsSupplier(){
         return Stream.of(new SimplePropertyNameBuilderArgs("standard case", "foo", "bar", 
@@ -17,7 +17,7 @@ class SimplePropertyNameBuilderTest extends
     }
     
     
-    static class SimplePropertyNameBuilderArgs extends AbstractPropertyNameBuilderArgs<SimplePropertyNameBuilder>{
+    static class SimplePropertyNameBuilderArgs extends PropertyNameBuilderArgs<SimplePropertyNameBuilder>{
         
         SimplePropertyNameBuilderArgs(String testCase, String name, String headerName, 
                 PropertyType<?> type) {

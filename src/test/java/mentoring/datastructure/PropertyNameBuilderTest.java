@@ -7,8 +7,8 @@ import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.function.Executable;
 import test.tools.TestFramework;
 
-abstract class AbstractPropertyNameBuilderTest
-        <K extends AbstractPropertyNameBuilderArgs<V>, V extends PropertyNameBuilder<V>> 
+abstract class PropertyNameBuilderTest
+        <K extends PropertyNameBuilderArgs<V>, V extends PropertyNameBuilder<V>> 
         implements TestFramework<K> {
     
     @TestFactory
