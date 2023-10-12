@@ -3,6 +3,7 @@ package mentoring.viewmodel;
 import mentoring.viewmodel.tasks.PersonGetterTask;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -12,6 +13,7 @@ import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import mentoring.concurrency.ConcurrencyHandler;
+import mentoring.configuration.Configuration;
 import mentoring.configuration.CriteriaConfiguration;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.configuration.PojoCriteriaConfiguration;
@@ -65,6 +67,13 @@ public class MainViewModel {
             new EnumMap<>(PersonType.class);
     private final ForbiddenMatchListViewModel extraForbiddenMatches = 
             new ForbiddenMatchListViewModel();
+    
+    private final static List<Pair<String, List<String>>> YAML_EXTENSIONS = List.of(
+                Pair.of("YAML files", List.of("*.yaml")),
+                Pair.of("All files", List.of("*.*")));
+    private final static List<Pair<String, List<String>>> CSV_EXTENSIONS = List.of(
+                Pair.of("CSV files", List.of("*.csv")),
+                Pair.of("All files", List.of("*.*")));
     
     /**
      * Create a new {@code MainViewModel}.
@@ -249,84 +258,74 @@ public class MainViewModel {
     
     private ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> 
             forgeResultConfigurationPickerViewModel(){
-        //TODO refactor forgeXXPickerViewModel to emphasize structure
         ResultConfiguration<Person, Person> configuration = 
                 PojoResultConfiguration.NAMES_AND_SCORE.getConfiguration();
-        String defaultPath = "";
-        ConfigurationPickerViewModel.ConfigurationType type = 
-                ConfigurationPickerViewModel.ConfigurationType.KNOWN;
-        FileParser<ResultConfiguration<Person, Person>> parser = file -> {
-            try (FileReader reader = new FileReader(file, Charset.forName("utf-8"))){
-                return new ResultConfigurationParser(new YamlReader()).parse(reader);
-            }
-        };
         List<ResultConfiguration<Person,Person>> values = 
                 Arrays.stream(PojoResultConfiguration.values())
                         .map(config -> config.getConfiguration())
                         .collect(Collectors.toList());
-        List<Pair<String, List<String>>> extensions = List.of(
-                Pair.of("YAML files", List.of("*.yaml")),
-                Pair.of("All files", List.of("*.*")));
+        IOFunction<ResultConfiguration<Person, Person>> parser = reader ->
+                new ResultConfigurationParser(new YamlReader()).parse(reader);
         FilePickerViewModel<ResultConfiguration<Person, Person>> filePicker = 
-                new FilePickerViewModel<>(defaultPath, parser, extensions);
-        return new ConfigurationPickerViewModel<>(configuration, values, filePicker, type);
+                forgeFilePickerViewModel(parser, YAML_EXTENSIONS);
+        return forgeConfigurationPickerViewModel(configuration, values, filePicker);
     }
             
     private ConfigurationPickerViewModel<PersonConfiguration> forgePersonConfigurationPickerViewModel(){
         PersonConfiguration configuration = 
                 PojoPersonConfiguration.TEST_CONFIGURATION.getConfiguration();
-        String defaultPath = "";
-        ConfigurationPickerViewModel.ConfigurationType type = 
-                ConfigurationPickerViewModel.ConfigurationType.KNOWN;
-        FileParser<PersonConfiguration> parser = file -> {
-            try (FileReader reader = new FileReader(file, Charset.forName("utf-8"))){
-                return new PersonConfigurationParser(new YamlReader()).parse(reader);
-            }
-        };
         List<PersonConfiguration> values = 
                 Arrays.stream(PojoPersonConfiguration.values())
                         .map(config -> config.getConfiguration())
                         .collect(Collectors.toList());
-        List<Pair<String, List<String>>> extensions = List.of(
-                Pair.of("YAML files", List.of("*.yaml")),
-                Pair.of("All files", List.of("*.*")));
+        IOFunction<PersonConfiguration> parser = reader -> 
+                new PersonConfigurationParser(new YamlReader()).parse(reader);
         FilePickerViewModel<PersonConfiguration> filePicker = 
-                new FilePickerViewModel<>(defaultPath, parser, extensions);
-        return new ConfigurationPickerViewModel<>(configuration, values, filePicker, type);
+                forgeFilePickerViewModel(parser, YAML_EXTENSIONS);
+        return forgeConfigurationPickerViewModel(configuration, values, filePicker);
     }
     
     private ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> 
             forgeMatchConfigurationPickerViewModel(){
         CriteriaConfiguration<Person, Person> configuration = 
                 PojoCriteriaConfiguration.CRITERIA_CONFIGURATION;
-        String defaultPath = "";
-        ConfigurationPickerViewModel.ConfigurationType type = 
-                ConfigurationPickerViewModel.ConfigurationType.KNOWN;
-        FileParser<CriteriaConfiguration<Person, Person>> parser = file -> {
-            throw new UnsupportedOperationException("not implemented yet");
-        };
         List<CriteriaConfiguration<Person, Person>> values = 
                 List.of(PojoCriteriaConfiguration.CRITERIA_CONFIGURATION, 
                         PojoCriteriaConfiguration.CRITERIA_CONFIGURATION_2023_DATA);
-        List<Pair<String, List<String>>> extensions = List.of(
-                Pair.of("YAML files", List.of("*.yaml")),
-                Pair.of("All files", List.of("*.*")));
+        IOFunction<CriteriaConfiguration<Person, Person>> parser = file -> {
+            throw new UnsupportedOperationException("not implemented yet");
+        };
         FilePickerViewModel<CriteriaConfiguration<Person, Person>> filePicker = 
-                new FilePickerViewModel<>(defaultPath, parser, extensions);
-        return new ConfigurationPickerViewModel<>(configuration, values, filePicker, type);
+                forgeFilePickerViewModel(parser, YAML_EXTENSIONS);
+        return forgeConfigurationPickerViewModel(configuration, values, filePicker);
     }
     
+    private <T extends Configuration<T>> ConfigurationPickerViewModel<T> forgeConfigurationPickerViewModel(
+            T initialValue, List<T> knownValues, FilePickerViewModel<T> filePicker){
+        return new ConfigurationPickerViewModel<>(initialValue, knownValues, filePicker, 
+                ConfigurationPickerViewModel.ConfigurationType.KNOWN);
+    }
+            
     private FilePickerViewModel<List<Person>> forgePersonListPickerViewModel(PersonType type){
-        String defaultPath = "";
-        FileParser<List<Person>> parser = file -> {
-            try (FileReader reader = new FileReader(file, Charset.forName("utf-8"))){
-                return new PersonFileParser(personConfigurations.get(type).getConfiguration())
+        IOFunction<List<Person>> parser = reader -> 
+                new PersonFileParser(personConfigurations.get(type).getConfiguration())
                         .parse(reader);
+        return forgeFilePickerViewModel(parser, CSV_EXTENSIONS);
+    }
+    
+    private <T> FilePickerViewModel<T> forgeFilePickerViewModel(IOFunction<T> parser, 
+            List<Pair<String, List<String>>> extensions) {
+        String defaultPath = "";
+        FileParser<T> actualParser = file -> {
+            try (FileReader reader = new FileReader(file, Charset.forName("utf-8"))){
+                return parser.apply(reader);
             }
         };
-        List<Pair<String, List<String>>> extensions = List.of(
-                Pair.of("CSV files", List.of("*.csv")),
-                Pair.of("All files", List.of("*.*")));
-        return new FilePickerViewModel<>(defaultPath, parser, extensions);
+        return new FilePickerViewModel<>(defaultPath, actualParser, extensions);
+    }
+    
+    @FunctionalInterface
+    private static interface IOFunction<T> {
+        public T apply(FileReader reader) throws IOException;
     }
 }
