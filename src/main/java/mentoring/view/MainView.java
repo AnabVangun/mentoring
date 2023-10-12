@@ -23,9 +23,6 @@ import mentoring.view.base.ViewTools;
 import mentoring.view.datastructure.ForbiddenMatchesView;
 import mentoring.view.datastructure.MatchesTableView;
 import mentoring.viewmodel.MainViewModel;
-import mentoring.viewmodel.base.ConfigurationPickerViewModel;
-import mentoring.viewmodel.base.FilePickerViewModel;
-import mentoring.viewmodel.datastructure.ForbiddenMatchListViewModel;
 import mentoring.viewmodel.datastructure.PersonType;
 import mentoring.viewmodel.tasks.AbstractTask;
 
@@ -139,7 +136,6 @@ public class MainView implements Initializable {
     }
     
     private void showConfigurationPicker(){
-        //TODO: refactor: emphasize structure and operations.
         /*
         TODO: when configuration is changed, erase the current matches.
             1. If there is anything to erase, ask for confirmation before showing the window
@@ -148,51 +144,8 @@ public class MainView implements Initializable {
         */
         FXMLLoader loader = new FXMLLoader(getClass()
                 .getResource("/mentoring/globalConfigurationSelectionView.fxml"));
-        Parent node = null;
-        try {
-            node = loader.load();
-        } catch (IOException e){
-            throw new UncheckedIOException(e);
-        }
-        GlobalConfigurationPickerView globalConfigurationView = 
-                (GlobalConfigurationPickerView) loader.getController();
-        FilePickerViewModel<?> menteeSourceVM =
-                vm.getPersonPicker(PersonType.MENTEE);
-        ConfigurationPickerViewModel<?> menteeConfigurationVM =
-                vm.getPersonConfiguration(PersonType.MENTEE);
-        FilePickerViewModel<?> mentorSourceVM =
-                vm.getPersonPicker(PersonType.MENTOR);
-        ConfigurationPickerViewModel<?> mentorConfigurationVM =
-                vm.getPersonConfiguration(PersonType.MENTOR);
-        ConfigurationPickerViewModel<?> matchVM = vm.getMatchConfiguration();
-        ConfigurationPickerViewModel<?> resultVM = vm.getResultConfiguration();
-        ConfigurationPickerViewModel<?> exportVM = vm.getExportConfiguration();
-        globalConfigurationView.getPersonSourceView(PersonType.MENTEE).setViewModel(menteeSourceVM);
-        globalConfigurationView.getPersonConfigurationView(PersonType.MENTEE).setViewModel(menteeConfigurationVM);
-        globalConfigurationView.getPersonSourceView(PersonType.MENTOR).setViewModel(mentorSourceVM);
-        globalConfigurationView.getPersonConfigurationView(PersonType.MENTOR).setViewModel(mentorConfigurationVM);
-        globalConfigurationView.getMatchConfigurationView().setViewModel(matchVM);
-        globalConfigurationView.getResultConfigurationView().setViewModel(resultVM);
-        globalConfigurationView.getExportConfigurationView().setViewModel(exportVM);
-        globalConfigurationView.setValidationAction(() -> {
-            vm.getResultConfiguration(List.of(tableViewController.getBatchMatchesViewModel(),
-                            tableViewController.getOneAtATimeMatchesViewModel()),
-                    TaskCompletionAlertFactory.alertOnFailure(except -> 
-                            //TODO internationalize string
-                            "Failed to get result configuration: %s"
-                                    .formatted(except.getLocalizedMessage())));
-            for (PersonType type : PersonType.values()){
-                vm.getPersons(tableViewController.getPersonViewModel(type), type,
-                        TaskCompletionAlertFactory.alertOnFailure(except -> 
-                                //TODO internationalise string
-                                "Failed to load %s : %s".formatted(type, 
-                                        except.getLocalizedMessage())));
-            }
-            tableViewController.getOneAtATimeMatchesViewModel().clear();
-            tableViewController.getBatchMatchesViewModel().clear();
-            vm.getForbiddenMatches().clear();
-        });
-        
+        Parent node = loadFromFxmlLoader(loader);
+        configureGlobalConfigurationPickerView(loader);
         StageBuilder builder = new StageBuilder().withTitle("Configure mentoring");
         if(runButton.getScene() != null){
             builder.withModality(Modality.APPLICATION_MODAL, runButton.getScene().getWindow());
@@ -202,20 +155,83 @@ public class MainView implements Initializable {
         stage.showAndWait();
     }
     
-    private void showForbiddenMatches(){
-        //TODO: refactor: emphasize structure and operations.
-        FXMLLoader loader = new FXMLLoader(getClass()
-                .getResource("/mentoring/forbiddenMatchesView.fxml"));
-        Parent node = null;
+    private Parent loadFromFxmlLoader(FXMLLoader loader){
         try {
-            node = loader.load();
+            return loader.load();
         } catch (IOException e){
             throw new UncheckedIOException(e);
         }
+    }
+    
+    private void configureGlobalConfigurationPickerView(FXMLLoader loader){
+        GlobalConfigurationPickerView globalConfigurationView = 
+                (GlobalConfigurationPickerView) loader.getController();
+        setGlobalConfigurationPickerViewModels(globalConfigurationView);
+        globalConfigurationView.setValidationAction(this::getConfiguration);
+    }
+    
+    private void setGlobalConfigurationPickerViewModels(GlobalConfigurationPickerView
+            globalConfigurationView){
+        globalConfigurationView.getPersonSourceView(PersonType.MENTEE)
+                .setViewModel(vm.getPersonPicker(PersonType.MENTEE));
+        globalConfigurationView.getPersonConfigurationView(PersonType.MENTEE)
+                .setViewModel(vm.getPersonConfiguration(PersonType.MENTEE));
+        globalConfigurationView.getPersonSourceView(PersonType.MENTOR)
+                .setViewModel(vm.getPersonPicker(PersonType.MENTOR));
+        globalConfigurationView.getPersonConfigurationView(PersonType.MENTOR)
+                .setViewModel(vm.getPersonConfiguration(PersonType.MENTOR));
+        globalConfigurationView.getMatchConfigurationView()
+                .setViewModel(vm.getMatchConfiguration());
+        globalConfigurationView.getResultConfigurationView()
+                .setViewModel(vm.getResultConfiguration());
+        globalConfigurationView.getExportConfigurationView()
+                .setViewModel(vm.getExportConfiguration());
+    }
+    
+    private void getConfiguration(){
+        getPersonConfigurations();
+        getResultConfiguration();
+        clearMatches();
+        vm.getForbiddenMatches().clear();
+    }
+    
+    private void getPersonConfigurations(){
+        for (PersonType type : PersonType.values()){
+            vm.getPersons(tableViewController.getPersonViewModel(type), type,
+                    TaskCompletionAlertFactory.alertOnFailure(except -> 
+                            //TODO internationalise string
+                            "Failed to load %s : %s".formatted(type, 
+                                    except.getLocalizedMessage())));
+        }
+    }
+    
+    private void getResultConfiguration(){
+        vm.getResultConfiguration(List.of(tableViewController.getBatchMatchesViewModel(),
+                tableViewController.getOneAtATimeMatchesViewModel()),
+                TaskCompletionAlertFactory.alertOnFailure(except ->
+                        //TODO internationalize string
+                        "Failed to get result configuration: %s"
+                                .formatted(except.getLocalizedMessage())));
+    }
+    
+    private void clearMatches(){
+        tableViewController.getOneAtATimeMatchesViewModel().clear();
+        tableViewController.getBatchMatchesViewModel().clear();
+    }
+    
+    private void showForbiddenMatches(){
+        FXMLLoader loader = new FXMLLoader(getClass()
+                .getResource("/mentoring/forbiddenMatchesView.fxml"));
+        Parent node = loadFromFxmlLoader(loader);
+        configureForbiddenMatchesView(loader);
+        StageBuilder builder = new StageBuilder().withTitle("Forbidden matches");
+        builder.build(node).show();
+    }
+    
+    private void configureForbiddenMatchesView(FXMLLoader loader){
         ForbiddenMatchesView view = 
                 (ForbiddenMatchesView) loader.getController();
-        ForbiddenMatchListViewModel forbiddenMatchesViewModel = vm.getForbiddenMatches();
-        view.setViewModel(forbiddenMatchesViewModel);
+        view.setViewModel(vm.getForbiddenMatches());
         AbstractTask.TaskCompletionCallback<Object> callback = 
                 TaskCompletionAlertFactory.alertOnFailure(except -> 
                         //TODO internationalise String
@@ -223,7 +239,5 @@ public class MainView implements Initializable {
                                 .formatted(except.getLocalizedMessage()));
         view.setRemovalButtonAction((event, viewModel) -> vm.removeForbiddenMatch(viewModel,
                 callback));
-        StageBuilder builder = new StageBuilder().withTitle("Forbidden matches");
-        builder.build(node).show();
     }
 }
