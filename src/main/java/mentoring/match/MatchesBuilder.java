@@ -100,11 +100,10 @@ public final class MatchesBuilder<Mentee, Mentor> {
     }
     
     /**
-     * Finalises the assignment problem instance, solves it and returns the result.
+     * Solves the assignment problem instance and returns the result.
      * @return an optimal assignment between the mentees and the mentors.
      */
     public Matches<Mentee, Mentor> build(){
-        costMatrixHandler.buildCostMatrix();
         Result rawResult = costMatrixHandler.solveCostMatrix(solver);
         return formatResult(rawResult);
     }
@@ -135,7 +134,7 @@ public final class MatchesBuilder<Mentee, Mentor> {
     private boolean isValidMatch(Integer menteeIndex, Integer mentorIndex){
         return (menteeIndex != unassignedValue 
                 && mentorIndex != unassignedValue 
-                && costMatrixHandler.isMatchScoreNotProhibitive(menteeIndex, mentorIndex));
+                && costMatrixHandler.isMatchAllowed(menteeIndex, mentorIndex));
     }
     
     private List<Match<Mentee, Mentor>> 
@@ -207,9 +206,10 @@ public final class MatchesBuilder<Mentee, Mentor> {
         } else if (mentorIndex == -1) {
             throw new IllegalArgumentException("Mentor %s are invalid".formatted(mentor));
         }
-        //TODO : avoid calling buildCostMatrix each time.
-        costMatrixHandler.buildCostMatrix();
-        int cost = costMatrixHandler.getMatchScore(menteeIndex, mentorIndex);
+        //TODO : get match score or prohibitive score if match is prohibited
+        int cost = costMatrixHandler.isMatchAllowed(menteeIndex, mentorIndex) 
+                ? costMatrixHandler.getMatchScore(menteeIndex, mentorIndex)
+                : PROHIBITIVE_VALUE;
         return new Match<>(mentee, mentor, cost);
     }
 }

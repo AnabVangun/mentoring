@@ -2,37 +2,51 @@ package mentoring.match;
 
 import assignmentproblem.Result;
 import assignmentproblem.Solver;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 final class CostMatrixHandler<Mentee, Mentor> {
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    final private List<Mentee> mentees;
+    private final List<Mentee> mentees;
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    final private List<Mentor> mentors;
-    final private Collection<ProgressiveCriterion<Mentee, Mentor>> progressiveCriteria;
+    private final List<Mentor> mentors;
+    private final Collection<ProgressiveCriterion<Mentee, Mentor>> progressiveCriteria;
     private Collection<NecessaryCriterion<Mentee, Mentor>> necessaryCriteria = List.of();
-    private int[][] costMatrix;
+    /** Cell [i][j] is the cost of associating mentee i with mentor j. */
+    private final int[][] costMatrix;
+    private final boolean[][] allowedMatch;
     
     CostMatrixHandler(List<Mentee> mentees, List<Mentor> mentors,
             Collection<ProgressiveCriterion<Mentee, Mentor>> progressiveCriteria){
         this.mentors = mentors;
         this.mentees = mentees;
         this.progressiveCriteria = progressiveCriteria;
+        costMatrix = new int[mentees.size()][mentors.size()];
+        buildCostMatrix();
+        allowedMatch = new boolean[mentees.size()][];
+        for(int i = 0 ; i < allowedMatch.length ; i++){
+            boolean[] allTrue = new boolean[mentors.size()];
+            Arrays.fill(allTrue, true);
+            allowedMatch[i] = allTrue;
+        }
     }
     
     CostMatrixHandler<Mentee, Mentor> withNecessaryCriteria(
             Collection<NecessaryCriterion<Mentee, Mentor>> necessaryCriteria){
         this.necessaryCriteria = necessaryCriteria;
+        for (int i = 0; i < mentees.size(); i++){
+            for (int j = 0; j < mentors.size(); j++){
+                allowedMatch[i][j] = checkNecessaryCriteria(mentees.get(i), mentors.get(j));
+            }
+        }
         return this;
     }
     
-    CostMatrixHandler<Mentee, Mentor> buildCostMatrix(){
-        /** Cell [i][j] is the cost of associating mentee i with mentor j. */
-        costMatrix = new int[mentees.size()][mentors.size()];
+    private CostMatrixHandler<Mentee, Mentor> buildCostMatrix(){
         for(int i = 0; i < mentees.size(); i++){
             for (int j = 0; j < mentors.size(); j++){
-                costMatrix[i][j] = computeCost(mentees.get(i), mentors.get(j));
+                costMatrix[i][j] = computeProgressiveCriteriaCost(mentees.get(i), mentors.get(j));
             }
         }
         return this;
@@ -73,11 +87,22 @@ final class CostMatrixHandler<Mentee, Mentor> {
     }
     
     Result solveCostMatrix(Solver solver){
-        return solver.solve(costMatrix);
+        int[][] actualCostMatrix = computeActualCostMatrix();
+        return solver.solve(actualCostMatrix);
     }
     
-    boolean isMatchScoreNotProhibitive(int menteeIndex, int mentorIndex){
-        return costMatrix[menteeIndex][mentorIndex] < MatchesBuilder.PROHIBITIVE_VALUE;
+    private int[][] computeActualCostMatrix(){
+        int[][] result = new int[costMatrix.length][costMatrix[0].length];
+        for (int i = 0; i < result.length; i++){
+            for (int j = 0; j < result[i].length; j++){
+                result[i][j] = computeCost(mentees.get(i), mentors.get(j));
+            }
+        }
+        return result;
+    }
+    
+    boolean isMatchAllowed(int menteeIndex, int mentorIndex){
+        return allowedMatch[menteeIndex][mentorIndex];
     }
     
     int getMatchScore(int menteeIndex, int mentorIndex){

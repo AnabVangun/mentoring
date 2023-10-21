@@ -22,6 +22,13 @@ import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 
 public class MultipleMatchTask extends AbstractTask<Void> {
     //TODO this class has become too complex, refactor to simplify and refactor test class accordingly
+    /*
+    1. Rework MatchesBuilder:
+        handle modifications of the necessary criteria <-- allow or forbid match between two persons
+        transform buildSingleMatch into solve(mentees, mentors) method
+            --> select the relevant rows and columns of the cost matrix and give it to solver
+    2. In MainViewModel, when configuration is selected, generate a MatchesBuilder
+    */
     private final PersonMatchesViewModel resultVM;
     private final PersonMatchesViewModel excludedMatchesVM;
     private final ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> criteriaVM;
@@ -39,6 +46,7 @@ public class MultipleMatchTask extends AbstractTask<Void> {
      * @param forbiddenMatchesVM an optional ViewModel encapsulating a list of forbidden matches
      * @param mentees the list of mentees to match
      * @param mentors the list of mentors to match
+     * @param callback the method to call when the task has run
      */
     public MultipleMatchTask(PersonMatchesViewModel resultVM, PersonMatchesViewModel excludedMatchesVM,
             ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> criteriaVM, 
