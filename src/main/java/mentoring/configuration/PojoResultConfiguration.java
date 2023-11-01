@@ -31,6 +31,7 @@ public enum PojoResultConfiguration{
                 "Mentoré", match.getMentee().getFullName(),
                 "email mentoré", match.getMentee().getPropertyAs("Email", String.class),
                 "Coût", Integer.toString(match.getCost())));
+    //TODO make it easy to print non-String properties as is done in PersonViewModel
     
     private final ResultConfiguration<Person, Person> configuration;
     
