@@ -5,12 +5,16 @@ import assignmentproblem.Solver;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-final class CostMatrixHandler<Mentee, Mentor> {
+class CostMatrixHandler<Mentee, Mentor> {
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private final List<Mentee> mentees;
+    private final List<Integer> menteeIndices;
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private final List<Mentor> mentors;
+    private final List<Integer> mentorIndices;
     private final Collection<ProgressiveCriterion<Mentee, Mentor>> progressiveCriteria;
     private Collection<NecessaryCriterion<Mentee, Mentor>> necessaryCriteria = List.of();
     /** Cell [i][j] is the cost of associating mentee i with mentor j. */
@@ -20,16 +24,23 @@ final class CostMatrixHandler<Mentee, Mentor> {
     CostMatrixHandler(List<Mentee> mentees, List<Mentor> mentors,
             Collection<ProgressiveCriterion<Mentee, Mentor>> progressiveCriteria){
         this.mentors = mentors;
+        menteeIndices = IntStream.range(0, mentees.size()).boxed().collect(Collectors.toList());
         this.mentees = mentees;
+        mentorIndices = IntStream.range(0, mentors.size()).boxed().collect(Collectors.toList());
         this.progressiveCriteria = progressiveCriteria;
         costMatrix = new int[mentees.size()][mentors.size()];
         buildCostMatrix();
-        allowedMatch = new boolean[mentees.size()][];
-        for(int i = 0 ; i < allowedMatch.length ; i++){
-            boolean[] allTrue = new boolean[mentors.size()];
+        allowedMatch = buildAllTrueMatrix(mentees.size(), mentors.size());
+    }
+    
+    private boolean[][] buildAllTrueMatrix(int nRows, int nColumns){
+        boolean[][] result = new boolean[nRows][];
+        for (int i = 0; i < nRows ; i++){
+            boolean[] allTrue = new boolean[nColumns];
             Arrays.fill(allTrue, true);
-            allowedMatch[i] = allTrue;
+            result[i] = allTrue;
         }
+        return result;
     }
     
     CostMatrixHandler<Mentee, Mentor> withNecessaryCriteria(
@@ -41,6 +52,24 @@ final class CostMatrixHandler<Mentee, Mentor> {
             }
         }
         return this;
+    }
+    
+    boolean forbidMatch(int menteeIndex, int mentorIndex){
+        if (isMatchAllowed(menteeIndex, mentorIndex)){
+            allowedMatch[menteeIndex][mentorIndex] = false;
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    boolean allowMatch(int menteeIndex, int mentorIndex){
+        if (!isMatchAllowed(menteeIndex, mentorIndex)){
+            allowedMatch[menteeIndex][mentorIndex] = true;
+            return true;
+        } else {
+            return false;
+        }
     }
     
     private CostMatrixHandler<Mentee, Mentor> buildCostMatrix(){
@@ -87,15 +116,22 @@ final class CostMatrixHandler<Mentee, Mentor> {
     }
     
     Result solveCostMatrix(Solver solver){
-        int[][] actualCostMatrix = computeActualCostMatrix();
+        return solvePartialCostMatrix(solver, menteeIndices, mentorIndices);
+    }
+    
+    Result solvePartialCostMatrix(Solver solver, List<Integer> menteeIndices,
+            List<Integer> mentorIndices){
+        int[][] actualCostMatrix = computeActualCostMatrix(menteeIndices, mentorIndices);
         return solver.solve(actualCostMatrix);
     }
     
-    private int[][] computeActualCostMatrix(){
-        int[][] result = new int[costMatrix.length][costMatrix[0].length];
+    private int[][] computeActualCostMatrix(List<Integer> menteeIndices, 
+            List<Integer> mentorIndices){
+        int[][] result = new int[menteeIndices.size()][mentorIndices.size()];
         for (int i = 0; i < result.length; i++){
             for (int j = 0; j < result[i].length; j++){
-                result[i][j] = computeCost(mentees.get(i), mentors.get(j));
+                result[i][j] = computeCost(mentees.get(menteeIndices.get(i)), 
+                        mentors.get(mentorIndices.get(j)));
             }
         }
         return result;

@@ -16,8 +16,7 @@ import mentoring.match.NecessaryCriterion;
 public final class PojoCriteriaConfiguration extends CriteriaConfiguration<Person,Person>{
     private static final String LANGUAGES_PROPERTY = "Langue";
     private static final String ENGLISH_PROPERTY = "Anglais";
-    private static final String ENGLISH_SPEAKING_PROPERTY = "Anglophone";
-    private static final int YEAR_WEIGHT = 10;
+    private static final int YEAR_WEIGHT = 1;
     private static final int MENTEE_YEAR = 2020;
     private static final String YEAR_PROPERTY = "Promotion";
     private static final String ACTIVITIES_PROPERTY = "Métiers";
@@ -27,11 +26,11 @@ public final class PojoCriteriaConfiguration extends CriteriaConfiguration<Perso
     private static final String MATURITY2023 = "Maturité";
     private static final String JOB2023 = "Métier";
     private static final String COMPANY2023 = "Entreprise";
-    private static final int MATURITY_WEIGHT = 50;
+    private static final int MATURITY_WEIGHT = 10;
     private static final Map<String, Integer> MEETING_INDICES = Map.of("oui",0,"sipossible",1,
             "pasnecessairement",2);
     private static final String MEETING2023 = "Echanges";
-    private static final int MEETING_WEIGHT = 150;
+    private static final int MEETING_WEIGHT = 10;
     private static final int INTEREST_AMPLIFIER2023 = 3;
     /** Configuration used in simple test cases. */
     public final static PojoCriteriaConfiguration CRITERIA_CONFIGURATION = 
@@ -78,27 +77,21 @@ public final class PojoCriteriaConfiguration extends CriteriaConfiguration<Perso
                                             Integer.class)
                                             - mentor.getPropertyAs(MATURITY2023, 
                                                     Integer.class)), 
-                            (mentee, mentor) -> INTEREST_AMPLIFIER2023
-                                    * CriteriaToolbox.computeWeightedAsymetricMapDistance(
+                            (mentee, mentor) -> 150*INTEREST_AMPLIFIER2023
+                                    * CriteriaToolbox.computeBrutalAsymetricDistance(
                                     mentee.getPropertyAsMapOf(SECTOR2023, String.class, 
                                             Integer.class), 
-                                    mentor.getPropertyAsSetOf(SECTOR2023, String.class),
-                                    mentee.getPropertyAs(MATURITY2023, Integer.class)
-                                            / MATURITE_MAX_2023), 
-                            (mentee, mentor) -> INTEREST_AMPLIFIER2023
-                                    * CriteriaToolbox.computeWeightedAsymetricMapDistance(
+                                    mentor.getPropertyAsSetOf(SECTOR2023, String.class)), 
+                            (mentee, mentor) -> 50*INTEREST_AMPLIFIER2023
+                                    * CriteriaToolbox.computeBrutalAsymetricDistance(
                                     mentee.getPropertyAsMapOf(JOB2023, String.class, 
                                             Integer.class), 
-                                    mentor.getPropertyAsSetOf(JOB2023, String.class),
-                                    mentee.getPropertyAs(MATURITY2023, Integer.class)
-                                            / MATURITE_MAX_2023), 
+                                    mentor.getPropertyAsSetOf(JOB2023, String.class)), 
                             (mentee, mentor) -> INTEREST_AMPLIFIER2023
-                                    * CriteriaToolbox.computeWeightedAsymetricMapDistance(
+                                    * CriteriaToolbox.computeBrutalAsymetricDistance(
                                     mentee.getPropertyAsMapOf(COMPANY2023, String.class, 
                                             Integer.class), 
-                                    mentor.getPropertyAsSetOf(COMPANY2023, String.class),
-                                    mentee.getPropertyAs(MATURITY2023, Integer.class)
-                                            / MATURITE_MAX_2023)
+                                    mentor.getPropertyAsSetOf(COMPANY2023, String.class))
                     ),
                     List.of((mentee, mentor) -> {
                         boolean found = false;

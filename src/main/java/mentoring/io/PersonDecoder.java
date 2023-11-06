@@ -58,11 +58,17 @@ final class PersonDecoder {
     }
     
     Person decodeLine(String[] line){
-        PersonBuilder builder = new PersonBuilder();
-        addPropertiesToBuilder(builder, line);
-        addMultiplePropertiesToBuilder(builder, line);
-        addFullNameToBuilder(builder, line);
-        return builder.build();
+        try {
+            PersonBuilder builder = new PersonBuilder();
+            addPropertiesToBuilder(builder, line);
+            addMultiplePropertiesToBuilder(builder, line);
+            addFullNameToBuilder(builder, line);
+            return builder.build();
+        } catch (NumberFormatException e){
+            throw new IllegalArgumentException("Failed to parse person %s"
+                    .formatted(Arrays.toString(line)),
+                    e);
+        }
     }
     
     private void addPropertiesToBuilder(PersonBuilder builder, String[] personData){

@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
+import org.mockito.Mockito;
 import org.opentest4j.AssertionFailedError;
 import test.tools.TestArgs;
 import test.tools.TestFramework;
@@ -30,10 +31,32 @@ final class MatchesBuilderTest implements TestFramework<MatchesBuilderTest.Match
                 new PublicMatchesBuilderArgs("minimal test case", expectedMatches, 
                         List.of(0,1), List.of(0,1), 
                         List.of((mentee, mentor) -> 
+                                mentee.equals(mentor) ? prohibitiveCost : standardCost)),
+                new PublicMatchesBuilderArgs("non square matrix", expectedMatches, 
+                        List.of(0,1,12), List.of(0,1),
+                        List.of((mentee, mentor) -> 
+                                (mentee.equals(mentor) || mentee.equals(12)) 
+                                        ? prohibitiveCost : standardCost)));
+        return test(testCase, "build() with default settings works", args -> {
+            assertMatchesEquals(args.expectedMatches, args.convert().build());
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> defaultMatchesBuilderWorksWithPartialBuild(){
+        int prohibitiveCost = 2000;
+        int standardCost = 5;
+        //TODO modify cases: one with a valid match and an unassigned mentee, one with a valid match and an unassigned mentor
+        Matches<Integer,Integer> expectedMatches = new Matches<>(List.of(
+                new Match<>(0,1,standardCost)));
+        Stream<PublicMatchesBuilderArgs> testCase = Stream.of(
+                new PublicMatchesBuilderArgs("minimal test case", expectedMatches, 
+                        List.of(0,1), List.of(0,1), 
+                        List.of((mentee, mentor) -> 
                                 mentee.equals(mentor) ? prohibitiveCost : standardCost)
                 ));
         return test(testCase, "build() with default settings works", args -> {
-            assertMatchesEquals(args.expectedMatches, args.convert().build());
+            assertMatchesEquals(args.expectedMatches, args.convert().build(List.of(0), List.of(1)));
         });
     }
     
@@ -57,6 +80,25 @@ final class MatchesBuilderTest implements TestFramework<MatchesBuilderTest.Match
     }
     
     @TestFactory
+    Stream<DynamicNode> defaultMatchesBuilderWithNecessaryCriteriaWorksWithPartialBuild(){
+        int prohibitiveCost = 2000;
+        int standardCost = 5;
+        Matches<Integer,Integer> expectedMatches = new Matches<>(List.of(
+                new Match<>(0,0,prohibitiveCost)));
+        Stream<PublicMatchesBuilderArgs> testCase = Stream.of(
+                new PublicMatchesBuilderArgs("minimal test case", expectedMatches, 
+                        List.of(0,1), List.of(0,1), 
+                        List.of((mentee, mentor) -> 
+                                mentee.equals(mentor) ? prohibitiveCost : standardCost)
+                ));
+        return test(testCase, "build() with necessary criterion works", args -> {
+            MatchesBuilder<Integer,Integer> builder = args.convert();
+            builder.withNecessaryCriteria(List.of((mentee, mentor) -> mentee.equals(mentor)));
+            assertMatchesEquals(args.expectedMatches, builder.build(List.of(0), List.of(0)));
+        });
+    }
+    
+    @TestFactory
     Stream<DynamicNode> defaultMatchesBuilderWithSolverWorks(){
         Matches<Integer,Integer> expectedMatches = new Matches<>(List.of(
                 new Match<>(0,0,0), new Match<>(1,1,1)));
@@ -70,6 +112,51 @@ final class MatchesBuilderTest implements TestFramework<MatchesBuilderTest.Match
             MatchesBuilder<Integer,Integer> builder = args.convert();
             builder.withSolver(solver, -1);
             assertMatchesEquals(args.expectedMatches, builder.build());
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> defaultMatchesBuilderWithSolverWorksWithPartialBuild(){
+        Matches<Integer,Integer> expectedMatches = new Matches<>(List.of(
+                new Match<>(0,0,0), new Match<>(1,1,1)));
+        Solver solver = new DummySolver(List.of(0,1), List.of(0,1));
+        Stream<PublicMatchesBuilderArgs> testCase = Stream.of(
+                new PublicMatchesBuilderArgs("minimal test case with solver", expectedMatches, 
+                        List.of(0,1), List.of(0,1), 
+                        List.of((mentee, mentor) -> mentee*mentor)
+                ));
+        return test(testCase, "build() with custom solver works", args -> {
+            MatchesBuilder<Integer,Integer> builder = args.convert();
+            builder.withSolver(solver, -1);
+            assertMatchesEquals(args.expectedMatches, builder.build(List.of(0,1), List.of(0,1)));
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> forbidMatch_forwardToHandler(){
+        @SuppressWarnings("unchecked")
+        CostMatrixHandler<Integer,Integer> handler = Mockito.mock(CostMatrixHandler.class);
+        Stream<HandlerMatchesBuilderArgs> testCase = Stream.of(
+                new HandlerMatchesBuilderArgs("minimal test case", null, 
+                        List.of(3,2), List.of(5,6), handler));
+        return test(testCase, "forbidMatch() forwards the call to the handler", args -> {
+            MatchesBuilder<Integer, Integer> builder = args.convert();
+            builder.forbidMatch(3, 6);
+            Mockito.verify(handler).forbidMatch(0, 1);
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> allowMatch_forwardToHandler(){
+        @SuppressWarnings("unchecked")
+        CostMatrixHandler<Integer,Integer> handler = Mockito.mock(CostMatrixHandler.class);
+        Stream<HandlerMatchesBuilderArgs> testCase = Stream.of(
+                new HandlerMatchesBuilderArgs("minimal test case", null, 
+                        List.of(3,2), List.of(5,6), handler));
+        return test(testCase, "allowMatch() forwards the call to the handler", args -> {
+            MatchesBuilder<Integer, Integer> builder = args.convert();
+            builder.allowMatch(2, 5);
+            Mockito.verify(handler).allowMatch(1, 0);
         });
     }
     
@@ -92,6 +179,39 @@ final class MatchesBuilderTest implements TestFramework<MatchesBuilderTest.Match
             builder.withSolver(solver, unassigned);
             builder.withPlaceholderPersons(defaultMentee, defaultMentor);
             assertMatchesEquals(args.expectedMatches, builder.build());
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> defaultMatchesBuilderWithPlaceholderWorksWithPartialBuild(){
+        Integer defaultMentee = 5;
+        Integer defaultMentor = -2;
+        Integer unassigned = -1;
+        Matches<Integer,Integer> validMatchWithAMenteePlaceholder = new Matches<>(List.of(
+                new Match<>(2,5,10),
+                new Match<>(defaultMentee,10,MatchesBuilder.PROHIBITIVE_VALUE)));
+        Matches<Integer, Integer> validMatchWithAMentorPlaceholder = new Matches<>(List.of(
+                new Match<>(2,5,10),
+                new Match<>(4,defaultMentor,MatchesBuilder.PROHIBITIVE_VALUE)));
+        Stream<PublicPartialMatchesBuilderArgs> testCase = Stream.of(
+                new PublicPartialMatchesBuilderArgs("one valid match and a mentee placeholder", 
+                        validMatchWithAMenteePlaceholder, 
+                        List.of(2, 4), List.of(5, 10), 
+                        List.of((mentee, mentor) -> mentee*mentor),
+                        List.of(2), List.of(10,5),
+                        new DummySolver(List.of(1), List.of(unassigned, 0))),
+                new PublicPartialMatchesBuilderArgs("one valid match and a mentor placeholder",
+                        validMatchWithAMentorPlaceholder,
+                        List.of(2, 4), List.of(5, 10),
+                        List.of((mentee, mentor) -> mentee*mentor), 
+                        List.of(4,2), List.of(5),
+                        new DummySolver(List.of(unassigned, 0), List.of(1))));
+        return test(testCase, "build() with custom solver works", args -> {
+            MatchesBuilder<Integer,Integer> builder = args.convert();
+            builder.withSolver(args.solver, unassigned);
+            builder.withPlaceholderPersons(defaultMentee, defaultMentor);
+            Matches<Integer, Integer> actual = builder.build(args.menteeIndices, args.mentorIndices);
+            assertMatchesEquals(args.expectedMatches, actual);
         });
     }
     
@@ -209,6 +329,23 @@ final class MatchesBuilderTest implements TestFramework<MatchesBuilderTest.Match
         @Override
         MatchesBuilder<Integer,Integer> convert(){
             return new MatchesBuilder<>(mentees, mentors, progressiveCriteria);
+        }
+    }
+    
+    static class PublicPartialMatchesBuilderArgs extends PublicMatchesBuilderArgs{
+        final List<Integer> menteeIndices;
+        final List<Integer> mentorIndices;
+        final Solver solver;
+        
+        PublicPartialMatchesBuilderArgs(String testCase, Matches<Integer, Integer> expectedMatches,
+                List<Integer> mentees, List<Integer> mentors,
+                Collection<ProgressiveCriterion<Integer, Integer>> progressiveCriteria, 
+                List<Integer> menteeIndices, List<Integer> mentorIndices,
+                Solver solver){
+            super(testCase, expectedMatches, mentees, mentors, progressiveCriteria);
+            this.menteeIndices = menteeIndices;
+            this.mentorIndices = mentorIndices;
+            this.solver = solver;
         }
     }
     

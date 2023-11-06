@@ -14,8 +14,7 @@ import java.util.stream.IntStream;
  * class is {@code new MatchesBuilder<>(...).build()}. All the other public methods are provided to 
  * tweak the behaviour of the {@link #build()} method and the content of its output.
  * 
- * <p>MatchesBuilder is neither thread-safe, nor designed for instance reuse: for each instance of 
- * {@link Matches} to build, a specific instance of MatchesBuilder should be used.
+ * <p>MatchesBuilder is not thread-safe.
  * @param <Mentee> class representing an individual mentee
  * @param <Mentor> class representing an individual mentor
  */
@@ -68,6 +67,44 @@ public final class MatchesBuilder<Mentee, Mentor> {
     }
     
     /**
+     * Forbids matches between the input mentee and mentor.
+     * @param mentee that cannot be matched with the mentor
+     * @param mentor that cannot be matched with the mentee
+     * @return true if the match was allowed and has been forbidden, false if it was already 
+     * forbidden
+     */
+    public boolean forbidMatch(Mentee mentee, Mentor mentor){
+        return costMatrixHandler.forbidMatch(getMenteeIndex(mentee), getMentorIndex(mentor));
+    }
+    
+    /**
+     * Allows matches between the input mentee and mentor.
+     * @param mentee that can be matched with the mentor
+     * @param mentor that can be matched with the mentee
+     * @return true if the match was forbidden and has been allowed, false if it was already 
+     * allowed
+     */
+    public boolean allowMatch(Mentee mentee, Mentor mentor){
+        return costMatrixHandler.allowMatch(getMenteeIndex(mentee), getMentorIndex(mentor));
+    }
+    
+    private int getMenteeIndex(Mentee mentee){
+        return getIndex(mentee, mentees, "mentee");
+    }
+    
+    private int getMentorIndex(Mentor mentor){
+        return getIndex(mentor, mentors, "mentor");
+    }
+    
+    private int getIndex(Object object, List<?> list, String typeOfObject){
+        int result = list.indexOf(object);
+        if(result == -1){
+            throw new IllegalArgumentException("Unknown %s %s".formatted(typeOfObject, object));
+        }
+        return result;
+    }
+    
+    /**
      * Sets the solver used to find the optimal assignment. If this method is not called before 
      * {@link #build()}, a default solver is used.
      * @param solver used to solve the assignment problem defined by the mentees, the mentors and 
@@ -105,65 +142,100 @@ public final class MatchesBuilder<Mentee, Mentor> {
      */
     public Matches<Mentee, Mentor> build(){
         Result rawResult = costMatrixHandler.solveCostMatrix(solver);
-        return formatResult(rawResult);
+        return formatResult(rawResult,
+                IntStream.range(0, mentees.size()).boxed().collect(Collectors.toList()),
+                IntStream.range(0, mentors.size()).boxed().collect(Collectors.toList()));
     }
     
-    private Matches<Mentee, Mentor> formatResult(Result rawResult){
+    /**
+     * Solves the assignment problem instance and returns the result.
+     * @param mentees subset of mentees on which to solve the problem
+     * @param mentors subset of mentors on which to solve the problem
+     * @return an optimal assignment between the input mentees and mentors.
+     * @throws IllegalArgumentException if the mentees and mentors are not subsets of those known
+     *      by this MatchesBuilder.
+     */
+    public Matches<Mentee, Mentor> build(List<Mentee> mentees, List<Mentor> mentors) 
+            throws IllegalArgumentException{
+        List<Integer> menteeIndices = getIndices(mentees, this.mentees, "mentee");
+        List<Integer> mentorIndices = getIndices(mentors, this.mentors, "mentor");
+        Result rawResult = costMatrixHandler.solvePartialCostMatrix(solver, menteeIndices, 
+                mentorIndices);
+        return formatResult(rawResult, menteeIndices, mentorIndices);
+    }
+    
+    private <T> List<Integer> getIndices(List<T> sublist, List<T> superlist, String typeOfObject){
+        return sublist.stream().map(element -> getIndex(element, superlist, typeOfObject))
+                .collect(Collectors.toList());
+    }
+    
+    private Matches<Mentee, Mentor> formatResult(Result rawResult, 
+            List<Integer> menteeIndices, List<Integer> mentorIndices){
         if (this.hasPlaceholderPersons){
-            return formatMatchesWithPlaceholders(rawResult);
+            return formatMatchesWithPlaceholders(rawResult, menteeIndices, mentorIndices);
         } else {
-            return filterAndFormatValidMatches(rawResult);
+            return filterAndFormatValidMatches(rawResult, menteeIndices, mentorIndices);
         }
     }
     
-    private Matches<Mentee, Mentor> formatMatchesWithPlaceholders(Result rawResult){
-        List<Match<Mentee, Mentor>> matches = buildMenteeMatchesWithValidOrDefaultMentor(rawResult);
-        matches.addAll(buildDefaultMatchesForUnassignedMentors(rawResult));
+    private Matches<Mentee, Mentor> formatMatchesWithPlaceholders(Result rawResult, 
+            List<Integer> menteeIndices, List<Integer> mentorIndices){
+        List<Match<Mentee, Mentor>> matches = buildMenteeMatchesWithValidOrDefaultMentor(rawResult,
+                menteeIndices, mentorIndices);
+        matches.addAll(buildDefaultMatchesForUnassignedMentors(rawResult, 
+                menteeIndices, mentorIndices));
         return new Matches<>(matches);
     }
     
-    private Matches<Mentee, Mentor> filterAndFormatValidMatches(Result rawResult){
+    private Matches<Mentee, Mentor> filterAndFormatValidMatches(Result rawResult, 
+            List<Integer> menteeIndices, List<Integer> mentorIndices){
         List<Integer> rowAssignments = rawResult.getRowAssignments();
         return new Matches<>(IntStream.range(0, rowAssignments.size())
-            .filter(i -> isValidMatch(i, rowAssignments.get(i)))
-            .mapToObj(i -> buildMatch(i, rowAssignments.get(i)))
+            .filter(i -> isValidMatch(i,rowAssignments.get(i), menteeIndices, mentorIndices))
+            .mapToObj(i -> buildMatch(menteeIndices.get(i), 
+                    mentorIndices.get(rowAssignments.get(i))))
             .collect(Collectors.toList())
         );
     }
     
-    private boolean isValidMatch(Integer menteeIndex, Integer mentorIndex){
+    private boolean isValidMatch(Integer menteeIndex, Integer mentorIndex, 
+            List<Integer> menteeIndices, List<Integer> mentorIndices){
         return (menteeIndex != unassignedValue 
                 && mentorIndex != unassignedValue 
-                && costMatrixHandler.isMatchAllowed(menteeIndex, mentorIndex));
+                && costMatrixHandler.isMatchAllowed(menteeIndices.get(menteeIndex), 
+                        mentorIndices.get(mentorIndex)));
     }
     
     private List<Match<Mentee, Mentor>> 
-            buildMenteeMatchesWithValidOrDefaultMentor(Result rawResult){
+            buildMenteeMatchesWithValidOrDefaultMentor(Result rawResult, 
+            List<Integer> menteeIndices, List<Integer> mentorIndices){
         List<Integer> rowAssignments = rawResult.getRowAssignments();
         List<Match<Mentee, Mentor>> result = new ArrayList<>(rowAssignments.size());
         for (int i = 0; i < rowAssignments.size(); i++){
-            result.add(buildMatchWithValidOrDefaultMentor(i, rowAssignments.get(i)));
+            result.add(buildMatchWithValidOrDefaultMentor(i, rowAssignments.get(i),
+                    menteeIndices, mentorIndices));
         }
         return result;
     }
     
-    private List<Match<Mentee,Mentor>> buildDefaultMatchesForUnassignedMentors(Result rawResult){
+    private List<Match<Mentee,Mentor>> buildDefaultMatchesForUnassignedMentors(Result rawResult,
+            List<Integer> menteeIndices, List<Integer> mentorIndices){
         List<Integer> colAssignments = rawResult.getColumnAssignments();
         List<Match<Mentee,Mentor>> result = new ArrayList<>();
         for (int j = 0; j < colAssignments.size(); j++){
-            if (!isValidMatch(colAssignments.get(j),j)){
-                result.add(buildDefaultMentorMatch(j));
+            if (!isValidMatch(colAssignments.get(j),j, menteeIndices, mentorIndices)){
+                result.add(buildDefaultMentorMatch(mentorIndices.get(j)));
             }
         }
         return result;
     }
     
     private Match<Mentee, Mentor> buildMatchWithValidOrDefaultMentor(int menteeIndex, 
-            Integer mentorIndex){
-        if (isValidMatch(menteeIndex, mentorIndex)){
-            return buildMatch(menteeIndex, mentorIndex);
+            Integer mentorIndex, List<Integer> menteeIndices, List<Integer> mentorIndices){
+        if (isValidMatch(menteeIndex, mentorIndex, menteeIndices, mentorIndices)){
+            return buildMatch(menteeIndices.get(menteeIndex), mentorIndices.get(mentorIndex));
         } else {
-            return buildDefaultMenteeMatch(menteeIndex);
+            return buildDefaultMenteeMatch(menteeIndices.get(menteeIndex));
         }
     }
     
@@ -206,7 +278,6 @@ public final class MatchesBuilder<Mentee, Mentor> {
         } else if (mentorIndex == -1) {
             throw new IllegalArgumentException("Mentor %s are invalid".formatted(mentor));
         }
-        //TODO : get match score or prohibitive score if match is prohibited
         int cost = costMatrixHandler.isMatchAllowed(menteeIndex, mentorIndex) 
                 ? costMatrixHandler.getMatchScore(menteeIndex, mentorIndex)
                 : PROHIBITIVE_VALUE;
