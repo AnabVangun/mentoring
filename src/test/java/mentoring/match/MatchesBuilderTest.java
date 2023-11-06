@@ -46,17 +46,26 @@ final class MatchesBuilderTest implements TestFramework<MatchesBuilderTest.Match
     Stream<DynamicNode> defaultMatchesBuilderWorksWithPartialBuild(){
         int prohibitiveCost = 2000;
         int standardCost = 5;
-        //TODO modify cases: one with a valid match and an unassigned mentee, one with a valid match and an unassigned mentor
-        Matches<Integer,Integer> expectedMatches = new Matches<>(List.of(
-                new Match<>(0,1,standardCost)));
-        Stream<PublicMatchesBuilderArgs> testCase = Stream.of(
-                new PublicMatchesBuilderArgs("minimal test case", expectedMatches, 
-                        List.of(0,1), List.of(0,1), 
+        Matches<Integer,Integer> expectedMatch = new Matches<>(List.of(
+                new Match<>(0, 1, standardCost)));
+        Stream<PublicPartialMatchesBuilderArgs> testCase = Stream.of(
+                new PublicPartialMatchesBuilderArgs("one valid match and an unassigned mentor", 
+                        expectedMatch, 
+                        List.of(0, 1), List.of(0, 1), 
                         List.of((mentee, mentor) -> 
-                                mentee.equals(mentor) ? prohibitiveCost : standardCost)
-                ));
+                                mentee.equals(mentor) ? prohibitiveCost : standardCost),
+                        List.of(0), List.of(1,0),
+                        null),
+                new PublicPartialMatchesBuilderArgs("one valid match and an unassigned mentee",
+                        expectedMatch,
+                        List.of(0, 1), List.of(0, 1), 
+                        List.of((mentee, mentor) -> 
+                                mentee.equals(mentor) ? prohibitiveCost : standardCost),
+                        List.of(0,1), List.of(1),
+                        null));
         return test(testCase, "build() with default settings works", args -> {
-            assertMatchesEquals(args.expectedMatches, args.convert().build(List.of(0), List.of(1)));
+            assertMatchesEquals(args.expectedMatches, 
+                    args.convert().build(args.partialMentees, args.partialMentors));
         });
     }
     
@@ -81,20 +90,25 @@ final class MatchesBuilderTest implements TestFramework<MatchesBuilderTest.Match
     
     @TestFactory
     Stream<DynamicNode> defaultMatchesBuilderWithNecessaryCriteriaWorksWithPartialBuild(){
-        int prohibitiveCost = 2000;
-        int standardCost = 5;
-        Matches<Integer,Integer> expectedMatches = new Matches<>(List.of(
-                new Match<>(0,0,prohibitiveCost)));
-        Stream<PublicMatchesBuilderArgs> testCase = Stream.of(
-                new PublicMatchesBuilderArgs("minimal test case", expectedMatches, 
-                        List.of(0,1), List.of(0,1), 
-                        List.of((mentee, mentor) -> 
-                                mentee.equals(mentor) ? prohibitiveCost : standardCost)
-                ));
+        Matches<Integer,Integer> expectedMatch = new Matches<>(List.of(new Match<>(2,5,10)));
+        Stream<PublicPartialMatchesBuilderArgs> testCase = Stream.of(
+                new PublicPartialMatchesBuilderArgs("one valid match and an unassigned mentor", 
+                        expectedMatch, 
+                        List.of(2, 4, 6), List.of(5, 10, 15), 
+                        List.of((mentee, mentor) -> mentee*mentor),
+                        List.of(2, 6), List.of(10,5),
+                        null),
+                new PublicPartialMatchesBuilderArgs("one valid match and an unassigned mentee",
+                        expectedMatch,
+                        List.of(2, 4), List.of(5, 10, 15, 20),
+                        List.of((mentee, mentor) -> mentee*mentor), 
+                        List.of(4,2), List.of(5, 20, 15),
+                        null));
         return test(testCase, "build() with necessary criterion works", args -> {
             MatchesBuilder<Integer,Integer> builder = args.convert();
-            builder.withNecessaryCriteria(List.of((mentee, mentor) -> mentee.equals(mentor)));
-            assertMatchesEquals(args.expectedMatches, builder.build(List.of(0), List.of(0)));
+            builder.withNecessaryCriteria(List.of((mentee, mentor) -> (mentee == 2 && mentor == 5)));
+            assertMatchesEquals(args.expectedMatches, 
+                    builder.build(args.partialMentees, args.partialMentors));
         });
     }
     
@@ -210,7 +224,7 @@ final class MatchesBuilderTest implements TestFramework<MatchesBuilderTest.Match
             MatchesBuilder<Integer,Integer> builder = args.convert();
             builder.withSolver(args.solver, unassigned);
             builder.withPlaceholderPersons(defaultMentee, defaultMentor);
-            Matches<Integer, Integer> actual = builder.build(args.menteeIndices, args.mentorIndices);
+            Matches<Integer, Integer> actual = builder.build(args.partialMentees, args.partialMentors);
             assertMatchesEquals(args.expectedMatches, actual);
         });
     }
@@ -333,8 +347,8 @@ final class MatchesBuilderTest implements TestFramework<MatchesBuilderTest.Match
     }
     
     static class PublicPartialMatchesBuilderArgs extends PublicMatchesBuilderArgs{
-        final List<Integer> menteeIndices;
-        final List<Integer> mentorIndices;
+        final List<Integer> partialMentees;
+        final List<Integer> partialMentors;
         final Solver solver;
         
         PublicPartialMatchesBuilderArgs(String testCase, Matches<Integer, Integer> expectedMatches,
@@ -343,8 +357,8 @@ final class MatchesBuilderTest implements TestFramework<MatchesBuilderTest.Match
                 List<Integer> menteeIndices, List<Integer> mentorIndices,
                 Solver solver){
             super(testCase, expectedMatches, mentees, mentors, progressiveCriteria);
-            this.menteeIndices = menteeIndices;
-            this.mentorIndices = mentorIndices;
+            this.partialMentees = menteeIndices;
+            this.partialMentors = mentorIndices;
             this.solver = solver;
         }
     }
