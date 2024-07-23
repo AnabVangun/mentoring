@@ -1,6 +1,7 @@
 package mentoring.match;
 
 import assignmentproblem.Solver;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +19,7 @@ final class MatchesBuilderTest implements TestFramework<MatchesBuilderTest.Match
 
     @Override
     public Stream<MatchesBuilderArgs> argumentsSupplier() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported.");
     }
     
     @TestFactory
@@ -231,34 +232,38 @@ final class MatchesBuilderTest implements TestFramework<MatchesBuilderTest.Match
     
     static <Mentee, Mentor> void assertMatchesEquals(Matches<Mentee, Mentor> expected, 
             Matches<Mentee, Mentor> actual){
-        Map<Mentee, Map<Mentor, Integer>> found = new HashMap<>();
+        Map<Mentee, Map<Mentor, List<Match<Mentee, Mentor>>>> found = new HashMap<>();
         for (Match<Mentee, Mentor> match : expected){
                 if (!found.containsKey(match.getMentee())){
                     found.put(match.getMentee(), new HashMap<>());
                 }
-                Map<Mentor, Integer> menteeMap = found.get(match.getMentee());
-                menteeMap.put(match.getMentor(), menteeMap.getOrDefault(match.getMentor(), 0));
+                Map<Mentor, List<Match<Mentee, Mentor>>> menteeMap = found.get(match.getMentee());
+                if (!menteeMap.containsKey(match.getMentor())){
+                    menteeMap.put(match.getMentor(), new ArrayList<>());
+                }
+                menteeMap.get(match.getMentor()).add(match);
             }
         for (Match<Mentee, Mentor> match: actual){
             if (!found.containsKey(match.getMentee())){
-                throw new AssertionFailedError(
-                        buildAssertMatchesEqualsErrorMessage(expected, actual, match), 
-                        expected, actual);
+                Assertions.fail(buildAssertMatchesEqualsErrorMessage(expected, actual, match));
             }
-            Map<Mentor, Integer> menteeMap = found.get(match.getMentee());
+            Map<Mentor, List<Match<Mentee, Mentor>>> menteeMap = found.get(match.getMentee());
             if (!menteeMap.containsKey(match.getMentor())){
-                throw new AssertionFailedError(
-                        buildAssertMatchesEqualsErrorMessage(expected, actual, match), 
-                        expected, actual);
+                Assertions.fail(buildAssertMatchesEqualsErrorMessage(expected, actual, match));
             }
-            if(menteeMap.get(match.getMentor()) == 1){
+            if (!menteeMap.get(match.getMentor()).remove(match)){
+                Assertions.fail(buildAssertMatchesEqualsErrorMessage(expected, actual, match));
+            }
+            if(menteeMap.get(match.getMentor()).isEmpty()){
                 menteeMap.remove(match.getMentor());
                 if (menteeMap.isEmpty()){
                     found.remove(match.getMentee());
                 }
-            } else {
-                menteeMap.put(match.getMentor(), menteeMap.get(match.getMentor()) - 1);
             }
+        }
+        if (!found.isEmpty()){
+            Assertions.fail("Matches " + actual + "differs from expected " + expected + 
+                    ": too many matches, remains " + found);
         }
     }
     
