@@ -10,7 +10,9 @@ import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
+import javafx.concurrent.Task;
 import javax.inject.Inject;
 import mentoring.concurrency.ConcurrencyHandler;
 import mentoring.configuration.Configuration;
@@ -21,11 +23,12 @@ import mentoring.configuration.PojoPersonConfiguration;
 import mentoring.configuration.PojoResultConfiguration;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.datastructure.Person;
+import mentoring.datastructure.PersonBuilder;
 import mentoring.io.PersonConfigurationParser;
 import mentoring.io.PersonFileParser;
 import mentoring.io.ResultConfigurationParser;
 import mentoring.io.datareader.YamlReader;
-import mentoring.match.MatchesBuilder;
+import mentoring.match.MatchesBuilderHandler;
 import mentoring.viewmodel.base.BoundableConfigurationPickerViewModel;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.base.FilePickerViewModel;
@@ -76,9 +79,10 @@ public class MainViewModel {
                 Pair.of("CSV files", List.of("*.csv")),
                 Pair.of("All files", List.of("*.*")));
     
-    private MatchesBuilder matchesBuilder = null;
-    //TODO have an EnumSet of configuration items needed to be loaded to generate a new MatchesBuilder
-    //When EnumSet is empty, generate new MatchesBuilder
+    //FIXME make sure that matchesBuilderHandler receives the match configuration
+    //TODO check how forbidden matches are handled: maybe in two different ways?
+    private final MatchesBuilderHandler<Person, Person> matchesBuilderHandler = 
+            new MatchesBuilderHandler<>();
     
     /**
      * Create a new {@code MainViewModel}.
@@ -94,6 +98,21 @@ public class MainViewModel {
             personConfigurations.put(type, forgePersonConfigurationPickerViewModel());
             personPickers.put(type, forgePersonListPickerViewModel(type));
         }
+        /*FIXME: defaultMentee and defaultMentor should be configured somewhere
+        (probably in result configuration).
+        Additionally, this is really ugly. 
+        Maybe a DummyFuture as used in tests would be more appropriate?
+        */
+        Person defaultMentee = new PersonBuilder().withProperty("Email", "")
+                .withFullName("PAS DE MENTORÉ").build();
+        Person defaultMentor = new PersonBuilder().withProperty("Email", "")
+                .withFullName("PAS DE MENTOR").build();
+        FutureTask<Person> defaultMenteeSupplier = new FutureTask<>(() -> defaultMentee);
+        defaultMenteeSupplier.run();
+        FutureTask<Person> defaultMentorSupplier = new FutureTask<>(() -> defaultMentor);
+        defaultMentorSupplier.run();
+        matchesBuilderHandler.setPlaceholderPersonsSupplier(defaultMenteeSupplier, 
+                defaultMentorSupplier);
     }
     
     /**
@@ -106,8 +125,14 @@ public class MainViewModel {
     public Future<?> getPersons(PersonListViewModel resultVM, PersonType type,
             AbstractTask.TaskCompletionCallback<? super List<Person>> callback){
         //TODO add to callback to signal that person type has been loaded
-        return taskHandler.submit(new PersonGetterTask(resultVM, personPickers.get(type), 
-                personConfigurations.get(type), callback));
+        Task<List<Person>> result = new PersonGetterTask(resultVM, personPickers.get(type), 
+                        personConfigurations.get(type), callback);
+        taskHandler.submit(result);
+        switch(type){
+            case MENTEE -> matchesBuilderHandler.setMenteesSupplier(result);
+            case MENTOR -> matchesBuilderHandler.setMentorsSupplier(result);
+        }
+        return result;
     }
     
     /**
@@ -123,8 +148,13 @@ public class MainViewModel {
     public Future<?> makeMatches(PersonListViewModel menteeVM, PersonListViewModel mentorVM,
             PersonMatchesViewModel resultVM, PersonMatchesViewModel excludedMatchesVM,
             AbstractTask.TaskCompletionCallback<? super Void> callback){
+        //FIXME ugly hack to supply the configuration to matchesBuilderHandler.
+        FutureTask<CriteriaConfiguration<Person, Person>> configuration = new FutureTask<>(() -> 
+                matchConfiguration.getConfiguration());
+        taskHandler.submit(configuration);
+        matchesBuilderHandler.setCriteriaSupplier(configuration);
         return taskHandler.submit(new MultipleMatchTask(resultVM, excludedMatchesVM, 
-                matchConfiguration, extraForbiddenMatches,
+                matchesBuilderHandler,
                 menteeVM.getUnderlyingData(),
                 mentorVM.getUnderlyingData(), callback));
     }
@@ -182,8 +212,10 @@ public class MainViewModel {
      */
     public Future<?> addForbiddenMatch(PersonViewModel menteeVM, PersonViewModel mentorVM,
             AbstractTask.TaskCompletionCallback<? super Void> callback){
+        //TODO refactor: forbidding a match should not need to be done twice
+        //FIXME currently, forbidding a match make both persons unmatchable.
         return taskHandler.submit(new ForbiddenMatchTask(extraForbiddenMatches, 
-                menteeVM.getData(), mentorVM.getData(), callback));
+                menteeVM.getData(), mentorVM.getData(), matchesBuilderHandler, callback));
     }
     
     /**
@@ -194,7 +226,9 @@ public class MainViewModel {
      */
     public Future<?> removeForbiddenMatch(ForbiddenMatchViewModel toRemove,
             AbstractTask.TaskCompletionCallback<? super Void> callback){
-        return taskHandler.submit(new ForbiddenMatchRemovalTask(extraForbiddenMatches, toRemove,
+        //TODO refactor: forbidding a match should not need to be done twice
+        return taskHandler.submit(new ForbiddenMatchRemovalTask(extraForbiddenMatches, 
+                toRemove, matchesBuilderHandler,
                 callback));
     }
     
@@ -206,8 +240,8 @@ public class MainViewModel {
      */
     public Future<?> getResultConfiguration(List<? extends PersonMatchesViewModel> resultVMs, 
             AbstractTask.TaskCompletionCallback<Object> callback) {
-        return taskHandler.submit(new ConfigurationGetterTask<>(getResultConfiguration(), resultVMs,
-                callback));
+        return taskHandler.submit(new ConfigurationGetterTask<>(getResultConfiguration(), 
+                resultVMs, callback));
     }
     
     /**

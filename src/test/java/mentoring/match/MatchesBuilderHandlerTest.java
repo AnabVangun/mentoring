@@ -13,6 +13,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
+import mentoring.configuration.CriteriaConfiguration;
 import mentoring.match.MatchesBuilderHandlerTest.MatchesBuilderHandlerArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -26,6 +27,9 @@ final class MatchesBuilderHandlerTest implements TestFramework<MatchesBuilderHan
     private static final int PROHIBITIVE_COST = 2000;
     private static final int STANDARD_COST = 5;
     private static final int UNASSIGNED_SCORE = Integer.MAX_VALUE;//FIXME the default value must be stored somewhere, reference it here
+    private static final List<ProgressiveCriterion<Integer, Integer>> defaultProgressiveCriterion =
+            List.of((mentee, mentor) -> mentee == mentor ? PROHIBITIVE_COST : STANDARD_COST);
+    
     @Override
     public Stream<MatchesBuilderHandlerArgs> argumentsSupplier() {
         return singleArgumentSupplier();
@@ -37,8 +41,8 @@ final class MatchesBuilderHandlerTest implements TestFramework<MatchesBuilderHan
         return Stream.of(
                 new MatchesBuilderHandlerArgs("simple test case", expectedMatches, 
                         new DummyFuture<>(List.of(0,1)), new DummyFuture<>(List.of(0,1)), 
-                        new DummyFuture<>(List.of((mentee, mentor) -> 
-                                mentee == mentor ? PROHIBITIVE_COST : STANDARD_COST))));
+                        new DummyFuture<>(new DummyConfiguration(defaultProgressiveCriterion, 
+                                List.of()))));
     }
     
     @BeforeAll
@@ -66,10 +70,10 @@ final class MatchesBuilderHandlerTest implements TestFramework<MatchesBuilderHan
                     Assertions.assertThrows(IllegalStateException.class, () -> builder.get());
                     builder.setMentorsSupplier(new DummyFuture<>(List.of(2)));
                     Assertions.assertThrows(IllegalStateException.class, () -> builder.get());
-                    MatchesBuilderHandler<String, Number> otherBuilder = new MatchesBuilderHandler<>();
-                    otherBuilder.setProgressiveCriteriaSupplier(new DummyFuture<>(List.of()));
+                    MatchesBuilderHandler<Integer, Integer> otherBuilder = new MatchesBuilderHandler<>();
+                    otherBuilder.setCriteriaSupplier(new DummyFuture<>(DummyConfiguration.dummyConfiguration()));
                     Assertions.assertThrows(IllegalStateException.class, () -> otherBuilder.get());
-                    otherBuilder.setMenteesSupplier(new DummyFuture<>(List.of("mentee")));
+                    otherBuilder.setMenteesSupplier(new DummyFuture<>(List.of(2)));
                     Assertions.assertThrows(IllegalStateException.class, () -> otherBuilder.get());
                 });
     }
@@ -123,67 +127,41 @@ final class MatchesBuilderHandlerTest implements TestFramework<MatchesBuilderHan
     }
     
     @TestFactory
-    Stream<DynamicNode> setProgressiveCriteriaSupplierSuccessiveCalls(){
-        Future<Collection<ProgressiveCriterion<Integer, Integer>>> secondCriteriaSupplier = 
-                new DummyFuture<>(List.of((mentee, mentor) -> PROHIBITIVE_COST));
-        Future<Collection<ProgressiveCriterion<Integer, Integer>>> thirdCriteriaSupplier = 
-                new DummyFuture<>(List.of((mentee, mentor) -> 
-                        mentee == mentor ? STANDARD_COST : PROHIBITIVE_COST));
+    Stream<DynamicNode> setCriteriaSupplierSuccessiveCalls(){
+        Future<CriteriaConfiguration<Integer, Integer>> secondCriteriaSupplier = 
+                new DummyFuture<>(new DummyConfiguration(
+                        List.of((mentee, mentor) -> PROHIBITIVE_COST), List.of()));
+        Future<CriteriaConfiguration<Integer, Integer>> thirdCriteriaSupplier = 
+                new DummyFuture<>(new DummyConfiguration(
+                        List.of((mentee, mentor) -> 
+                                mentee == mentor ? STANDARD_COST + 1: STANDARD_COST),
+                        List.of((mentee, mentor) -> mentee == mentor)));
         Matches<Integer,Integer> expectedMatches = new Matches<>(List.of(
-                new Match<>(0,0,STANDARD_COST), new Match<>(1,1,STANDARD_COST)));
+                new Match<>(0,0,STANDARD_COST + 1), new Match<>(1,1,STANDARD_COST + 1)));
         return test(singleArgumentSupplier(),
-                "calling setProgressiveCriteriaSupplier() multiple times retains only the last call", args -> {
+                "calling setCriteriaSupplier() multiple times retains only the last call", args -> {
                     MatchesBuilderHandler<Integer, Integer> handler = args.convert();
-                    handler.setProgressiveCriteriaSupplier(secondCriteriaSupplier);
-                    handler.setProgressiveCriteriaSupplier(thirdCriteriaSupplier);
+                    handler.setCriteriaSupplier(secondCriteriaSupplier);
+                    handler.setCriteriaSupplier(thirdCriteriaSupplier);
                     assertMatchesBuilderAsExpected(expectedMatches, handler);
         });
     }
     
     @TestFactory
-    Stream<DynamicNode> setProgressiveCriteriaSupplier_failFastOnNullSupplier(){
+    Stream<DynamicNode> setCriteriaSupplier_failFastOnNullSupplier(){
         return test(singleArgumentSupplier(),
-                "calling setProgressiveCriteriaSupplier() with null fails", args -> {
+                "calling setCriteriaSupplier() with null fails", args -> {
                     MatchesBuilderHandler<Integer, Integer> handler = args.convert();
                     Assertions.assertThrows(NullPointerException.class,
-                            () -> handler.setProgressiveCriteriaSupplier(null));
-                });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> setNecessaryCriteriaSupplierSuccessiveCalls(){
-        Future<Collection<NecessaryCriterion<Integer, Integer>>> firstCriteriaSupplier = 
-                new DummyFuture<>(List.of((mentee, mentor) -> false));
-        Future<Collection<NecessaryCriterion<Integer, Integer>>> secondCriteriaSupplier = 
-                new DummyFuture<>(List.of((mentee, mentor) -> mentee == mentor));
-        Matches<Integer,Integer> expectedMatches = new Matches<>(List.of(
-                new Match<>(0,0,PROHIBITIVE_COST), new Match<>(1,1,PROHIBITIVE_COST)));
-        return test(singleArgumentSupplier(),
-                "calling setNecessaryCriteriaSupplier() multiple times retains only the last call", args -> {
-                    MatchesBuilderHandler<Integer, Integer> handler = args.convert();
-                    handler.setNecessaryCriteriaSupplier(firstCriteriaSupplier);
-                    handler.setNecessaryCriteriaSupplier(secondCriteriaSupplier);
-                    assertMatchesBuilderAsExpected(expectedMatches, handler);
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> setNecessaryCriteriaSupplier_resetOnNull(){
-        Future<Collection<NecessaryCriterion<Integer, Integer>>> overridenCriteriaSupplier = 
-                new DummyFuture<>(List.of((mentee, mentor) -> false));
-        return test(singleArgumentSupplier(), 
-                "calling setNecessaryCriteriaSupplier with null resets the necessary criteria", args -> {
-                    MatchesBuilderHandler<Integer, Integer> handler = args.convert();
-                    handler.setNecessaryCriteriaSupplier(overridenCriteriaSupplier);
-                    handler.setNecessaryCriteriaSupplier(null);
-                    assertMatchesBuilderAsExpected(args.expectedMatches, handler);
+                            () -> handler.setCriteriaSupplier(null));
                 });
     }
     
     @TestFactory
     Stream<DynamicNode> setPlaceholderPersonsSupplierSuccessiveCalls(){
-        Future<Collection<NecessaryCriterion<Integer, Integer>>> criteriaSupplier = 
-                new DummyFuture<>(List.of((mentee, mentor) -> false));
+        Future<CriteriaConfiguration<Integer, Integer>> criteriaSupplier = 
+                new DummyFuture<>(new DummyConfiguration(defaultProgressiveCriterion, 
+                        List.of((mentee, mentor) -> false)));
         Integer placeholderMentee = 6;
         Integer placeholderMentor = 8;
         Future<Integer> firstPlaceholderMentee = new DummyFuture<>(placeholderMentee+3);
@@ -198,7 +176,7 @@ final class MatchesBuilderHandlerTest implements TestFramework<MatchesBuilderHan
         return test(singleArgumentSupplier(),
                 "calling setPlaceholderPersonsSupplier() multiple times retains only the last call", args -> {
                     MatchesBuilderHandler<Integer, Integer> handler = args.convert();
-                    handler.setNecessaryCriteriaSupplier(criteriaSupplier);
+                    handler.setCriteriaSupplier(criteriaSupplier);
                     handler.setPlaceholderPersonsSupplier(firstPlaceholderMentee, firstPlaceholderMentor);
                     handler.setPlaceholderPersonsSupplier(secondPlaceholderMentee, secondPlaceholderMentor);
                     assertMatchesBuilderAsExpected(expectedMatches, handler);
@@ -252,8 +230,9 @@ final class MatchesBuilderHandlerTest implements TestFramework<MatchesBuilderHan
         });
         executor.execute(secondMenteesSupplier);
         Future<List<Integer>> secondMentorsSupplier = new DummyFuture<>(List.of(12, 63));
-        Future<Collection<NecessaryCriterion<Integer, Integer>>> necessaryCriteriaSupplier =
-                new DummyFuture<>(List.of((mentee, mentor) -> mentee == mentor));
+        Future<CriteriaConfiguration<Integer, Integer>> criteriaSupplier =
+                new DummyFuture<>(new DummyConfiguration(defaultProgressiveCriterion,
+                        List.of((mentee, mentor) -> mentee == mentor)));
         Matches<Integer,Integer> expectedMatches = new Matches<>(List.of(
                 new Match<>(0,1,STANDARD_COST), new Match<>(3,0,STANDARD_COST)));
         return test(singleArgumentSupplier(),
@@ -269,7 +248,7 @@ final class MatchesBuilderHandlerTest implements TestFramework<MatchesBuilderHan
                     });
                     Thread otherSetter = new Thread(() -> {
                         handler.setMentorsSupplier(secondMentorsSupplier);
-                        handler.setNecessaryCriteriaSupplier(necessaryCriteriaSupplier);
+                        handler.setCriteriaSupplier(criteriaSupplier);
                         stopSignal.countDown();
                             });
                     otherSetter.start();//ran as a thread to pool its state
@@ -304,8 +283,9 @@ final class MatchesBuilderHandlerTest implements TestFramework<MatchesBuilderHan
                 });
         executor.execute(secondMenteesSupplier);
         Future<List<Integer>> secondMentorsSupplier = new DummyFuture<>(List.of(6, 3));
-        Future<Collection<NecessaryCriterion<Integer, Integer>>> necessaryCriteriaSupplier =
-                new DummyFuture<>(List.of((mentee, mentor) -> mentee == mentor));
+        Future<CriteriaConfiguration<Integer, Integer>> criteriaSupplier =
+                new DummyFuture<>(new DummyConfiguration(defaultProgressiveCriterion,
+                        List.of((mentee, mentor) -> mentee == mentor)));
         Integer defaultMentee = 15;
         Future<Integer> defaultMenteeSupplier = new DummyFuture<>(defaultMentee);
         Integer defaultMentor = 23;
@@ -325,7 +305,7 @@ final class MatchesBuilderHandlerTest implements TestFramework<MatchesBuilderHan
                             }});
                     Thread otherSetter = new Thread(() -> {
                         handler.setMentorsSupplier(secondMentorsSupplier);
-                        handler.setNecessaryCriteriaSupplier(necessaryCriteriaSupplier);
+                        handler.setCriteriaSupplier(criteriaSupplier);
                         handler.setPlaceholderPersonsSupplier(defaultMenteeSupplier, defaultMentorSupplier);
                         stopSignal.countDown();
                             });
@@ -366,23 +346,23 @@ final class MatchesBuilderHandlerTest implements TestFramework<MatchesBuilderHan
         final Matches<Integer,Integer> expectedMatches;
         final Future<List<Integer>> menteesSupplier;
         final Future<List<Integer>> mentorsSupplier;
-        final Future<Collection<ProgressiveCriterion<Integer, Integer>>> progressiveCriteriaSupplier;
+        final Future<CriteriaConfiguration<Integer, Integer>> criteriaSupplier;
         
         MatchesBuilderHandlerArgs(String string, Matches<Integer, Integer> expectedMatches, 
                 Future<List<Integer>> menteesSupplier, Future<List<Integer>> mentorsSupplier,
-                Future<Collection<ProgressiveCriterion<Integer, Integer>>> progressiveCriteriaSupplier) {
+                Future<CriteriaConfiguration<Integer, Integer>> criteriaSupplier) {
             super(string);
             this.expectedMatches = expectedMatches;
             this.menteesSupplier = menteesSupplier;
             this.mentorsSupplier = mentorsSupplier;
-            this.progressiveCriteriaSupplier = progressiveCriteriaSupplier;
+            this.criteriaSupplier = criteriaSupplier;
         }
         
         MatchesBuilderHandler<Integer, Integer> convert(){
             MatchesBuilderHandler<Integer, Integer> result = new MatchesBuilderHandler<>();
             result.setMenteesSupplier(menteesSupplier);
             result.setMentorsSupplier(mentorsSupplier);
-            result.setProgressiveCriteriaSupplier(progressiveCriteriaSupplier);
+            result.setCriteriaSupplier(criteriaSupplier);
             return result;
         }
     }
@@ -417,6 +397,33 @@ final class MatchesBuilderHandlerTest implements TestFramework<MatchesBuilderHan
         @Override
         public V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             return get();
+        }
+    }
+    
+    static class DummyConfiguration extends CriteriaConfiguration<Integer, Integer> {
+        
+        private final List<ProgressiveCriterion<Integer, Integer>> progressiveCriteria;
+        private final List<NecessaryCriterion<Integer, Integer>> necessaryCriteria;
+        
+        DummyConfiguration(List<ProgressiveCriterion<Integer, Integer>> progressiveCriteria,
+                List<NecessaryCriterion<Integer, Integer>> necessaryCriteria){
+            super("ad-hoc configuration");
+            this.progressiveCriteria = progressiveCriteria;
+            this.necessaryCriteria = necessaryCriteria;
+        }
+
+        @Override
+        public Collection<ProgressiveCriterion<Integer, Integer>> getProgressiveCriteria() {
+            return progressiveCriteria;
+        }
+
+        @Override
+        public List<NecessaryCriterion<Integer, Integer>> getNecessaryCriteria() {
+            return necessaryCriteria;
+        }
+        
+        static DummyConfiguration dummyConfiguration(){
+            return new DummyConfiguration(List.of(), List.of());
         }
     }
 }

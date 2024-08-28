@@ -8,6 +8,7 @@ import java.util.Set;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import mentoring.datastructure.Person;
+import mentoring.match.MatchesBuilderHandler;
 import mentoring.match.NecessaryCriterion;
 
 /**
@@ -15,6 +16,9 @@ import mentoring.match.NecessaryCriterion;
  */
 public class ForbiddenMatchListViewModel{
     //TODO concurrency: handle synchronization on menteeToForbiddenMentors
+    /*TODO refactor this class should not need to access MatchesBuilderHandler, 
+    only a list of forbidden matches.
+    */
     
     private final Map<Person,Set<Person>> menteeToForbiddenMentors = new HashMap<>();
     private final ObservableList<ForbiddenMatchViewModel> modifiableItems = 
@@ -35,9 +39,11 @@ public class ForbiddenMatchListViewModel{
      * impossible.
      * @param mentee that must not be matched with the mentor
      * @param mentor that must not be matched with the mentee
+     * @param handler object to notify of the action
      * @return true if the match was not already marked as impossible
      */
-    public boolean addForbiddenMatch(Person mentee, Person mentor){
+    public boolean addForbiddenMatch(Person mentee, Person mentor, 
+            MatchesBuilderHandler<Person, Person> handler){
         Objects.requireNonNull(mentee, "expected mentee, received null");
         Objects.requireNonNull(mentor, "expected mentor, received null");
         Set<Person> forbiddenMentors = menteeToForbiddenMentors.computeIfAbsent(mentee, 
@@ -48,6 +54,7 @@ public class ForbiddenMatchListViewModel{
         forbiddenMentors.add(mentor);
         menteeToForbiddenMentors.put(mentee, forbiddenMentors);
         modifiableItems.add(new ForbiddenMatchViewModel(mentee, mentor));
+        handler.forbidMatch(mentee, mentor);
         return true;
     }
     
@@ -67,9 +74,11 @@ public class ForbiddenMatchListViewModel{
      * Define a match as possible. Optional operation: no-op if the match is not already marked as
      * impossible.
      * @param forbiddenVM ViewModel representing the match to unmark as impossible
+     * @param handler object to notify of the action
      * @return true if the match was unmarked as impossible
      */
-    public boolean removeForbiddenMatch(ForbiddenMatchViewModel forbiddenVM){
+    public boolean removeForbiddenMatch(ForbiddenMatchViewModel forbiddenVM,
+            MatchesBuilderHandler<Person, Person> handler){
         Person mentee = forbiddenVM.getMentee();
         if(! menteeToForbiddenMentors.containsKey(mentee)){
             return false;
@@ -80,7 +89,9 @@ public class ForbiddenMatchListViewModel{
         if(forbiddenMentors.isEmpty()){
             menteeToForbiddenMentors.remove(mentee);
         }
-        return result && modifiableItems.remove(forbiddenVM);
+        result = result && modifiableItems.remove(forbiddenVM);
+        handler.allowMatch(mentee, mentor);
+        return result;
     }
     
     /**

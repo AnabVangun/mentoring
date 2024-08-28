@@ -3,6 +3,7 @@ package mentoring.viewmodel.tasks;
 import java.util.stream.Stream;
 import mentoring.datastructure.Person;
 import mentoring.datastructure.PersonBuilder;
+import mentoring.match.MatchesBuilderHandler;
 import mentoring.viewmodel.datastructure.ForbiddenMatchListViewModel;
 import mentoring.viewmodel.tasks.ForbiddenMatchTaskTest.ForbiddenMatchTaskArgs;
 import org.junit.jupiter.api.Assertions;
@@ -29,7 +30,7 @@ class ForbiddenMatchTaskTest implements TestFramework<ForbiddenMatchTaskArgs>{
                 Assertions.fail("normally unreachable code", e);
             }
             task.succeeded();
-            Mockito.verify(args.vm).addForbiddenMatch(args.mentee, args.mentor);
+            Mockito.verify(args.vm).addForbiddenMatch(args.mentee, args.mentor, args.handler);
         });
     }
     
@@ -37,27 +38,32 @@ class ForbiddenMatchTaskTest implements TestFramework<ForbiddenMatchTaskArgs>{
     Stream<DynamicNode> constructor_NPE(){
         return test(Stream.of(new ForbiddenMatchTaskArgs("unique test case")), 
                 "constructor throws NPE on null input", args -> Assertions.assertAll(
-                        () -> assertConstructorThrowsNPE(null, args.mentee, args.mentor, args.callback, 
-                                "null VM"),
-                    () -> assertConstructorThrowsNPE(args.vm, null, args.mentor, args.callback,
-                            "null mentee"),
-                    () -> assertConstructorThrowsNPE(args.vm, args.mentee, null, args.callback,
-                            "null mentor"),
-                    () -> assertConstructorThrowsNPE(args.vm, args.mentee, args.mentor, null, 
-                            "null callback")));
+                        () -> assertConstructorThrowsNPE(null, args.mentee, args.mentor, args.handler,
+                            args.callback, "null VM"),
+                    () -> assertConstructorThrowsNPE(args.vm, null, args.mentor, args.handler,
+                            args.callback, "null mentee"),
+                    () -> assertConstructorThrowsNPE(args.vm, args.mentee, null, args.handler,
+                            args.callback, "null mentor"),
+                    () -> assertConstructorThrowsNPE(args.vm, args.mentee, args.mentor, null,
+                            args.callback, "null handler"),
+                    () -> assertConstructorThrowsNPE(args.vm, args.mentee, args.mentor, args.handler,
+                            null, "null callback")));
     }
     
     static Executable assertConstructorThrowsNPE(ForbiddenMatchListViewModel viewModel, 
-            Person mentee, Person mentor, AbstractTask.TaskCompletionCallback<? super Void> callback,
+            Person mentee, Person mentor, MatchesBuilderHandler<Person, Person> handler, 
+            AbstractTask.TaskCompletionCallback<? super Void> callback,
             String message){
         return () -> Assertions.assertThrows(NullPointerException.class, () -> 
-                new ForbiddenMatchTask(viewModel, mentee, mentor, callback), message);
+                new ForbiddenMatchTask(viewModel, mentee, mentor, handler, callback), message);
     }
     
     static class ForbiddenMatchTaskArgs extends TestArgs {
         final ForbiddenMatchListViewModel vm = Mockito.mock(ForbiddenMatchListViewModel.class);
         final Person mentee;
         final Person mentor;
+        @SuppressWarnings("unchecked")
+        final MatchesBuilderHandler<Person, Person> handler = Mockito.mock(MatchesBuilderHandler.class);
         final AbstractTask.TaskCompletionCallback<Object> callback = task -> {};
         
         ForbiddenMatchTaskArgs(String testCase){
@@ -68,7 +74,7 @@ class ForbiddenMatchTaskTest implements TestFramework<ForbiddenMatchTaskArgs>{
         }
         
         ForbiddenMatchTask convert(){
-            return new ForbiddenMatchTask(vm, mentee, mentor, callback);
+            return new ForbiddenMatchTask(vm, mentee, mentor, handler, callback);
         }
     }
 }

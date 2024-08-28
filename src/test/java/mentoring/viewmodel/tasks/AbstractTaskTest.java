@@ -11,7 +11,7 @@ import test.tools.TestArgs;
 import test.tools.TestFramework;
 
 class AbstractTaskTest implements TestFramework<AbstractTaskArgs>{
-    
+    //FIXME add test to make sure that ConcurrenyHandler.submit() make the task follow the Future workflow
     @Override
     public Stream<AbstractTaskArgs> argumentsSupplier(){
         return Stream.concat(successfulArgumentsSupplier(), failedArgumentsSupplier());

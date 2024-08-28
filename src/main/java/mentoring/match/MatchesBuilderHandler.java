@@ -1,7 +1,6 @@
 package mentoring.match;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -11,6 +10,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+//TODO refactor: here, mentoring.match relies on mentoring.configuration and vice-versa.
+import mentoring.configuration.CriteriaConfiguration;
 
 /**
  * Handler forging and providing {@link MatchesBuilder} instances. 
@@ -26,6 +27,7 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
     private final SupplierList suppliers = new SupplierList();
     private final Map<Mentee,Set<Mentor>> forbiddenMatches = new HashMap<>();
     //TODO refactor to extract allowMatch and forbidMatch and share them with builder
+    //FIXME currently, allowMatch and forbidMatch do not reset when the person list change
     //TODO optimise: when #get() is called several times without changing the parameters, do not
     //recompute result
     /**
@@ -49,9 +51,9 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
             ParametersList parameters = new ParametersList(synchronizedSuppliers);
             builder = new MatchesBuilder<>(
                     parameters.mentees, parameters.mentors,
-                    parameters.progressiveCriteria);
-            if (parameters.necessaryCriteria != null){
-                builder.withNecessaryCriteria(parameters.necessaryCriteria);
+                    parameters.criteria.getProgressiveCriteria());
+            if (parameters.criteria.getNecessaryCriteria() != null){
+                builder.withNecessaryCriteria(parameters.criteria.getNecessaryCriteria());
             }
             if (parameters.placeholderMentee != null 
                     && parameters.placeholderMentor != null){
@@ -101,28 +103,16 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
     }
     
     /**
-     * Provides a supplier for progressive criteria for the next call to {@link #get()}.
+     * Provides a supplier for criteria for the next call to {@link #get()}.
      * Only the last call to this method is kept: each call overrides the previous one.
      * This setter is mandatory.
-     * @param progressiveCriteriaSupplier collection of progressive criteria encapsulated in a 
+     * @param criteriaSupplier criteria encapsulated in a 
      *      Future container
      */
-    public synchronized void setProgressiveCriteriaSupplier(
-            Future<Collection<ProgressiveCriterion<Mentee, Mentor>>> progressiveCriteriaSupplier){
-        suppliers.progressiveCriteriaSupplier = Objects.requireNonNull(progressiveCriteriaSupplier,
-                "progressive criteria supplier cannot be null");
-    }
-    
-    /**
-     * Provides a supplier for necessary criteria for the next call to {@link #get()}.
-     * Only the last call to this method is kept: each call overrides the previous one.
-     * This setter is not mandatory.
-     * @param necessaryCriteriaSupplier collection of necessary criteria encapsulated in a 
-     *      Future container
-     */
-    public synchronized void setNecessaryCriteriaSupplier(
-            Future<Collection<NecessaryCriterion<Mentee, Mentor>>> necessaryCriteriaSupplier){
-        suppliers.necessaryCriteriaSupplier = necessaryCriteriaSupplier;
+    public synchronized void setCriteriaSupplier(
+            Future<CriteriaConfiguration<Mentee, Mentor>> criteriaSupplier){
+        suppliers.criteriaSupplier = Objects.requireNonNull(criteriaSupplier,
+                "criteria supplier cannot be null");
     }
     
     /**
@@ -176,8 +166,7 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
     private class SupplierList {
         Future<List<Mentee>> menteesSupplier;
         Future<List<Mentor>> mentorsSupplier;
-        Future<Collection<ProgressiveCriterion<Mentee, Mentor>>> progressiveCriteriaSupplier;
-        Future<Collection<NecessaryCriterion<Mentee, Mentor>>> necessaryCriteriaSupplier;
+        Future<CriteriaConfiguration<Mentee, Mentor>> criteriaSupplier;
         Future<Mentee> placeholderMenteeSupplier;
         Future<Mentor> placeholderMentorSupplier;
         
@@ -188,8 +177,7 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
             synchronized(MatchesBuilderHandler.this){
                 result.menteesSupplier = menteesSupplier;
                 result.mentorsSupplier = mentorsSupplier;
-                result.progressiveCriteriaSupplier = progressiveCriteriaSupplier;
-                result.necessaryCriteriaSupplier = necessaryCriteriaSupplier;
+                result.criteriaSupplier = criteriaSupplier;
                 result.placeholderMenteeSupplier = placeholderMenteeSupplier;
                 result.placeholderMentorSupplier = placeholderMentorSupplier;
             }
@@ -200,8 +188,7 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
     private class ParametersList {
         List<Mentee> mentees;
         List<Mentor> mentors;
-        Collection<ProgressiveCriterion<Mentee, Mentor>> progressiveCriteria;
-        Collection<NecessaryCriterion<Mentee, Mentor>> necessaryCriteria;
+        CriteriaConfiguration<Mentee, Mentor> criteria;
         Mentee placeholderMentee;
         Mentor placeholderMentor;
         
@@ -210,10 +197,7 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
             verifyMandatorySuppliers(suppliers);
             mentees = suppliers.menteesSupplier.get();
             mentors = suppliers.mentorsSupplier.get();
-            progressiveCriteria = suppliers.progressiveCriteriaSupplier.get();
-            if(suppliers.necessaryCriteriaSupplier != null){
-                necessaryCriteria = suppliers.necessaryCriteriaSupplier.get();
-            }
+            criteria = suppliers.criteriaSupplier.get();
             if(suppliers.placeholderMenteeSupplier != null){
                 placeholderMentee = suppliers.placeholderMenteeSupplier.get();
             }
@@ -225,22 +209,22 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
         private void verifyMandatorySuppliers(SupplierList suppliers) throws IllegalStateException {
             if(suppliers.menteesSupplier == null
                     || suppliers.mentorsSupplier == null 
-                    || suppliers.progressiveCriteriaSupplier == null){
+                    || suppliers.criteriaSupplier == null){
                 throw new IllegalStateException(
                         forgeMissingMandatorySettersErrorMessage(
                                 suppliers.menteesSupplier,
                                 suppliers.mentorsSupplier, 
-                                suppliers.progressiveCriteriaSupplier));
+                                suppliers.criteriaSupplier));
             }
         }
         
         private String forgeMissingMandatorySettersErrorMessage(Future<List<Mentee>> menteesSupplier,
                 Future<List<Mentor>> mentorsSupplier,
-                Future<Collection<ProgressiveCriterion<Mentee, Mentor>>> progressiveCriteriaSupplier) {
+                Future<CriteriaConfiguration<Mentee, Mentor>> criteriaSupplier) {
             List<String> missingFields = new ArrayList<>(3);
             addFieldLabelIfNull(menteesSupplier, "mentees supplier", missingFields);
             addFieldLabelIfNull(mentorsSupplier, "mentors supplier", missingFields);
-            addFieldLabelIfNull(progressiveCriteriaSupplier, "progressive criteria supplier", missingFields);
+            addFieldLabelIfNull(criteriaSupplier, "progressive criteria supplier", missingFields);
             return "Some mandatory setters are missing: " + missingFields;
         }
 

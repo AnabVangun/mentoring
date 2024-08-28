@@ -1,8 +1,8 @@
 package mentoring.viewmodel.tasks;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import mentoring.configuration.CriteriaConfiguration;
@@ -12,9 +12,9 @@ import mentoring.datastructure.PersonBuilder;
 import mentoring.match.Match;
 import mentoring.match.MatchTest;
 import mentoring.match.Matches;
+import mentoring.match.MatchesBuilder;
+import mentoring.match.MatchesBuilderHandler;
 import mentoring.match.MatchesTest;
-import mentoring.viewmodel.base.ConfigurationPickerViewModel;
-import mentoring.viewmodel.datastructure.ForbiddenMatchListViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 import mentoring.viewmodel.tasks.MultipleMatchTaskTest.MultipleMatchTaskArgs;
@@ -32,10 +32,9 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
 
     @Override
     public Stream<MultipleMatchTaskArgs> argumentsSupplier() {
-        return Stream.of(new MultipleMatchTaskArgs("with exclusion and forbidden VM", true, true),
-                new MultipleMatchTaskArgs("with exclusion but no forbidden VM", true, false),
-                new MultipleMatchTaskArgs("with forbidden but no exclusion VM", false, true),
-                new MultipleMatchTaskArgs("with neither exclusion nor forbidden VM", false, false));
+        return Stream.of(
+                new MultipleMatchTaskArgs("with exclusion VM", true),
+                new MultipleMatchTaskArgs("without exclusion VM", false));
     }
     
     @TestFactory
@@ -63,22 +62,6 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
                             captureArgumentsForSetAll(args.resultVM);
                     Matches<Person,Person> expectedMatches = args.makeMatches(Stream.of(
                             Pair.of(1,2),Pair.of(2,0)));
-                    assertMatchesEquals(expectedMatches, captor.getValue());
-                });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> makeMultipleMatches_excludeForbiddenMatches(){
-        return test(argumentsSupplier().filter(args -> args.forbiddenMatchVM != null),
-                "call() updates the input view model without forbidden matches", args -> {
-                    args.setForbiddenMatch(args.mentees.get(0), args.mentors.get(2));
-                    MultipleMatchTask task = args.convert();
-                    runTask(task);
-                    task.succeeded();
-                    ArgumentCaptor<Matches<Person, Person>> captor = 
-                            captureArgumentsForSetAll(args.resultVM);
-                    Matches<Person,Person> expectedMatches = args.makeMatches(Stream.of(
-                            Pair.of(0,1),Pair.of(1,2),Pair.of(2,0)));
                     assertMatchesEquals(expectedMatches, captor.getValue());
                 });
     }
@@ -112,71 +95,57 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
     
     @TestFactory
     Stream<DynamicNode> constructor_NPE(){
-        return test(Stream.of(new MultipleMatchTaskArgs("specific test case", true, true)), 
+        return test(Stream.of(new MultipleMatchTaskArgs("specific test case", true)), 
                 "constructor throws an NPE on null input", args ->
                         Assertions.assertAll(
                                 assertConstructorThrowsNPE("result VM", null, 
-                                        args.excludedMatchesVM, 
-                                        args.configurationVM, args.forbiddenMatchVM, 
+                                        args.excludedMatchesVM, args.handler,
                                         args.mentees, args.mentors, args.callback),
                                 () -> Assertions.assertDoesNotThrow(() -> new MultipleMatchTask(args.resultVM,
                                         null, 
-                                        args.configurationVM, args.forbiddenMatchVM, 
+                                        args.handler,
                                         args.mentees, args.mentors, args.callback), "excluded matches VM"),
-                                assertConstructorThrowsNPE("configuration VM", args.resultVM, 
+                                assertConstructorThrowsNPE("handler", args.resultVM, 
                                         args.excludedMatchesVM, 
-                                        null, args.forbiddenMatchVM, 
+                                        null, 
                                         args.mentees, args.mentors, args.callback),
-                                () -> Assertions.assertDoesNotThrow(() -> new MultipleMatchTask(args.resultVM, 
-                                        args.excludedMatchesVM, 
-                                        args.configurationVM, null, 
-                                        args.mentees, args.mentors, args.callback), "forbidden match VM"),
                                 assertConstructorThrowsNPE("mentees", args.resultVM, 
                                         args.excludedMatchesVM, 
-                                        args.configurationVM, args.forbiddenMatchVM, 
+                                        args.handler, 
                                         null, args.mentors, args.callback),
                                 assertConstructorThrowsNPE("mentors", args.resultVM, 
                                         args.excludedMatchesVM, 
-                                        args.configurationVM, args.forbiddenMatchVM, 
+                                        args.handler, 
                                         args.mentees, null, args.callback),
                                 assertConstructorThrowsNPE("callback", args.resultVM, 
                                         args.excludedMatchesVM, 
-                                        args.configurationVM, args.forbiddenMatchVM, 
+                                        args.handler, 
                                         args.mentees, args.mentors, null)));
     }
     
     Executable assertConstructorThrowsNPE(String label, PersonMatchesViewModel resultVM, 
             PersonMatchesViewModel excludedMatchesVM,
-            ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> criteriaVM, 
-            ForbiddenMatchListViewModel forbiddenMatchesVM,
+            MatchesBuilderHandler<Person, Person> handler,
             List<Person> mentees, 
             List<Person> mentors,
             AbstractTask.TaskCompletionCallback<? super Void> callback){
         return () -> Assertions.assertThrows(NullPointerException.class, 
-                () -> new MultipleMatchTask(resultVM, excludedMatchesVM, criteriaVM, 
-                        forbiddenMatchesVM, mentees, mentors, callback), label);
+                () -> new MultipleMatchTask(resultVM, excludedMatchesVM, handler, 
+                        mentees, mentors, callback), label);
     }
     
     static class MultipleMatchTaskArgs extends TestArgs{
         final PersonMatchesViewModel resultVM = Mockito.mock(PersonMatchesViewModel.class);
         final PersonMatchesViewModel excludedMatchesVM;
-        @SuppressWarnings("unchecked")
-        final ConfigurationPickerViewModel<CriteriaConfiguration<Person, Person>> configurationVM 
-                = Mockito.mock(ConfigurationPickerViewModel.class);
-        final ForbiddenMatchListViewModel forbiddenMatchVM;
         final List<Person> mentees;
         final List<Person> mentors;
+        @SuppressWarnings("unchecked")
+        final MatchesBuilderHandler<Person, Person> handler = Mockito.mock(MatchesBuilderHandler.class);
         final AbstractTask.TaskCompletionCallback<Object> callback = task -> {};
         
-        MultipleMatchTaskArgs(String testCase, boolean withExclusionVM, boolean withForbiddenMatchVM){
+        MultipleMatchTaskArgs(String testCase, boolean withExclusionVM){
             super(testCase);
             excludedMatchesVM = withExclusionVM ? Mockito.mock(PersonMatchesViewModel.class) : null;
-            if(withForbiddenMatchVM) {
-                forbiddenMatchVM = Mockito.mock(ForbiddenMatchListViewModel.class);
-                Mockito.when(forbiddenMatchVM.getCriterion()).thenReturn((mentee, mentor) -> true);
-            } else {
-                forbiddenMatchVM = null;
-            }
             PersonBuilder builder = new PersonBuilder();
             mentees = List.of(buildIndexedPerson(1, builder),
                     buildIndexedPerson(2, builder),
@@ -190,8 +159,10 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
                                     * mentor.getPropertyAs("value", Integer.class)), 
                     List.of());
             try {
-                Mockito.when(configurationVM.getConfiguration()).thenReturn(criteria);
-            } catch (IOException e){
+                Mockito.when(handler.get()).thenReturn(new MatchesBuilder<>(mentees, mentors, 
+                        criteria.getProgressiveCriteria())
+                        .withNecessaryCriteria(criteria.getNecessaryCriteria()));
+            } catch (InterruptedException | ExecutionException e){
                 Assertions.fail("normally unreachable code", e);
             }
         }
@@ -208,8 +179,8 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
         }
         
         MultipleMatchTask convert(){
-            return new MultipleMatchTask(resultVM, excludedMatchesVM, configurationVM, 
-                    forbiddenMatchVM, mentees, mentors, callback);
+            return new MultipleMatchTask(resultVM, excludedMatchesVM, handler, mentees, mentors, 
+                    callback);
         }
         
         void setManualMatch(Person mentee, Person mentor){
@@ -218,11 +189,6 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
                     .thenReturn(new MatchTest.MatchArgs("", mentee, mentor, 0)
                             .convertAs(Person.class, Person.class));
             Mockito.when(excludedMatchesVM.getContent()).thenReturn(List.of(manualMatchVM));
-        }
-        
-        void setForbiddenMatch(Person mentee, Person mentor){
-            Mockito.when(forbiddenMatchVM.getCriterion())
-                    .thenReturn((t, u) -> t != mentee || u != mentor);
         }
     }
 }
