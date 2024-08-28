@@ -26,6 +26,7 @@ import mentoring.io.PersonFileParser;
 import mentoring.io.ResultConfigurationParser;
 import mentoring.io.datareader.YamlReader;
 import mentoring.match.MatchesBuilder;
+import mentoring.match.MatchesBuilderHandler;
 import mentoring.viewmodel.base.BoundableConfigurationPickerViewModel;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.base.FilePickerViewModel;
@@ -76,9 +77,8 @@ public class MainViewModel {
                 Pair.of("CSV files", List.of("*.csv")),
                 Pair.of("All files", List.of("*.*")));
     
-    private MatchesBuilder matchesBuilder = null;
-    //TODO have an EnumSet of configuration items needed to be loaded to generate a new MatchesBuilder
-    //When EnumSet is empty, generate new MatchesBuilder
+    private final MatchesBuilderHandler<Person, Person> matchesBuilderHandler = 
+            new MatchesBuilderHandler<>();
     
     /**
      * Create a new {@code MainViewModel}.

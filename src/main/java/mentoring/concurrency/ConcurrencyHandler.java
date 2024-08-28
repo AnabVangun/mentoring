@@ -28,10 +28,26 @@ public final class ConcurrencyHandler {
      * @throws RejectedExecutionException if the workers pool rejected the task.
      */
     public Future<?> submit(Runnable runnable) throws RejectedExecutionException{
+        initialiseIfNeeded();
+        return privateExecutor.submit(runnable);
+    }
+    
+    private void initialiseIfNeeded(){
         if(privateExecutor == null){
             initialise(true);
         }
-        return privateExecutor.submit(runnable);
+    }
+    
+    /**
+     * Submit a task to the workers pool for a background execution.
+     * @param <T> type of the value supplied by the returned object after completion.
+     * @param callable the task to perform in the background.
+     * @return an object representing the execution state and supplying the result when completed.
+     * @throws RejectedExecutionException if the workers pool rejected the task.
+     */
+    public <T> Future<T> submit(Callable<T> callable) throws RejectedExecutionException{
+        initialiseIfNeeded();
+        return privateExecutor.submit(callable);
     }
     
     /**
