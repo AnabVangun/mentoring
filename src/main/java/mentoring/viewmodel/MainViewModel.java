@@ -25,6 +25,7 @@ import mentoring.io.PersonConfigurationParser;
 import mentoring.io.PersonFileParser;
 import mentoring.io.ResultConfigurationParser;
 import mentoring.io.datareader.YamlReader;
+import mentoring.match.MatchesBuilder;
 import mentoring.viewmodel.base.BoundableConfigurationPickerViewModel;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
 import mentoring.viewmodel.base.FilePickerViewModel;
@@ -56,7 +57,7 @@ public class MainViewModel {
         make sure that only one global match can be run at the same time
         make sure that if several single matches are running, they only handle different persons
     */
-    private final ConcurrencyHandler matchMaker;
+    private final ConcurrencyHandler taskHandler;
     
     private final EnumMap<PersonType, ConfigurationPickerViewModel<PersonConfiguration>> 
             personConfigurations = new EnumMap<>(PersonType.class);
@@ -75,13 +76,17 @@ public class MainViewModel {
                 Pair.of("CSV files", List.of("*.csv")),
                 Pair.of("All files", List.of("*.*")));
     
+    private MatchesBuilder matchesBuilder = null;
+    //TODO have an EnumSet of configuration items needed to be loaded to generate a new MatchesBuilder
+    //When EnumSet is empty, generate new MatchesBuilder
+    
     /**
      * Create a new {@code MainViewModel}.
      * @param executor Executor service that will receive the task to run the application.
      */
     @Inject
     MainViewModel(ConcurrencyHandler concurrencyHandler){
-        matchMaker = concurrencyHandler;
+        taskHandler = concurrencyHandler;
         matchConfiguration = forgeMatchConfigurationPickerViewModel();
         resultConfiguration = forgeResultConfigurationPickerViewModel();
         exportConfiguration = new BoundableConfigurationPickerViewModel<>(resultConfiguration);
@@ -100,7 +105,8 @@ public class MainViewModel {
      */
     public Future<?> getPersons(PersonListViewModel resultVM, PersonType type,
             AbstractTask.TaskCompletionCallback<? super List<Person>> callback){
-        return matchMaker.submit(new PersonGetterTask(resultVM, personPickers.get(type), 
+        //TODO add to callback to signal that person type has been loaded
+        return taskHandler.submit(new PersonGetterTask(resultVM, personPickers.get(type), 
                 personConfigurations.get(type), callback));
     }
     
@@ -117,7 +123,7 @@ public class MainViewModel {
     public Future<?> makeMatches(PersonListViewModel menteeVM, PersonListViewModel mentorVM,
             PersonMatchesViewModel resultVM, PersonMatchesViewModel excludedMatchesVM,
             AbstractTask.TaskCompletionCallback<? super Void> callback){
-        return matchMaker.submit(new MultipleMatchTask(resultVM, excludedMatchesVM, 
+        return taskHandler.submit(new MultipleMatchTask(resultVM, excludedMatchesVM, 
                 matchConfiguration, extraForbiddenMatches,
                 menteeVM.getUnderlyingData(),
                 mentorVM.getUnderlyingData(), callback));
@@ -133,7 +139,7 @@ public class MainViewModel {
      */
     public Future<?> makeSingleMatch(PersonViewModel menteeVM, PersonViewModel mentorVM,
             PersonMatchesViewModel resultVM, AbstractTask.TaskCompletionCallback<Object> callback){
-        return matchMaker.submit(new SingleMatchTask(resultVM, matchConfiguration, 
+        return taskHandler.submit(new SingleMatchTask(resultVM, matchConfiguration, 
                 menteeVM.getData(), mentorVM.getData(), callback));
     }
     
@@ -147,7 +153,7 @@ public class MainViewModel {
     public Future<?> removeSingleMatch(PersonMatchViewModel toRemove, 
             PersonMatchesViewModel resultVM, 
             AbstractTask.TaskCompletionCallback<? super Void> callback){
-        return matchMaker.submit(new SingleMatchRemovalTask(resultVM, toRemove, callback));
+        return taskHandler.submit(new SingleMatchRemovalTask(resultVM, toRemove, callback));
     }
     
     /**
@@ -161,7 +167,7 @@ public class MainViewModel {
     public Future<?> exportMatches(File outputFile, 
             AbstractTask.TaskCompletionCallback<? super Void> callback,
             PersonMatchesViewModel toExportWithHeader, PersonMatchesViewModel... toExport){
-        return matchMaker.submit(new MatchExportTask(
+        return taskHandler.submit(new MatchExportTask(
                 () -> new PrintWriter(outputFile, Charset.forName("utf-8")), 
                 callback, exportConfiguration, 
                 toExportWithHeader, toExport));
@@ -176,7 +182,7 @@ public class MainViewModel {
      */
     public Future<?> addForbiddenMatch(PersonViewModel menteeVM, PersonViewModel mentorVM,
             AbstractTask.TaskCompletionCallback<? super Void> callback){
-        return matchMaker.submit(new ForbiddenMatchTask(extraForbiddenMatches, 
+        return taskHandler.submit(new ForbiddenMatchTask(extraForbiddenMatches, 
                 menteeVM.getData(), mentorVM.getData(), callback));
     }
     
@@ -188,7 +194,7 @@ public class MainViewModel {
      */
     public Future<?> removeForbiddenMatch(ForbiddenMatchViewModel toRemove,
             AbstractTask.TaskCompletionCallback<? super Void> callback){
-        return matchMaker.submit(new ForbiddenMatchRemovalTask(extraForbiddenMatches, toRemove,
+        return taskHandler.submit(new ForbiddenMatchRemovalTask(extraForbiddenMatches, toRemove,
                 callback));
     }
     
@@ -200,7 +206,7 @@ public class MainViewModel {
      */
     public Future<?> getResultConfiguration(List<? extends PersonMatchesViewModel> resultVMs, 
             AbstractTask.TaskCompletionCallback<Object> callback) {
-        return matchMaker.submit(new ConfigurationGetterTask<>(getResultConfiguration(), resultVMs,
+        return taskHandler.submit(new ConfigurationGetterTask<>(getResultConfiguration(), resultVMs,
                 callback));
     }
     

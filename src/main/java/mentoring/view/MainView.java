@@ -189,13 +189,14 @@ public class MainView implements Initializable {
     }
     
     private void getConfiguration(){
-        getPersonConfigurations();
+        //TODO signal to vm that configuration is being loaded. When configuration is fully loaded, generate MatchesBuilder
+        getPersons();
         getResultConfiguration();
         clearMatches();
         vm.getForbiddenMatches().clear();
     }
     
-    private void getPersonConfigurations(){
+    private void getPersons(){
         for (PersonType type : PersonType.values()){
             vm.getPersons(tableViewController.getPersonViewModel(type), type,
                     TaskCompletionAlertFactory.alertOnFailure(except -> 

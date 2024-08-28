@@ -13,13 +13,13 @@ public class Main {
      * the order of preference for the mentor
      * 6. Handle refactoring TODOs
      * Fix display: column "cost" should be properly sorted as a number and not a string
+     * Add status for person: "not matched", "manual match", "automated match"
      * 7. Add an indicator for when "Run" should be clicked
      * 9a. Add global configuration parameters for magic numbers.
      * 9b. Internationalize GUI
      * 9e. Add save/load button to load configuration (including forbidden matches) and results from a file
      * 10. Handle concurrency TODOs
      * 10a. Handle disabled property for all buttons in MainView
-     * 10b. Add status for person: "not matched", "manual match", "automated match"
      * 11. Alert if configuration is not consistent with data file:
      * for person conf, missing columns in file header
      * 12. Alert if criteria configuration is not consistent with person configuration
