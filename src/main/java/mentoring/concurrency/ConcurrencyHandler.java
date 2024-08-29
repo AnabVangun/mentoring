@@ -39,19 +39,6 @@ public final class ConcurrencyHandler {
     }
     
     /**
-     * Submit a task to the workers pool for a background execution.
-     * @param <T> type of the value supplied by the returned object after completion.
-     * @param callable the task to perform in the background.
-     * @return an object representing the execution state and supplying the result when completed.
-     * @throws RejectedExecutionException if the workers pool rejected the task.
-     */
-    @Deprecated
-    public <T> Future<T> submit(Callable<T> callable) throws RejectedExecutionException{
-        initialiseIfNeeded();
-        return privateExecutor.submit(callable);
-    }
-    
-    /**
      * Shutdown the service. After the service has been shutdown, it will reject any future incoming
      * tasks. The call will block until all ongoing tasks have stopped or timeout has been reached.
      * @param timeout the maximum time to wait (in milliseconds)
