@@ -116,10 +116,106 @@ final class CostMatrixHandlerTest implements TestFramework<CostMatrixHandlerTest
     }
     
     @TestFactory
+    Stream<DynamicNode> solveCostMatrixForbidsForbiddenMatches(){
+        return test("solveCostMatrix() forbids forbidden matches", args -> {
+            Solver solver = Mockito.mock(Solver.class);
+            ArgumentCaptor<int[][]> captor = ArgumentCaptor.forClass(int[][].class);
+            CostMatrixHandler<Integer, Integer> matrixHandler = args.convert();
+            matrixHandler.forbidMatch(0, 1);
+            matrixHandler.forbidMatch(2,0);
+            matrixHandler.solveCostMatrix(solver);
+            Mockito.verify(solver).solve(captor.capture());
+            Assertions.assertAll(
+                    () -> Assertions.assertEquals(MatchesBuilder.PROHIBITIVE_VALUE, 
+                            captor.getValue()[0][1], "first forbidden match"),
+                    () -> Assertions.assertEquals(MatchesBuilder.PROHIBITIVE_VALUE,
+                            captor.getValue()[2][0], "second forbidden match"));
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> solveCostMatrixAllowsAllowedMatches(){
+        return test("solveCostMatrix() allows allowed matches", args -> {
+            Solver solver = Mockito.mock(Solver.class);
+            ArgumentCaptor<int[][]> captor = ArgumentCaptor.forClass(int[][].class);
+            CostMatrixHandler<Integer, Integer> matrixHandler = args.convert();
+            Assertions.assertTrue(matrixHandler.getMatchScore(0, 1) < MatchesBuilder.PROHIBITIVE_VALUE, 
+                    "test conditions require match (0,1) to be allowed");
+            matrixHandler.forbidMatch(0, 1);
+            matrixHandler.forbidMatch(2,0);
+            matrixHandler.allowMatch(0,1);
+            matrixHandler.solveCostMatrix(solver);
+            Mockito.verify(solver).solve(captor.capture());
+            Assertions.assertTrue(captor.getValue()[0][1] < MatchesBuilder.PROHIBITIVE_VALUE,
+                    "Score of allowed match is prohibitive.");
+        });
+    }
+    
+    @TestFactory
     Stream<DynamicNode> solvePartialCostMatrixSolvesMatrix(){
         return test("solvePartialCostMatrix() solves partial cost matrix", args -> {
                 Solver solver = Mockito.mock(Solver.class);
                 args.convert().solvePartialCostMatrix(solver, args.partialMenteeIndices, 
+                        args.partialMentorIndices);
+                ArgumentCaptor<int[][]> captor = 
+                        ArgumentCaptor.forClass((new int[0][0]).getClass());
+                Mockito.verify(solver).solve(captor.capture());
+                Assertions.assertArrayEquals(args.expectedPartialActualCostMatrix, captor.getValue());
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> solvePartialCostMatrixSolvesMatrixForbidsForbiddenMatches(){
+        Stream<CostMatrixHandlerArgs> testCase = Stream.of(
+                new CostMatrixHandlerArgs("matrix without necessary criterion", 
+                        new int[][]{{0,0},{1,1},{2,2}}, null, 
+                        List.of(0,1,2), List.of(0,1), 
+                        List.of((mentee, mentor) -> mentee), 
+                        List.of(1,2), List.of(0),
+                        new int[][]{{MatchesBuilder.PROHIBITIVE_VALUE}, {2}}),
+                new NecessaryCostMatrixHandlerArgs("matrix with necessary criterion", 
+                        new int[][]{{0,0},{1,1},{2,2}}, null, 
+                        List.of(0,1,2), List.of(0,1), 
+                        List.of((mentee, mentor) -> mentee),
+                        List.of((mentee, mentor) -> mentee != 2), 
+                        List.of(1,2), List.of(0),
+                        new int[][]{{MatchesBuilder.PROHIBITIVE_VALUE}, 
+                            {MatchesBuilder.PROHIBITIVE_VALUE}}));
+        return test(testCase, "solvePartialCostMatrix() forbids forbidden matches", args -> {
+                Solver solver = Mockito.mock(Solver.class);
+                CostMatrixHandler<Integer, Integer> matrixHandler = args.convert();
+                matrixHandler.forbidMatch(1,0);
+                matrixHandler.solvePartialCostMatrix(solver, args.partialMenteeIndices, 
+                        args.partialMentorIndices);
+                ArgumentCaptor<int[][]> captor = 
+                        ArgumentCaptor.forClass((new int[0][0]).getClass());
+                Mockito.verify(solver).solve(captor.capture());
+                Assertions.assertArrayEquals(args.expectedPartialActualCostMatrix, captor.getValue());
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> solvePartialCostMatrixSolvesMatrixAllowsAllowedMatches(){
+        Stream<CostMatrixHandlerArgs> testCase = Stream.of(
+                new CostMatrixHandlerArgs("matrix without necessary criterion", 
+                        new int[][]{{0,0},{1,1},{2,2}}, null, 
+                        List.of(0,1,2), List.of(0,1), 
+                        List.of((mentee, mentor) -> mentee), 
+                        List.of(1,2), List.of(0),
+                        new int[][]{{1}, {2}}),
+                new NecessaryCostMatrixHandlerArgs("matrix with necessary criterion", 
+                        new int[][]{{0,0},{1,1},{2,2}}, null, 
+                        List.of(0,1,2), List.of(0,1), 
+                        List.of((mentee, mentor) -> mentee),
+                        List.of((mentee, mentor) -> mentee != 2), 
+                        List.of(1,2), List.of(0),
+                        new int[][]{{1},{MatchesBuilder.PROHIBITIVE_VALUE}}));
+        return test(testCase, "solvePartialCostMatrix() forbids forbidden matches", args -> {
+                Solver solver = Mockito.mock(Solver.class);
+                CostMatrixHandler<Integer, Integer> matrixHandler = args.convert();
+                matrixHandler.forbidMatch(1,0);
+                matrixHandler.allowMatch(1, 0);
+                matrixHandler.solvePartialCostMatrix(solver, args.partialMenteeIndices, 
                         args.partialMentorIndices);
                 ArgumentCaptor<int[][]> captor = 
                         ArgumentCaptor.forClass((new int[0][0]).getClass());

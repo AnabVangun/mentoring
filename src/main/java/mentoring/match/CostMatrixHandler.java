@@ -81,9 +81,10 @@ class CostMatrixHandler<Mentee, Mentor> {
         return this;
     }
     
-    private int computeCost(Mentee mentee, Mentor mentor){
-        if (checkNecessaryCriteria(mentee, mentor)){
-            return computeProgressiveCriteriaCost(mentee, mentor);
+    private int computeCost(int menteeIndex, int mentorIndex){
+        if (isMatchAllowed(menteeIndex, mentorIndex)){
+            return computeProgressiveCriteriaCost(mentees.get(menteeIndex), 
+                    mentors.get(mentorIndex));
         } else {
             return MatchesBuilder.PROHIBITIVE_VALUE;
         }
@@ -130,8 +131,7 @@ class CostMatrixHandler<Mentee, Mentor> {
         int[][] result = new int[menteeIndices.size()][mentorIndices.size()];
         for (int i = 0; i < result.length; i++){
             for (int j = 0; j < result[i].length; j++){
-                result[i][j] = computeCost(mentees.get(menteeIndices.get(i)), 
-                        mentors.get(mentorIndices.get(j)));
+                result[i][j] = computeCost(menteeIndices.get(i), mentorIndices.get(j));
             }
         }
         return result;
