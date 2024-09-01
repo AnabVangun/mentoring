@@ -1,5 +1,7 @@
 package mentoring.configuration;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,8 +25,7 @@ public final class CriteriaToolbox {
      * Compute a distance between two sets.
      * 
      *<p>As a distance, if the result is 0, the sets are equal. The result is always positive, and
-     * the distance between a first set and a second one is the same as the distance between the
-     * second set and the first. There is no guarantee that the triangular inequality holds.
+     * symmetry holds. There is no guarantee that the triangular inequality holds.
      * @param <E> common ancestor of the type of elements in both sets
      * @param first one of the two sets
      * @param second the second set
@@ -47,49 +48,61 @@ public final class CriteriaToolbox {
     }
     
     /**
-     * Computes the distance between the map and the set, where the map values represent an 
-     * ordering of the map keys.
-     * @param <E> type of the keys of the map and the elements of the set
-     * @param map that must be evaluated against the set, where each value is the index of the key
-     * (on a 0-indexed basis)
-     * @param set that must be evaluated against the map
-     * @param spikeFactor the higher the spikeFactor, the farther from the mean distance the return
-     * value for a given map and a given set will be. {@code spikeFactor} MUST be between 0 and 1,
-     * both included.
-     * @throws IllegalArgumentException if spikeFactor is out of bounds or if the values in map do
-     * not correspond to an indexing of its keys.
-     * @return an estimation of how close the map and the set are
+     * Compute a similarity score between two maps representing an ordering of preferences.
+     * The keys of the input maps are compared using {@link Object#equals(java.lang.Object) }.
+     * The values of the input maps SHOULD all be strictly positive and distinct.
+     * No fail-fast mechanism is guaranteed if these assumptions are not enforced by the caller.
+     * The score is not a distance:
+     * separation, symmetry and the triangle inequality are not guaranteed to be held.
+     * <p>
+     * On simple inputs, the returned value is 
+     * {@code fromFactor*<from value> + toFactor*<to value>} where the two values are each the 
+     * highest value in its map below that associated with the property with the lowest value in 
+     * {@code from} that is also contained in {@code to}.
+     * @param <E> type of the keys of the maps
+     * @param from first map to compare
+     * @param to second map to compare
+     * @param fromFactor the higher this value, the higher the impact of the values of {@code from} 
+     *      on the result
+     * @param toFactor the higher this value, the higher the impact of the values of {@code to} on 
+     *      the result
+     * @param defaultValue value returned if either {@code from} or {@code to} is empty
+     * @return a score that is minimal if the two input maps share the same key for their lowest 
+     * value.
      */
-    public static <E> int computeWeightedAsymetricMapDistance(
-            Map<? extends E, ? extends Integer> map, 
-            Set<? extends E> set, double spikeFactor) throws IllegalArgumentException{
-        if (spikeFactor < 0 || spikeFactor > 1){
-            throw new IllegalArgumentException("Received spikeFactor " + spikeFactor 
-                    + ", expected value between 0 and 1.");
+    public static <E> int computePreferenceMapSimilarityScore(
+            Map<? extends E, ? extends Integer> from,
+            Map<? extends E, ? extends Integer> to,
+            int fromFactor, int toFactor, int defaultValue) {
+        if (from.isEmpty() || to.isEmpty()){
+            return defaultValue;
         }
-        double baseScore = (1.0 - spikeFactor * computeConfigurationScore(map, set));
-        return (int) Math.round(SET_PROXIMITY_MULTIPLIER * baseScore);
-    }
-    
-    private static <E> double computeConfigurationScore(Map<? extends E, ? extends Integer> map, 
-            Set<? extends E> set){
-        double result = 0;
-        int size = map.size();
-        if (size == 0){
-            return 0;
-        }
-        for (Map.Entry<? extends E, ? extends Integer> entry: map.entrySet()){
-            if(entry.getValue() < 0 || entry.getValue() >= size){
-                throw new IllegalArgumentException("Map " + map + " contains entry " + entry 
-                        + " with value out of bounds, expected between 0 and " + size + ".");
+        int previousFromValue = 0;
+        Object[] sortedFromKeys = from.keySet().toArray();
+        Arrays.sort(sortedFromKeys, (first, second) -> Integer.compare(from.get(first), 
+                from.get(second)));
+        for (Object fromKey : sortedFromKeys){
+            if (to.containsKey(fromKey)){
+                Object[] sortedToKeys = to.keySet().toArray();
+                Arrays.sort(sortedToKeys, (first, second) -> Integer.compare(to.get(first), 
+                        to.get(second)));
+                int previousToValue = 0;
+                for (Object toKey : sortedToKeys){
+                    if (toKey.equals(fromKey)){
+                        return fromFactor * previousFromValue + toFactor * previousToValue;
+                    }
+                    else {
+                        previousToValue = to.get(toKey);
+                    }
+                }
+                throw new RuntimeException("Could not find common key " + fromKey + " in map " + to);
             }
-            result += (set.contains(entry.getKey()) ? 1 : -1) 
-                    * (1 << (size - 1 - entry.getValue()));
+            previousFromValue = from.get(fromKey);
         }
-        return result / ((1 << size) - 1);
+        return previousFromValue*fromFactor + Collections.max(to.values())*toFactor;
     }
     
-    //TODO document and test
+    @Deprecated
     public static <E> int computeBrutalAsymetricDistance(Map<? extends E, ? extends Integer> map, 
             Set<? extends E> set){
         int result = 0;

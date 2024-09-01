@@ -49,27 +49,22 @@ class CriteriaToolboxTest implements TestFramework<Object>{
     }
     
     @TestFactory
-    Stream<DynamicNode> computeMapSetProximity(){
-        int multiplier = CriteriaToolbox.SET_PROXIMITY_MULTIPLIER;
-        Set<Integer> set = Set.of(0,1);
+    Stream<DynamicNode> computePreferenceMapSimilarityScore_correctOutput(){
         return test(Stream.of(
-                new SetMapArgs("no element", multiplier, set, Map.of(), 1),
-                new SetMapArgs("one non-common element", multiplier*2, 
-                        set, Map.of(2,0),1),
-                new SetMapArgs("one common element", (int) (multiplier * 0.8), 
-                        set, Map.of(1,0), 0.2),
-                new SetMapArgs("two non-common elements", (int) (multiplier * 1.4), 
-                        set, Map.of(2,0,3,1),0.4),
-                new SetMapArgs("two partially common elements", (int) (multiplier * 1.2), 
-                        set, Map.of(0,1,2,0),0.6),
-                new SetMapArgs("two common elements", (int) (multiplier * 0.2), 
-                        set, Map.of(0,0,1,1),0.8),
-                new SetMapArgs("three partially common elements", (int) (multiplier * 1.14285714285), 
-                        set, Map.of(0,2,1,1,2,0),1)),
-                "computeWeightedAsymetricMapDistance() returns the expected value", 
-                args -> Assertions.assertEquals(args.expected, 
-                        CriteriaToolbox.computeWeightedAsymetricMapDistance(args.map, args.set, 
-                                args.spikeFactor)));
+                new TwoMapsArgs("same first property", 0, Map.of(2, 1), Map.of(2,2,5,6),
+                        100, 1, 12),
+                new TwoMapsArgs("multiple common property", 15, Map.of(2,1,5,2,6,4),
+                        Map.of(6,5,5,8), 10, 1, 3),
+                new TwoMapsArgs("no common property", 26, Map.of(-5,1,0,2),
+                        Map.of(12,3),10,2, 5),
+                new TwoMapsArgs("empty from", -5, Map.of(), Map.of(2,1), 25, 6, -5),
+                new TwoMapsArgs("empty to", 150, Map.of(1,2), Map.of(), 25, 6, 150),
+                new TwoMapsArgs("both maps empty", 3, Map.of(), Map.of(), 25, 6, 3)),
+                "computePreferenceMapSimilarityScore() returns the expected result", args ->
+                        Assertions.assertEquals(args.expected,
+                                CriteriaToolbox.computePreferenceMapSimilarityScore(args.from, 
+                                        args.to, args.fromFactor, args.toFactor, 
+                                        args.defaultValue)));
     }
     
     @TestFactory
@@ -121,8 +116,8 @@ class CriteriaToolboxTest implements TestFramework<Object>{
         }
     }
     
-    static record SetMapArgs(String testCase, int expected, Set<Integer> set, 
-        Map<Integer, Integer> map, double spikeFactor) {
+    static record TwoMapsArgs(String testCase, int expected, Map<Integer, Integer> from, 
+        Map<Integer, Integer> to, int fromFactor, int toFactor, int defaultValue) {
         
         @Override
         public String toString(){
