@@ -9,10 +9,8 @@ public class Main {
     }
     /**
      * TODO: link GUI to code.
-     * Fix brutal CriteriaToolbox method: document, test and give a better result depending on 
-     * the order of preference for the mentor
-     * 6. Handle refactoring TODOs
      * Fix display: column "cost" should be properly sorted as a number and not a string
+     * 6. Handle refactoring TODOs
      * Add status for person: "not matched", "manual match", "automated match"
      * 7. Add an indicator for when "Run" should be clicked
      * 9a. Add global configuration parameters for magic numbers.

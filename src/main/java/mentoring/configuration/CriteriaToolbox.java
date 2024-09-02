@@ -57,8 +57,8 @@ public final class CriteriaToolbox {
      * <p>
      * On simple inputs, the returned value is 
      * {@code fromFactor*<from value> + toFactor*<to value>} where the two values are each the 
-     * highest value in its map below that associated with the property with the lowest value in 
-     * {@code from} that is also contained in {@code to}.
+     * value associated with the property with the lowest value in {@code from} that is also 
+     * contained in {@code to}.
      * @param <E> type of the keys of the maps
      * @param from first map to compare
      * @param to second map to compare
@@ -66,7 +66,7 @@ public final class CriteriaToolbox {
      *      on the result
      * @param toFactor the higher this value, the higher the impact of the values of {@code to} on 
      *      the result
-     * @param defaultValue value returned if either {@code from} or {@code to} is empty
+     * @param defaultValue value used if either {@code from} or {@code to} is empty
      * @return a score that is minimal if the two input maps share the same key for their lowest 
      * value.
      */
@@ -74,10 +74,6 @@ public final class CriteriaToolbox {
             Map<? extends E, ? extends Integer> from,
             Map<? extends E, ? extends Integer> to,
             int fromFactor, int toFactor, int defaultValue) {
-        if (from.isEmpty() || to.isEmpty()){
-            return defaultValue;
-        }
-        int previousFromValue = 0;
         Object[] sortedFromKeys = from.keySet().toArray();
         Arrays.sort(sortedFromKeys, (first, second) -> Integer.compare(from.get(first), 
                 from.get(second)));
@@ -86,20 +82,19 @@ public final class CriteriaToolbox {
                 Object[] sortedToKeys = to.keySet().toArray();
                 Arrays.sort(sortedToKeys, (first, second) -> Integer.compare(to.get(first), 
                         to.get(second)));
-                int previousToValue = 0;
                 for (Object toKey : sortedToKeys){
                     if (toKey.equals(fromKey)){
-                        return fromFactor * previousFromValue + toFactor * previousToValue;
-                    }
-                    else {
-                        previousToValue = to.get(toKey);
+                        return fromFactor * from.get(fromKey) + toFactor * to.get(toKey);
                     }
                 }
                 throw new RuntimeException("Could not find common key " + fromKey + " in map " + to);
             }
-            previousFromValue = from.get(fromKey);
         }
-        return previousFromValue*fromFactor + Collections.max(to.values())*toFactor;
+        int defaultFromWeight = from.isEmpty() ? defaultValue : 
+                from.get(sortedFromKeys[sortedFromKeys.length-1])+1;
+        int defaultToWeight = to.isEmpty() ? defaultValue :
+                Collections.max(to.values()) + 1;
+        return defaultFromWeight*fromFactor + defaultToWeight*toFactor;
     }
     
     @Deprecated

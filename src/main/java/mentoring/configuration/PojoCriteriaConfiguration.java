@@ -21,17 +21,22 @@ public final class PojoCriteriaConfiguration extends CriteriaConfiguration<Perso
     private static final String YEAR_PROPERTY = "Promotion";
     private static final String ACTIVITIES_PROPERTY = "Métiers";
     private static final String MOTIVATION_PROPERTY = "Motivation";
-    private static final int MATURITE_MAX_2023 = 5;
-    private static final String SECTOR2023 = "Secteur";
-    private static final String MATURITY2023 = "Maturité";
-    private static final String JOB2023 = "Métier";
-    private static final String COMPANY2023 = "Entreprise";
+    private static final String SECTOR2024 = "Secteur";
+    private static final String MATURITY2024 = "Maturité";
+    private static final String JOB2024 = "Métier";
+    private static final String COMPANY2024 = "Entreprise";
     private static final int MATURITY_WEIGHT = 10;
     private static final Map<String, Integer> MEETING_INDICES = Map.of("oui",0,"sipossible",1,
             "pasnecessairement",2);
-    private static final String MEETING2023 = "Echanges";
+    private static final String MEETING2024 = "Echanges";
     private static final int MEETING_WEIGHT = 10;
-    private static final int INTEREST_AMPLIFIER2023 = 3;
+    private static final int INTEREST_AMPLIFIER2024 = 3;
+    private static final int SECTOR_MENTEE_WEIGHT = 150;
+    private static final int SECTOR_MENTOR_WEIGHT = 9;
+    private static final int JOB_MENTEE_WEIGHT = 50;
+    private static final int JOB_MENTOR_WEIGHT = 3;
+    private static final int COMPANY_MENTEE_WEIGHT = 1;
+    private static final int COMPANY_MENTOR_WEIGHT = 0;
     /** Configuration used in simple test cases. */
     public final static PojoCriteriaConfiguration CRITERIA_CONFIGURATION = 
             new PojoCriteriaConfiguration("Test criteria configuration", List.of(
@@ -57,14 +62,14 @@ public final class PojoCriteriaConfiguration extends CriteriaConfiguration<Perso
                     }), List.of((mentee, mentor) -> CriteriaToolbox.logicalNotAOrB(
                             mentee.getPropertyAs(ENGLISH_PROPERTY, Boolean.class),
                             mentor.getPropertyAs(ENGLISH_PROPERTY, Boolean.class))));
-    /** Configuration used for the preprocessed 2022 data set. */
-    public final static PojoCriteriaConfiguration CRITERIA_CONFIGURATION_2023_DATA =
-            new PojoCriteriaConfiguration("Criteria configuration for 2023 data",
+    /** Configuration used for the preprocessed 2024 data set. */
+    public final static PojoCriteriaConfiguration CRITERIA_CONFIGURATION_2024_DATA =
+            new PojoCriteriaConfiguration("Criteria configuration for 2024 data",
                     List.of(
                             (mentee, mentor) -> CriteriaToolbox.exponentialDistance(
                                     MEETING_INDICES, 
-                                    mentee.getPropertyAs(MEETING2023, String.class), 
-                                    mentor.getPropertyAs(MEETING2023, String.class), 
+                                    mentee.getPropertyAs(MEETING2024, String.class), 
+                                    mentor.getPropertyAs(MEETING2024, String.class), 
                                     MEETING_WEIGHT),
                             (mentee, mentor ) -> 
                                 YEAR_WEIGHT * Math.abs(
@@ -73,25 +78,34 @@ public final class PojoCriteriaConfiguration extends CriteriaConfiguration<Perso
                                         - mentor.getPropertyAs(
                                                 YEAR_PROPERTY, Year.class).getNormalizedYear()), 
                             (mentee, mentor) -> MATURITY_WEIGHT * 
-                                    Math.abs(mentee.getPropertyAs(MATURITY2023, 
+                                    Math.abs(mentee.getPropertyAs(MATURITY2024, 
                                             Integer.class)
-                                            - mentor.getPropertyAs(MATURITY2023, 
+                                            - mentor.getPropertyAs(MATURITY2024, 
                                                     Integer.class)), 
-                            (mentee, mentor) -> 150*INTEREST_AMPLIFIER2023
-                                    * CriteriaToolbox.computeBrutalAsymetricDistance(
-                                    mentee.getPropertyAsMapOf(SECTOR2023, String.class, 
-                                            Integer.class), 
-                                    mentor.getPropertyAsSetOf(SECTOR2023, String.class)), 
-                            (mentee, mentor) -> 50*INTEREST_AMPLIFIER2023
-                                    * CriteriaToolbox.computeBrutalAsymetricDistance(
-                                    mentee.getPropertyAsMapOf(JOB2023, String.class, 
-                                            Integer.class), 
-                                    mentor.getPropertyAsSetOf(JOB2023, String.class)), 
-                            (mentee, mentor) -> INTEREST_AMPLIFIER2023
-                                    * CriteriaToolbox.computeBrutalAsymetricDistance(
-                                    mentee.getPropertyAsMapOf(COMPANY2023, String.class, 
-                                            Integer.class), 
-                                    mentor.getPropertyAsSetOf(COMPANY2023, String.class))
+                            (mentee, mentor) -> INTEREST_AMPLIFIER2024
+                                    * CriteriaToolbox.computePreferenceMapSimilarityScore(
+                                            mentee.getPropertyAsMapOf(SECTOR2024, String.class,
+                                                    Integer.class),
+                                            mentor.getPropertyAsMapOf(SECTOR2024, String.class,
+                                                    Integer.class),
+                                            SECTOR_MENTEE_WEIGHT, SECTOR_MENTOR_WEIGHT,
+                                            3*(SECTOR_MENTEE_WEIGHT+SECTOR_MENTOR_WEIGHT)), 
+                            (mentee, mentor) -> INTEREST_AMPLIFIER2024
+                                    * CriteriaToolbox.computePreferenceMapSimilarityScore(
+                                            mentee.getPropertyAsMapOf(JOB2024, String.class, 
+                                                    Integer.class), 
+                                            mentor.getPropertyAsMapOf(JOB2024, String.class,
+                                                    Integer.class),
+                                            JOB_MENTEE_WEIGHT, JOB_MENTOR_WEIGHT,
+                                            3*(JOB_MENTEE_WEIGHT+JOB_MENTOR_WEIGHT)), 
+                            (mentee, mentor) -> INTEREST_AMPLIFIER2024
+                                    * CriteriaToolbox.computePreferenceMapSimilarityScore(
+                                            mentee.getPropertyAsMapOf(COMPANY2024, String.class, 
+                                                    Integer.class), 
+                                            mentor.getPropertyAsMapOf(COMPANY2024, String.class,
+                                                    Integer.class),
+                                            COMPANY_MENTEE_WEIGHT, COMPANY_MENTOR_WEIGHT,
+                                            3*(COMPANY_MENTEE_WEIGHT+COMPANY_MENTOR_WEIGHT))
                     ),
                     List.of((mentee, mentor) -> {
                         boolean found = false;

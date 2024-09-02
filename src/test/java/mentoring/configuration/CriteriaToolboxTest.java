@@ -51,15 +51,15 @@ class CriteriaToolboxTest implements TestFramework<Object>{
     @TestFactory
     Stream<DynamicNode> computePreferenceMapSimilarityScore_correctOutput(){
         return test(Stream.of(
-                new TwoMapsArgs("same first property", 0, Map.of(2, 1), Map.of(2,2,5,6),
+                new TwoMapsArgs("same first property", 102, Map.of(2, 1), Map.of(2,2,5,6),
                         100, 1, 12),
-                new TwoMapsArgs("multiple common property", 15, Map.of(2,1,5,2,6,4),
+                new TwoMapsArgs("multiple common property", 28, Map.of(2,1,5,2,6,4),
                         Map.of(6,5,5,8), 10, 1, 3),
-                new TwoMapsArgs("no common property", 26, Map.of(-5,1,0,2),
+                new TwoMapsArgs("no common property", 38, Map.of(-5,1,0,2),
                         Map.of(12,3),10,2, 5),
-                new TwoMapsArgs("empty from", -5, Map.of(), Map.of(2,1), 25, 6, -5),
-                new TwoMapsArgs("empty to", 150, Map.of(1,2), Map.of(), 25, 6, 150),
-                new TwoMapsArgs("both maps empty", 3, Map.of(), Map.of(), 25, 6, 3)),
+                new TwoMapsArgs("empty from", -38, Map.of(), Map.of(2,1), 25, 6, -2),
+                new TwoMapsArgs("empty to", 375, Map.of(1,2), Map.of(), 25, 2, 150),
+                new TwoMapsArgs("both maps empty", 93, Map.of(), Map.of(), 25, 6, 3)),
                 "computePreferenceMapSimilarityScore() returns the expected result", args ->
                         Assertions.assertEquals(args.expected,
                                 CriteriaToolbox.computePreferenceMapSimilarityScore(args.from, 

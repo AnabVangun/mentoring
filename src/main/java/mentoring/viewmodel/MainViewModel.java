@@ -331,7 +331,7 @@ public class MainViewModel {
                 PojoCriteriaConfiguration.CRITERIA_CONFIGURATION;
         List<CriteriaConfiguration<Person, Person>> values = 
                 List.of(PojoCriteriaConfiguration.CRITERIA_CONFIGURATION, 
-                        PojoCriteriaConfiguration.CRITERIA_CONFIGURATION_2023_DATA);
+                        PojoCriteriaConfiguration.CRITERIA_CONFIGURATION_2024_DATA);
         IOFunction<CriteriaConfiguration<Person, Person>> parser = file -> {
             throw new UnsupportedOperationException("not implemented yet");
         };
