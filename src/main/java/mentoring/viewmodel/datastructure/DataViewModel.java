@@ -12,7 +12,7 @@ import java.util.function.Function;
  */
 public abstract class DataViewModel<T> {
     //TODO add tests
-    private final Map<String, String> formattedData;
+    private final Map<String, Object> formattedData;
     private final T data;
     
     /**
@@ -20,9 +20,9 @@ public abstract class DataViewModel<T> {
      * @param data to encapsulate in the ViewModel
      * @param formatter used to prepare the data
      */
-    protected DataViewModel(T data, Function<T, Iterator<Map.Entry<String, String>>> formatter){
+    protected DataViewModel(T data, Function<T, Iterator<Map.Entry<String, Object>>> formatter){
         this.data = data;
-        Map<String, String> modifiableData = new HashMap<>();
+        Map<String, Object> modifiableData = new HashMap<>();
         formatter.apply(data).forEachRemaining(
                 entry -> modifiableData.put(entry.getKey(), entry.getValue()));
         this.formattedData = Collections.unmodifiableMap(modifiableData);
@@ -32,7 +32,7 @@ public abstract class DataViewModel<T> {
      * Get the encapsulated data formatted as a map of Strings.
      * @return the formatted data
      */
-    public Map<String, String> getFormattedData(){
+    public Map<String, Object> getFormattedData(){
         return formattedData;
     }
     

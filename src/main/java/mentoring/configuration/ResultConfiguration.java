@@ -30,7 +30,7 @@ public abstract class ResultConfiguration<Mentee, Mentor>
      */
     public static <Mentee, Mentor> ResultConfiguration<Mentee, Mentor> createForArrayLine(
             String configurationName, List<String> resultHeader,
-            Function<Match<Mentee, Mentor>, String[]> resultLineFormatter){
+            Function<Match<Mentee, Mentor>, Object[]> resultLineFormatter){
         requireArgumentsNonNull(configurationName, resultHeader, resultLineFormatter);
         return new ArrayResultConfiguration<>(configurationName, resultHeader, resultLineFormatter);
     }
@@ -47,7 +47,7 @@ public abstract class ResultConfiguration<Mentee, Mentor>
      */
     public static <Mentee, Mentor> ResultConfiguration<Mentee, Mentor> createForMapLine(
             String configurationName, List<String> resultHeader, 
-            Function<Match<Mentee, Mentor>, Map<String, String>> resultLineFormatter){
+            Function<Match<Mentee, Mentor>, Map<String, Object>> resultLineFormatter){
         requireArgumentsNonNull(configurationName, resultHeader, resultLineFormatter);
         return new MapResultConfiguration<>(configurationName, resultHeader, resultLineFormatter);
     }
@@ -77,7 +77,7 @@ public abstract class ResultConfiguration<Mentee, Mentor>
      * @return an array containing each of the properties expected in the output, in the same order 
      * as that defined by {@link #getResultHeader() }.
      */
-    public abstract String[] getResultLine(Match<Mentee, Mentor> match);
+    public abstract Object[] getResultLine(Match<Mentee, Mentor> match);
     
     /**
      * Generates the map corresponding to an input {@link Match} object.
@@ -85,27 +85,27 @@ public abstract class ResultConfiguration<Mentee, Mentor>
      * @return a map containing, for each property defined in {@link #getResultHeader() }, 
      * the corresponding output
      */
-    public abstract Map<String, String> getResultMap(Match<Mentee, Mentor> match);
+    public abstract Map<String, Object> getResultMap(Match<Mentee, Mentor> match);
     
     private static class ArrayResultConfiguration<Mentee, Mentor>
             extends ResultConfiguration<Mentee, Mentor> {
-        private final Function<Match<Mentee, Mentor>, String[]> resultLineFormatter;
+        private final Function<Match<Mentee, Mentor>, Object[]> resultLineFormatter;
 
         ArrayResultConfiguration(String configurationName, List<String> resultHeader,
-                Function<Match<Mentee, Mentor>, String[]> resultLineFormatter){
+                Function<Match<Mentee, Mentor>, Object[]> resultLineFormatter){
             super(configurationName, resultHeader);
             this.resultLineFormatter = resultLineFormatter;
         }
         
         @Override
-        public String[] getResultLine(Match<Mentee, Mentor> match){
+        public Object[] getResultLine(Match<Mentee, Mentor> match){
             return resultLineFormatter.apply(match);
         }
 
         @Override
-        public Map<String, String> getResultMap(Match<Mentee, Mentor> match){
-            String[] line = getResultLine(match);
-            Map<String, String> result = new HashMap<>();
+        public Map<String, Object> getResultMap(Match<Mentee, Mentor> match){
+            Object[] line = getResultLine(match);
+            Map<String, Object> result = new HashMap<>();
             for (int i = 0; i < line.length; i++){
                 result.put(super.resultHeader.get(i), line[i]);
             }
@@ -115,18 +115,18 @@ public abstract class ResultConfiguration<Mentee, Mentor>
     
     private static class MapResultConfiguration<Mentee, Mentor>
             extends ResultConfiguration<Mentee, Mentor> {
-        private final Function<Match<Mentee, Mentor>, Map<String, String>> resultLineFormatter;
+        private final Function<Match<Mentee, Mentor>, Map<String, Object>> resultLineFormatter;
         
         MapResultConfiguration(String configurationName, List<String> resultHeader,
-                Function<Match<Mentee, Mentor>, Map<String, String>> resultLineFormatter){
+                Function<Match<Mentee, Mentor>, Map<String, Object>> resultLineFormatter){
             super(configurationName, resultHeader);
             this.resultLineFormatter = resultLineFormatter;
         }
         
         @Override
-        public String[] getResultLine(Match<Mentee, Mentor> match){
-            Map<String, String> map = getResultMap(match);
-            String[] result = new String[super.resultHeader.size()];
+        public Object[] getResultLine(Match<Mentee, Mentor> match){
+            Map<String, Object> map = getResultMap(match);
+            Object[] result = new Object[super.resultHeader.size()];
             for (int i = 0; i < result.length ; i++){
                 result[i] = map.get(super.resultHeader.get(i));
             }
@@ -134,7 +134,7 @@ public abstract class ResultConfiguration<Mentee, Mentor>
         }
         
         @Override
-        public Map<String, String> getResultMap(Match<Mentee, Mentor> match){
+        public Map<String, Object> getResultMap(Match<Mentee, Mentor> match){
             return resultLineFormatter.apply(match);
         }
     }

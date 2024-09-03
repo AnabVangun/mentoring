@@ -79,8 +79,6 @@ public class MainViewModel {
                 Pair.of("CSV files", List.of("*.csv")),
                 Pair.of("All files", List.of("*.*")));
     
-    //FIXME make sure that matchesBuilderHandler receives the match configuration
-    //TODO check how forbidden matches are handled: maybe in two different ways?
     private final MatchesBuilderHandler<Person, Person> matchesBuilderHandler = 
             new MatchesBuilderHandler<>();
     
@@ -213,7 +211,6 @@ public class MainViewModel {
     public Future<?> addForbiddenMatch(PersonViewModel menteeVM, PersonViewModel mentorVM,
             AbstractTask.TaskCompletionCallback<? super Void> callback){
         //TODO refactor: forbidding a match should not need to be done twice
-        //FIXME currently, forbidding a match make both persons unmatchable.
         return taskHandler.submit(new ForbiddenMatchTask(extraForbiddenMatches, 
                 menteeVM.getData(), mentorVM.getData(), matchesBuilderHandler, callback));
     }

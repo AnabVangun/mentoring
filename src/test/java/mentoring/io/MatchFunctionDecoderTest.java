@@ -43,7 +43,7 @@ class MatchFunctionDecoderTest implements TestFramework<MatchFunctionDecoderArgs
                         Map.of(
                                 new MatchTest.MatchArgs("", builder.build(), builder.build(), 
                                         12).convertAs(Person.class, Person.class),
-                                "12")),
+                                12)),
                 new MatchFunctionDecoderArgs("multiple property",
                         MatchFunctionDecoder.MENTEE_TOKEN 
                                 + MatchFunctionDecoder.CUSTOM_MULTIPLE_PROPERTY_TOKEN + "Sports",
@@ -52,7 +52,7 @@ class MatchFunctionDecoderTest implements TestFramework<MatchFunctionDecoderArgs
                                         builder.withPropertyMap("Sports", Map.of(true, false))
                                                 .build(),
                                         builder.build(), 761).convertAs(Person.class, Person.class),
-                                Map.of(true, false).toString()))),
+                                Map.of(true, false)))),
                 "decodeMatchFunction() returns the correct function on valid input",
                 MatchFunctionDecoderArgs::assertFunctionIsCorrect);
     }
@@ -108,10 +108,10 @@ class MatchFunctionDecoderTest implements TestFramework<MatchFunctionDecoderArgs
     }
     
     static class MatchFunctionDecoderArgs extends 
-            AbstractFunctionBuilderArgs<Match<Person, Person>, String>{
+            AbstractFunctionBuilderArgs<Match<Person, Person>, Object>{
         
         MatchFunctionDecoderArgs(String testCase, String input, 
-                Map<Match<Person, Person>, String> verificationData){
+                Map<Match<Person, Person>, Object> verificationData){
             super(testCase, input, verificationData);
         }
         
@@ -120,7 +120,7 @@ class MatchFunctionDecoderTest implements TestFramework<MatchFunctionDecoderArgs
         }
         
         @Override
-        Function<Match<Person, Person>, String> convert(){
+        Function<Match<Person, Person>, Object> convert(){
             return MatchFunctionDecoder.decodeMatchFunction(input);
         }
     }

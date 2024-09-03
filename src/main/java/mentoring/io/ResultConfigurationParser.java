@@ -37,14 +37,14 @@ public final class ResultConfigurationParser extends Parser<ResultConfiguration<
                 buildLineFormatter(lineDescription));
     }
     
-    private static Function<Match<Person, Person>, String[]> buildLineFormatter(
+    private static Function<Match<Person, Person>, Object[]> buildLineFormatter(
             List<String> lineDescription){
-        List<Function<Match<Person, Person>, String>> functions = 
+        List<Function<Match<Person, Person>, Object>> functions = 
                 new ArrayList<>(lineDescription.size());
         lineDescription.forEach(column -> 
                 functions.add(MatchFunctionDecoder.decodeMatchFunction(column)));
         return args -> {
-            String[] result = new String[lineDescription.size()];
+            Object[] result = new Object[lineDescription.size()];
             for (int index = 0; index < result.length; index++){
                 result[index] = functions.get(index).apply(args);
             }

@@ -40,7 +40,12 @@ public final class ResultWriter<Mentee, Mentor> {
             writer.writeNext(resultConfiguration.getResultHeader().toArray(String[]::new));
         }
         for (Match<Mentee, Mentor> match : results){
-            writer.writeNext(resultConfiguration.getResultLine(match));
+            Object[] line = resultConfiguration.getResultLine(match);
+            String[] formattedLine = new String[line.length];
+            for (int i = 0; i < line.length; i++){
+                formattedLine[i] = line[i].toString();
+            }
+            writer.writeNext(formattedLine);
         }
     }
     

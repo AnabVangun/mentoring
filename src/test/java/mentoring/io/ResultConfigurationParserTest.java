@@ -7,7 +7,6 @@ import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Stream;
 import mentoring.configuration.ResultConfiguration;
 import mentoring.datastructure.Person;
@@ -19,7 +18,6 @@ import mentoring.io.datareader.YamlReader;
 import mentoring.match.Match;
 import mentoring.match.MatchTest.MatchArgs;
 import org.junit.jupiter.api.Assertions;
-import test.tools.TestToolbox;
 
 class ResultConfigurationParserTest implements ParserTest<ResultConfiguration<Person, Person>, 
         ResultConfigurationParser, ResultConfigurationParserArgs>{
@@ -31,7 +29,7 @@ class ResultConfigurationParserTest implements ParserTest<ResultConfiguration<Pe
                 new ResultConfigurationParserArgs("standard configuration", 
                         "validResultConfigurationTest.yaml", 
                         List.of("Mentoré", "Mentor", "Coût", "Propriété"),
-                        new String[][]{{"foo", "bar", "5", "Paris"},{"bar", "foo", "12", "Reims"}},
+                        new Object[][]{{"foo", "bar", 5, "Paris"},{"bar", "foo", 12, "Reims"}},
                         List.of(
                                 new MatchArgs("", builder.withFullName("foo").build(),
                                         builder.withFullName("bar")
@@ -40,14 +38,13 @@ class ResultConfigurationParserTest implements ParserTest<ResultConfiguration<Pe
                                 new MatchArgs("", builder.withFullName("bar").build(),
                                         builder.withFullName("foo")
                                                 .withProperty("Ville", "Reims").build(),
-                                        12).convertAs(Person.class, Person.class)),
-                        new YamlReader(), Map.of()),
+                                        12).convertAs(Person.class, Person.class))),
                 new ResultConfigurationParserArgs("configuration with complex persons",
                         "validComplexResultConfigurationTest.yaml",
                         List.of("Mentoré", "Première propriété", "Mentor", "Coût", 
                             "Deuxième propriété"),
-                        new Object[][]{{"foo1", Map.of("3","6","5","false"), "bar1", "962", "180"}, 
-                            {"bar2", Map.of("true","blood","taken","2"), "foo2", "0", "-51"}},
+                        new Object[][]{{"foo1", Map.of(3,6,5,false), "bar1", 962, 180}, 
+                            {"bar2", Map.of(true,"blood","taken",2), "foo2", 0, -51}},
                         List.of(
                                 new MatchArgs("", 
                                         builder.withFullName("foo1").withProperty("Anglais", true)
@@ -60,9 +57,7 @@ class ResultConfigurationParserTest implements ParserTest<ResultConfiguration<Pe
                                                 .withPropertyMap("Goûts", 
                                                         Map.of(true,"blood","taken",2)).build(),
                                         builder.withFullName("foo2").withProperty("Taille", -51).build(),
-                                        0).convertAs(Person.class, Person.class)), 
-                        new YamlReader(), 
-                        Map.of(1, s -> TestToolbox.recreateMap(s, String.class, String.class))));
+                                        0).convertAs(Person.class, Person.class))));
     }
     
     @Override
@@ -88,20 +83,18 @@ class ResultConfigurationParserTest implements ParserTest<ResultConfiguration<Pe
     
     static record ResultConfigurationParserArgs(String testCase, String filePath, 
             List<String> expectedResultHeader, Object[][] expectedResultLines, 
-            List<Match<Person, Person>> matchToPrint, DataReader reader, 
-            Map<Integer, Function<String, Object>> mapperFunctions, int specificErrorsCount) 
+            List<Match<Person, Person>> matchToPrint, DataReader reader, int specificErrorsCount) 
             implements ParserArgs<ResultConfiguration<Person, Person>, ResultConfigurationParser>{
         
         ResultConfigurationParserArgs(String testCase, String filePath, 
                 List<String> expectedResultHeader, Object[][] expectedResultLines, 
-                List<Match<Person, Person>> matchToPrint, DataReader reader, 
-                Map<Integer, Function<String, Object>> mapperFunctions){
+                List<Match<Person, Person>> matchToPrint){
             this(testCase, filePath, expectedResultHeader, expectedResultLines, matchToPrint, 
-                    reader, mapperFunctions, 0);
+                    new YamlReader(), 0);
         }
                 
         ResultConfigurationParserArgs(String testCase, String filePath, int specificErrorsCount){
-            this(testCase, filePath, null, null, null, new YamlReader(), null, specificErrorsCount);
+            this(testCase, filePath, null, null, null, new YamlReader(), specificErrorsCount);
         }
         
         @Override
@@ -122,13 +115,7 @@ class ResultConfigurationParserTest implements ParserTest<ResultConfiguration<Pe
         public void assertResultAsExpected(ResultConfiguration<Person, Person> actual) {
             Object[][] actualResults = new Object[expectedResultLines.length][];
             for (int i = 0; i < expectedResultLines.length; i++){
-                String[] line = actual.getResultLine(matchToPrint.get(i));
-                actualResults[i] = new Object[line.length];
-                for (int j = 0; j < line.length; j++){
-                    actualResults[i][j] = mapperFunctions.containsKey(j) 
-                            ? mapperFunctions.get(j).apply(line[j])
-                            : line[j];
-                }
+                actualResults[i] = actual.getResultLine(matchToPrint.get(i));
             }
             Assertions.assertAll("Result configuration is not as expected", 
                     () -> Assertions.assertEquals(testCase, actual.toString()),

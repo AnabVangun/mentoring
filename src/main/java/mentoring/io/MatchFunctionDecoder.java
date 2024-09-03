@@ -28,7 +28,7 @@ class MatchFunctionDecoder {
      * @param input a String containing the function to apply.
      * @return the function as a callable Java object.
      */
-    public static Function<Match<Person, Person>, String> decodeMatchFunction(String input){
+    public static Function<Match<Person, Person>, Object> decodeMatchFunction(String input){
         Function<Match<Person, Person>, Person> personAccessor;
         int prefixLength;
         if (input.startsWith(MENTOR_TOKEN)){
@@ -38,14 +38,13 @@ class MatchFunctionDecoder {
             personAccessor = Match::getMentee;
             prefixLength = MENTEE_TOKEN.length();
         } else if (input.equals(COST_TOKEN)){
-            return match -> Integer.toString(match.getCost());
+            return match -> match.getCost();
         } else {
             throw new IllegalArgumentException(
                     "Input string \"" + input + "\" could not be parsed as a match function");
         }
         return personAccessor
-                .andThen(decodePersonPropertyGetter(input.substring(prefixLength)))
-                .andThen(Object::toString);
+                .andThen(decodePersonPropertyGetter(input.substring(prefixLength)));
     }
     
     /**

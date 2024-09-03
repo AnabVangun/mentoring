@@ -20,11 +20,11 @@ class ResultConfigurationTest implements TestFramework<ResultConfigurationTestAr
     @SuppressWarnings("unchecked")
     public Stream<ResultConfigurationTestArgs> argumentsSupplier() {
         @SuppressWarnings("unchecked")
-        Function<Match<String,String>, String[]> arrayFormatter = Mockito.mock(Function.class);
+        Function<Match<String,String>, Object[]> arrayFormatter = Mockito.mock(Function.class);
         Mockito.when(arrayFormatter.apply(Mockito.any()))
-                .thenReturn(new String[]{"first value", "second value"});
+                .thenReturn(new Object[]{"first value", "second value"});
         @SuppressWarnings("unchecked")
-        Function<Match<String, String>, Map<String, String>> mapFormatter = 
+        Function<Match<String, String>, Map<String, Object>> mapFormatter = 
                 Mockito.mock(Function.class);
         Mockito.when(mapFormatter.apply(Mockito.any()))
                 .thenReturn(Map.of("first", "first value", "second", "second value"));
@@ -107,10 +107,10 @@ class ResultConfigurationTest implements TestFramework<ResultConfigurationTestAr
     
     static class ArrayResultConfigurationTestArgs extends ResultConfigurationTestArgs{
         @SuppressWarnings("unchecked")
-        final Function<Match<String, String>, String[]> formatter;
+        final Function<Match<String, String>, Object[]> formatter;
 
         public ArrayResultConfigurationTestArgs(String testCase, List<String> expectedHeader,
-                Function<Match<String, String>, String[]> formatter) {
+                Function<Match<String, String>, Object[]> formatter) {
             super(testCase, expectedHeader);
             this.formatter = formatter;
         }
@@ -123,10 +123,10 @@ class ResultConfigurationTest implements TestFramework<ResultConfigurationTestAr
     
     static class MapResultConfigurationTestArgs extends ResultConfigurationTestArgs{
         @SuppressWarnings("unchecked")
-        final Function<Match<String, String>, Map<String,String>> formatter;
+        final Function<Match<String, String>, Map<String,Object>> formatter;
 
         public MapResultConfigurationTestArgs(String testCase, List<String> expectedHeader,
-                Function<Match<String, String>, Map<String,String>> formatter) {
+                Function<Match<String, String>, Map<String,Object>> formatter) {
             super(testCase, expectedHeader);
             this.formatter = formatter;
         }

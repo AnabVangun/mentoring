@@ -79,7 +79,7 @@ class MatchViewModelTest implements TestFramework<MatchViewModelArgs>{
         final String other = "other";
         final Match<String, String> match = new MatchTest.MatchArgs("", "mentee", "mentor", 12)
                 .convertAs(String.class, String.class);
-        final Map<String, String> expectedResult = 
+        final Map<String, Object> expectedResult = 
                 Map.of("first", "first value", "second", "second value");
         final ResultConfiguration<String, String> configuration =
                 ResultConfiguration.createForMapLine("name", List.of("first", "second"),
@@ -97,7 +97,7 @@ class MatchViewModelTest implements TestFramework<MatchViewModelArgs>{
     static class StringViewModel extends DataViewModel<String> {
         
         StringViewModel(String content){
-            super(content, x -> Map.of("foo", "bar").entrySet().iterator());
+            super(content, x -> Map.of("foo", (Object) "bar").entrySet().iterator());
         }
     }
 }

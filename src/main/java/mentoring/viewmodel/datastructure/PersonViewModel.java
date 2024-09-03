@@ -16,10 +16,10 @@ public class PersonViewModel extends DataViewModel<Person>{
         super(person, p -> formatPerson(configuration, p));
     }
     
-    private static Iterator<Map.Entry<String, String>> formatPerson(
+    private static Iterator<Map.Entry<String, Object>> formatPerson(
             PersonConfiguration configuration, Person person) {
         //TODO test
-        Map<String, String> result = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();
         for(PropertyName<?> property : configuration.getSimplePropertiesNames()){
             result.put(property.getName(), property.getStringRepresentation(person));
         }

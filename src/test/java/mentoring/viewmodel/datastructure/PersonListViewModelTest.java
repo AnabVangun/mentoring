@@ -238,9 +238,9 @@ class PersonListViewModelTest extends ObservableTest<PersonListViewModel,
         void assertItemsAsExpected(PersonListViewModel viewModel, List<Person> data, 
                 PersonConfiguration configuration){
             List<PersonViewModel> toCheck = viewModel.getContent();
-            List<Map<String, String>> actual = toCheck.stream()
+            List<Map<String, Object>> actual = toCheck.stream()
                     .map(element -> element.getFormattedData()).toList();
-            List<Map<String, String>> expected = data.stream()
+            List<Map<String, Object>> expected = data.stream()
                     .map(element -> new PersonViewModel(configuration, element).getFormattedData())
                     .toList();
             Assertions.assertEquals(expected, actual);

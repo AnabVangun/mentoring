@@ -82,7 +82,7 @@ class ResultWriterTest implements TestFramework<ResultWriterArgs> {
             super(testCase);
             Iterator<String[]> results = List.of(new String[]{"3","4"}, new String[]{"5","6"}, 
                     new String[]{"7","8"}).iterator();
-            Function<Match<String, String>, String[]> lineFormatter = match -> results.next();
+            Function<Match<String, String>, Object[]> lineFormatter = match -> results.next();
             configuration = ResultConfiguration.createForArrayLine("ResultWriterArgs configuration", 
                     List.of("1","2"), lineFormatter);
             this.expectedResult = expectedResult;

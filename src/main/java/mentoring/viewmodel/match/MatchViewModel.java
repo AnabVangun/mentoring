@@ -13,18 +13,18 @@ import mentoring.viewmodel.datastructure.DataViewModel;
  * @param <Mentor> type of the second element of a {@link Match}.
  */
 public class MatchViewModel<Mentee, Mentor> {
-    private final ObservableMap<String, String> match;
+    private final ObservableMap<String, Object> match;
     private final Match<Mentee, Mentor> data;
     
     protected MatchViewModel(ResultConfiguration<Mentee, Mentor> configuration, 
             Match<Mentee, Mentor> match){
-        ObservableMap<String, String> modifiableMatch = 
+        ObservableMap<String, Object> modifiableMatch = 
                 FXCollections.observableMap(configuration.getResultMap(match));
         this.match = FXCollections.unmodifiableObservableMap(modifiableMatch);
         data = match;
     }
     
-    public ObservableMap<String, String> observableMatch(){
+    public ObservableMap<String, Object> observableMatch(){
         return match;
     }
     

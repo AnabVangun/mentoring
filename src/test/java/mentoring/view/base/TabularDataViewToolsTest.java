@@ -84,7 +84,7 @@ class TabularDataViewToolsTest implements TestFramework<TabularDataViewToolsArgs
         return viewModel;
     }
     
-    private static Function<String, Map<String, String>> forgeGetterProperty(List<String> headers){
+    private static Function<String, Map<String, Object>> forgeGetterProperty(List<String> headers){
         return input -> headers.stream().collect(Collectors.toMap(Function.identity(), 
                 header -> header + input));
     }
@@ -138,7 +138,7 @@ class TabularDataViewToolsTest implements TestFramework<TabularDataViewToolsArgs
             TableView<String> view = new TableView<>();
             List<String> headers = List.of("first", "second");
             TabularDataViewModel<String> viewModel = forgeViewModel(headers, List.of("foo"));
-            Function<String, Map<String, String>> propertyGetter = forgeGetterProperty(headers);
+            Function<String, Map<String, Object>> propertyGetter = forgeGetterProperty(headers);
             Assertions.assertAll(
                     assertUpdateTableThrowsNPE(null, viewModel, propertyGetter),
                     assertUpdateTableThrowsNPE(view, null, propertyGetter),
@@ -147,7 +147,7 @@ class TabularDataViewToolsTest implements TestFramework<TabularDataViewToolsArgs
     }
     
     private static <E> Executable assertUpdateTableThrowsNPE(TableView<E> table, 
-            TabularDataViewModel<E> viewModel, Function<E, Map<String, String>> propertyGetter) {
+            TabularDataViewModel<E> viewModel, Function<E, Map<String, Object>> propertyGetter) {
         return () -> Assertions.assertThrows(NullPointerException.class, 
                 () -> TabularDataViewTools.updateTable(table, viewModel, propertyGetter));
     }

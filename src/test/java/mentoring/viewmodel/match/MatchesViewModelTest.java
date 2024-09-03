@@ -85,7 +85,7 @@ class MatchesViewModelTest extends ObservableTest<
             Matches<String, String> content = new MatchesTest.MatchesArgs<>(
                     List.of(Pair.of("mentee", "mentor"))).convert();
             viewModel.setAll(content);
-            List<Map<String, String>> expectedContent = List.of(Map.of("unique","mentee"));
+            List<Map<String, Object>> expectedContent = List.of(Map.of("unique","mentee"));
             viewModel.setConfiguration(newConf);
             assertContentAsExpected(expectedContent, viewModel.getContent());
         });
@@ -115,7 +115,7 @@ class MatchesViewModelTest extends ObservableTest<
         return test("repeated calls to setAll() properly set the content", args -> {
             MatchesViewModel<String, String, MatchViewModel<String, String>> viewModel = 
                     args.convertAndSetContent();
-            List<Map<String, String>> expectedContent = 
+            List<Map<String, Object>> expectedContent = 
                     List.of(Map.of("first", "foo", "second", "bar"));
             viewModel.setAll(new MatchesTest.MatchesArgs<>(
                     List.of(Pair.of("foo", "bar"))).convert());
@@ -133,9 +133,9 @@ class MatchesViewModelTest extends ObservableTest<
         });
     }
     
-    private static void assertContentAsExpected(List<Map<String, String>> expectedContent,
+    private static void assertContentAsExpected(List<Map<String, Object>> expectedContent,
             List<MatchViewModel<String, String>> actualContent){
-        List<Map<String, String>> formattedContent = actualContent.stream()
+        List<Map<String, Object>> formattedContent = actualContent.stream()
                     .map(matchVM -> matchVM.observableMatch())
                     .collect(Collectors.toList());
             Assertions.assertEquals(expectedContent, formattedContent);
@@ -407,11 +407,11 @@ class MatchesViewModelTest extends ObservableTest<
             MatchesViewModel<String, String, MatchViewModel<String, String>>>{
         private final List<String> expectedHeader;
         private final Matches<String, String> input;
-        private final List<Map<String, String>> expectedContent;
+        private final List<Map<String, Object>> expectedContent;
         
         MatchesViewModelTestArgs(String testCase, List<String> expectedHeader,
                 List<Pair<? extends String, ? extends String>> input, 
-                List<Map<String, String>> expectedContent){
+                List<Map<String, Object>> expectedContent){
             super(testCase);
             this.expectedHeader = expectedHeader;
             this.input = new MatchesTest.MatchesArgs<>(input).convert();

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.util.Callback;
@@ -26,7 +26,7 @@ public class TabularDataViewTools {
      * each header defined in the ViewModel as keys.
      */
     public static <E> void updateTable(TableView<E> table, TabularDataViewModel<E> viewModel,
-            Function<E, Map<String, String>> propertyGetter){
+            Function<E, Map<String, Object>> propertyGetter){
         //No need to requireNonNull on table: the call to getColumns() will fail.
         Objects.requireNonNull(viewModel);
         Objects.requireNonNull(propertyGetter);
@@ -39,9 +39,9 @@ public class TabularDataViewTools {
     }
     
     private static <E> void addColumn(TableView<E> table, String header, 
-            Callback<TableColumn.CellDataFeatures<E, String>, Map<String, String>> propertiesGetter){
-        TableColumn<E, String> column = new WrappableTableColumn<>(header);
-        column.setCellValueFactory(p -> new SimpleStringProperty(
+            Callback<TableColumn.CellDataFeatures<E, Object>, Map<String, Object>> propertiesGetter){
+        TableColumn<E, Object> column = new WrappableTableColumn<>(header);
+        column.setCellValueFactory(p -> new SimpleObjectProperty<Object>(
                 propertiesGetter.call(p).get(header)));
         table.getColumns().add(column);
     }
