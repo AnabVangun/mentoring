@@ -167,7 +167,7 @@ public class MainViewModel {
      */
     public Future<?> makeSingleMatch(PersonViewModel menteeVM, PersonViewModel mentorVM,
             PersonMatchesViewModel resultVM, AbstractTask.TaskCompletionCallback<Object> callback){
-        return taskHandler.submit(new SingleMatchTask(resultVM, matchConfiguration, 
+        return taskHandler.submit(new SingleMatchTask(resultVM, matchesBuilderHandler, 
                 menteeVM.getData(), mentorVM.getData(), callback));
     }
     

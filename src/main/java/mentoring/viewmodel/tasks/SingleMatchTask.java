@@ -1,19 +1,17 @@
 package mentoring.viewmodel.tasks;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.Objects;
-import mentoring.configuration.CriteriaConfiguration;
+import java.util.concurrent.ExecutionException;
 import mentoring.datastructure.Person;
 import mentoring.match.Match;
 import mentoring.match.MatchesBuilder;
-import mentoring.viewmodel.base.ConfigurationPickerViewModel;
+import mentoring.match.MatchesBuilderHandler;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 
 public class SingleMatchTask extends AbstractTask<Match<Person, Person>> {
     
     private final PersonMatchesViewModel resultVM;
-    private final ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> criteriaVM;
+    private final MatchesBuilderHandler<Person, Person> builderHandler;
     private final Person mentee;
     private final Person mentor;
     private Match<Person, Person> result;
@@ -21,25 +19,25 @@ public class SingleMatchTask extends AbstractTask<Match<Person, Person>> {
     /**
      * Initialise a {@code SingleMatchTask} object.
      * @param resultVM the view model that will be updated when the task completes
-     * @param criteriaVM the ViewModel that will be used to get the configuration
+     * @param builderHandler the handler that will supply the {@link MatchesBuilder}
      * @param mentee the mentee to match
      * @param mentor the mentor to match
      * @param callback the method to call when the task has run
      */
-    public SingleMatchTask(PersonMatchesViewModel resultVM, 
-            ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> criteriaVM, 
+    public SingleMatchTask(PersonMatchesViewModel resultVM,
+            MatchesBuilderHandler<Person, Person> builderHandler,
             Person mentee, Person mentor, 
             TaskCompletionCallback<? super Match<Person, Person>> callback) {
         super(callback);
         this.resultVM = Objects.requireNonNull(resultVM);
-        this.criteriaVM = Objects.requireNonNull(criteriaVM);
+        this.builderHandler = Objects.requireNonNull(builderHandler);
         this.mentee = Objects.requireNonNull(mentee);
         this.mentor = Objects.requireNonNull(mentor);
     }
 
     @Override
     protected Match<Person, Person> call() throws Exception {
-        result = makeMatchWithException(criteriaVM, mentee, mentor);
+        result = makeMatchWithException(builderHandler, mentee, mentor);
         return result;
     }
 
@@ -49,22 +47,9 @@ public class SingleMatchTask extends AbstractTask<Match<Person, Person>> {
     }
 
     private static Match<Person, Person> makeMatchWithException(
-            ConfigurationPickerViewModel<CriteriaConfiguration<Person,Person>> criteriaVM, 
+            MatchesBuilderHandler<Person, Person> builderHandler, 
             Person mentee,
-            Person mentor) throws IOException {
-        //Get criteria configuration
-        CriteriaConfiguration<Person, Person> criteriaConfiguration = criteriaVM.getConfiguration();
-        //Build match
-        return matchMenteeAndMentor(mentee, mentor, criteriaConfiguration);
-    }
-
-    private static Match<Person, Person> matchMenteeAndMentor(Person mentee, Person mentor, 
-            CriteriaConfiguration<Person, Person> criteriaConfiguration) {
-        //TODO: MatchMaker should handle the MatchesBuilder object so that there is no need to
-        //recreate one each time.
-        MatchesBuilder<Person, Person> solver = new MatchesBuilder<>(List.of(mentee), List.of(mentor),
-                criteriaConfiguration.getProgressiveCriteria());
-        solver.withNecessaryCriteria(criteriaConfiguration.getNecessaryCriteria());
-        return solver.buildSingleMatch(mentee, mentor);
+            Person mentor) throws InterruptedException, ExecutionException {
+        return builderHandler.get().buildSingleMatch(mentee, mentor);
     }
 }
