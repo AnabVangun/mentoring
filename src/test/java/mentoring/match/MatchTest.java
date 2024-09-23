@@ -15,7 +15,7 @@ public final class MatchTest implements TestFramework<MatchTest.MatchArgs>{
                 new MatchArgs("negative cost", Byte.MAX_VALUE, Long.MIN_VALUE, -27));
     }
     
-    public Stream<MatchPairOfArgs> argumentPairsSupplier(){
+    Stream<MatchPairOfArgs> argumentPairsSupplier(){
         return Stream.of(
                 new MatchPairOfArgs("same types of mentees and mentors", 
                         new MatchArgs("first element", "mentee", "mentor", 12), 

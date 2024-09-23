@@ -29,7 +29,7 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
     //TODO refactor to extract allowMatch and forbidMatch and share them with builder
     //FIXME currently, allowMatch and forbidMatch do not reset when the person list change
     //TODO optimise: when #get() is called several times without changing the parameters, do not
-    //recompute result
+    //recompute result. Make sure that if a builder is reused, then allowMatch is properly used
     /**
      * Instantiates a MatchesBuilderHandler instance.
      */
