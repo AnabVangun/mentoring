@@ -9,7 +9,7 @@ public class Main {
     }
     /**
      * TODO: link GUI to code.
-     * Handle refactoring TODOs starting
+     * Handle refactoring TODOs
      * Add status for person: "not matched", "manual match", "automated match"
      * 7. Add an indicator for when "Run" should be clicked
      * 9a. Add global configuration parameters for magic numbers.

@@ -3,7 +3,7 @@ package mentoring.viewmodel.tasks;
 import java.util.stream.Stream;
 import mentoring.datastructure.Person;
 import mentoring.datastructure.PersonBuilder;
-import mentoring.match.MatchesBuilderHandler;
+import mentoring.match.ForbiddenMatches;
 import mentoring.viewmodel.datastructure.ForbiddenMatchListViewModel;
 import mentoring.viewmodel.tasks.ForbiddenMatchTaskTest.ForbiddenMatchTaskArgs;
 import org.junit.jupiter.api.Assertions;
@@ -30,7 +30,7 @@ class ForbiddenMatchTaskTest implements TestFramework<ForbiddenMatchTaskArgs>{
                 Assertions.fail("normally unreachable code", e);
             }
             task.succeeded();
-            Mockito.verify(args.vm).addForbiddenMatch(args.mentee, args.mentor, args.handler);
+            Mockito.verify(args.vm).addForbiddenMatch(args.mentee, args.mentor);
         });
     }
     
@@ -51,7 +51,7 @@ class ForbiddenMatchTaskTest implements TestFramework<ForbiddenMatchTaskArgs>{
     }
     
     static Executable assertConstructorThrowsNPE(ForbiddenMatchListViewModel viewModel, 
-            Person mentee, Person mentor, MatchesBuilderHandler<Person, Person> handler, 
+            Person mentee, Person mentor, ForbiddenMatches<Person, Person> handler, 
             AbstractTask.TaskCompletionCallback<? super Void> callback,
             String message){
         return () -> Assertions.assertThrows(NullPointerException.class, () -> 
@@ -63,7 +63,7 @@ class ForbiddenMatchTaskTest implements TestFramework<ForbiddenMatchTaskArgs>{
         final Person mentee;
         final Person mentor;
         @SuppressWarnings("unchecked")
-        final MatchesBuilderHandler<Person, Person> handler = Mockito.mock(MatchesBuilderHandler.class);
+        final ForbiddenMatches<Person, Person> handler = new ForbiddenMatches<>();
         final AbstractTask.TaskCompletionCallback<Object> callback = task -> {};
         
         ForbiddenMatchTaskArgs(String testCase){

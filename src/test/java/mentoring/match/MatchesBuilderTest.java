@@ -10,8 +10,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
-import org.mockito.Mockito;
-import org.opentest4j.AssertionFailedError;
 import test.tools.TestArgs;
 import test.tools.TestFramework;
 
@@ -148,30 +146,54 @@ final class MatchesBuilderTest implements TestFramework<MatchesBuilderTest.Match
     }
     
     @TestFactory
-    Stream<DynamicNode> forbidMatch_forwardToHandler(){
-        @SuppressWarnings("unchecked")
-        CostMatrixHandler<Integer,Integer> handler = Mockito.mock(CostMatrixHandler.class);
-        Stream<HandlerMatchesBuilderArgs> testCase = Stream.of(
-                new HandlerMatchesBuilderArgs("minimal test case", null, 
-                        List.of(3,2), List.of(5,6), handler));
-        return test(testCase, "forbidMatch() forwards the call to the handler", args -> {
-            MatchesBuilder<Integer, Integer> builder = args.convert();
-            builder.forbidMatch(3, 6);
-            Mockito.verify(handler).forbidMatch(0, 1);
+    Stream<DynamicNode> defaultMatchesBuilderWithForbiddenMatchesWorks(){
+        int prohibitiveCost = 2000;
+        int standardCost = 5;
+        Matches<Integer,Integer> expectedMatches = new Matches<>(List.of(
+                new Match<>(0,0,prohibitiveCost), new Match<>(1,1,prohibitiveCost)));
+        Stream<PublicMatchesBuilderArgs> testCase = Stream.of(
+                new PublicMatchesBuilderArgs("minimal test case", expectedMatches, 
+                        List.of(0,1), List.of(0,1), 
+                        List.of((mentee, mentor) -> 
+                                mentee.equals(mentor) ? prohibitiveCost : standardCost)
+                ));
+        return test(testCase, "build() with forbidden matches works", args -> {
+            MatchesBuilder<Integer,Integer> builder = args.convert();
+            ForbiddenMatches<Integer, Integer> forbiddenMatches = new ForbiddenMatches<>();
+            builder.withForbiddenMatches(forbiddenMatches);
+            forbiddenMatches.forbidMatch(0, 1);
+            assertMatchesEquals(args.expectedMatches, builder.build());
         });
     }
     
     @TestFactory
-    Stream<DynamicNode> allowMatch_forwardToHandler(){
-        @SuppressWarnings("unchecked")
-        CostMatrixHandler<Integer,Integer> handler = Mockito.mock(CostMatrixHandler.class);
-        Stream<HandlerMatchesBuilderArgs> testCase = Stream.of(
-                new HandlerMatchesBuilderArgs("minimal test case", null, 
-                        List.of(3,2), List.of(5,6), handler));
-        return test(testCase, "allowMatch() forwards the call to the handler", args -> {
-            MatchesBuilder<Integer, Integer> builder = args.convert();
-            builder.allowMatch(2, 5);
-            Mockito.verify(handler).allowMatch(1, 0);
+    Stream<DynamicNode> defaultMatchesBuilderWithForbiddenMatchesWorksWithPartialBuild(){
+        Matches<Integer,Integer> expectedMatch = new Matches<>(List.of(new Match<>(2,10,20)));
+        Stream<PublicPartialMatchesBuilderArgs> testCase = Stream.of(
+                new PublicPartialMatchesBuilderArgs("one valid match and an unassigned mentor", 
+                        expectedMatch, 
+                        List.of(2, 4, 6), List.of(5, 10, 15), 
+                        List.of((mentee, mentor) -> mentee*mentor),
+                        List.of(2, 6), List.of(10,5),
+                        null),
+                new PublicPartialMatchesBuilderArgs("one valid match and an unassigned mentee",
+                        expectedMatch,
+                        List.of(2, 4), List.of(5, 10, 15, 20),
+                        List.of((mentee, mentor) -> mentee*mentor), 
+                        List.of(4,2), List.of(5, 20, 10),
+                        null));
+        return test(testCase, "build() with forbidden matches works", args -> {
+            MatchesBuilder<Integer,Integer> builder = args.convert();
+            ForbiddenMatches<Integer, Integer> forbiddenMatches = new ForbiddenMatches<>();
+            for (Integer mentee: args.mentees){
+                for (Integer mentor: args.mentors){
+                    forbiddenMatches.forbidMatch(mentee, mentor);
+                }
+            }
+            forbiddenMatches.allowMatch(2, 10);
+            builder.withForbiddenMatches(forbiddenMatches);
+            assertMatchesEquals(args.expectedMatches, 
+                    builder.build(args.partialMentees, args.partialMentors));
         });
     }
     

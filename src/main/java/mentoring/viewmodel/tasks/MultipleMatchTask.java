@@ -14,14 +14,7 @@ import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
 
 public class MultipleMatchTask extends AbstractTask<Void> {
-    //TODO this class has become too complex, refactor to simplify and refactor test class accordingly
-    /*
-    In MainViewModel, when configuration is selected, generate a MatchesBuilder
-        <-- not so easy, need to fuse the results of PersonGetter and ConfigurationGetter
-    Modify forbiddenMatchTask and forbiddenMatchRemovalTask to modify MatchesBuilder
-    Modify SingleMatchTask to use MatchesBuilder
-    Here, Replace mentees, mentors, criteriaVM and forbiddenMatchesVM with a MatchesBuilder
-    */
+    //TODO consider getting the mentees and mentors from the builderHandler rather than as args.
     private final PersonMatchesViewModel resultVM;
     private final PersonMatchesViewModel excludedMatchesVM;
     private final List<Person> mentees;

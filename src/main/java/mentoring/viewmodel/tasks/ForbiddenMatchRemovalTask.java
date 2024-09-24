@@ -2,7 +2,7 @@ package mentoring.viewmodel.tasks;
 
 import java.util.Objects;
 import mentoring.datastructure.Person;
-import mentoring.match.MatchesBuilderHandler;
+import mentoring.match.ForbiddenMatches;
 import mentoring.viewmodel.datastructure.ForbiddenMatchListViewModel;
 import mentoring.viewmodel.datastructure.ForbiddenMatchViewModel;
 
@@ -12,10 +12,10 @@ import mentoring.viewmodel.datastructure.ForbiddenMatchViewModel;
 public class ForbiddenMatchRemovalTask extends AbstractTask<Void>{
     private final ForbiddenMatchListViewModel list;
     private final ForbiddenMatchViewModel toRemove;
-    private final MatchesBuilderHandler<Person, Person> handler;
+    private final ForbiddenMatches<Person, Person> handler;
     
     public ForbiddenMatchRemovalTask(ForbiddenMatchListViewModel list, 
-            ForbiddenMatchViewModel toRemove, MatchesBuilderHandler<Person, Person> handler,
+            ForbiddenMatchViewModel toRemove, ForbiddenMatches<Person, Person> handler,
             TaskCompletionCallback<? super Void> callback) {
         super(callback);
         this.list = Objects.requireNonNull(list);
@@ -25,6 +25,8 @@ public class ForbiddenMatchRemovalTask extends AbstractTask<Void>{
     
     @Override
     protected Void call(){
+        //TODO consider restoring symmetry with ForbiddenMatchTask
+        //It requires to get the mentee and mentor from toRemove
         return null;
     }
     

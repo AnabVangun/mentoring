@@ -189,10 +189,11 @@ public class MainView implements Initializable {
     }
     
     private void getConfiguration(){
-        //TODO signal to vm that configuration is being loaded. When configuration is fully loaded, generate MatchesBuilder
+        //TODO signal to vm that configuration is being loaded.
         getPersons();
         getResultConfiguration();
         clearMatches();
+        //TODO coordinate clearing forbiddenMatches between MatchesBuilderHandler and MainViewModel
         vm.getForbiddenMatches().clear();
     }
     

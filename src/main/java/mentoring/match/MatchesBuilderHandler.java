@@ -1,13 +1,8 @@
 package mentoring.match;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 //TODO refactor: here, mentoring.match relies on mentoring.configuration and vice-versa.
@@ -25,15 +20,16 @@ import mentoring.configuration.CriteriaConfiguration;
  */
 public class MatchesBuilderHandler<Mentee, Mentor> {
     private final SupplierList suppliers = new SupplierList();
-    private final Map<Mentee,Set<Mentor>> forbiddenMatches = new HashMap<>();
-    //TODO refactor to extract allowMatch and forbidMatch and share them with builder
-    //FIXME currently, allowMatch and forbidMatch do not reset when the person list change
     //TODO optimise: when #get() is called several times without changing the parameters, do not
     //recompute result. Make sure that if a builder is reused, then allowMatch is properly used
     /**
      * Instantiates a MatchesBuilderHandler instance.
      */
     public MatchesBuilderHandler(){}
+    
+    public ForbiddenMatches<Mentee, Mentor> getForbiddenMatches(){
+        return suppliers.forbiddenMatches;
+    }
     
     /**
      * Forges a MatchesBuilder if necessary and returns it.
@@ -59,21 +55,10 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
                     && parameters.placeholderMentor != null){
                 builder.withPlaceholderPersons(parameters.placeholderMentee, 
                         parameters.placeholderMentor);
+            builder.withForbiddenMatches(parameters.forbiddenMatches);
             }
         } catch (InterruptedException ex) {
             throw new InterruptedException();
-        }
-        synchronized(this){
-            /*
-            FIXME: race condition, forbiddenMatches may have been cleared by concurrent calls to 
-            setMenteesSupplier or setMentorsSupplier. A copy should be made in the first atomic copy.
-            */
-            for (Entry<Mentee, Set<Mentor>> entry: forbiddenMatches.entrySet()){
-                Mentee mentee = entry.getKey();
-                for (Mentor mentor : entry.getValue()){
-                    builder.forbidMatch(mentee, mentor);
-                }
-            }
         }
         return builder;
     }
@@ -85,9 +70,11 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
      * @param menteesSupplier list of mentees encapsulated in a Future container
      */
     public synchronized void setMenteesSupplier(Future<List<Mentee>> menteesSupplier){
-        forbiddenMatches.clear();
         suppliers.menteesSupplier = Objects.requireNonNull(menteesSupplier, 
                 "mentees supplier cannot be null");
+        /*TODO coordinate: it is likely that setMenteesSupplier and SetMentorsSupplier will be both
+        called, no need to create two ForbiddenMatches each time*/
+        suppliers.forbiddenMatches = new ForbiddenMatches<>();
     }
     
     /**
@@ -97,9 +84,9 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
      * @param mentorsSupplier list of mentors encapsulated in a Future container
      */
     public synchronized void setMentorsSupplier(Future<List<Mentor>> mentorsSupplier){
-        forbiddenMatches.clear();
         suppliers.mentorsSupplier = Objects.requireNonNull(mentorsSupplier,
                 "mentors supplier cannot be null");
+        suppliers.forbiddenMatches = new ForbiddenMatches<>();
     }
     
     /**
@@ -134,41 +121,13 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
         suppliers.placeholderMentorSupplier = defaultMentor;
     }
     
-    /**
-     * Forbids matches between the input mentee and mentor.
-     * All successive calls to this method are forwarded to all successive instances of 
-     * {@link MatchesBuilder} that use the same mentees and mentors as the one available when the
-     * call to this method was made. When the mentees and/or mentors change, the list of 
-     * forbidden matches is cleared.
-     * @param mentee that cannot be matched with the mentor
-     * @param mentor that cannot be matched with the mentee
-     */
-    public synchronized void forbidMatch(Mentee mentee, Mentor mentor){
-        if(!forbiddenMatches.containsKey(mentee)){
-            forbiddenMatches.put(mentee, new HashSet<>());
-        }
-        forbiddenMatches.get(mentee).add(mentor);
-    }
-    
-    /**
-     * Allows matches between the input mentee and mentor.
-     * Cancels a previous call to {@link #forbidMatch(java.lang.Object, java.lang.Object) }, has no
-     * effect if no such call has been made.
-     * @param mentee that can be matched with the mentor
-     * @param mentor that can be matched with the mentee
-     */
-    public synchronized void allowMatch(Mentee mentee, Mentor mentor){
-        if(forbiddenMatches.containsKey(mentee) && forbiddenMatches.get(mentee).contains(mentor)){
-            forbiddenMatches.get(mentee).remove(mentor);
-        }
-    }
-    
     private class SupplierList {
         Future<List<Mentee>> menteesSupplier;
         Future<List<Mentor>> mentorsSupplier;
         Future<CriteriaConfiguration<Mentee, Mentor>> criteriaSupplier;
         Future<Mentee> placeholderMenteeSupplier;
         Future<Mentor> placeholderMentorSupplier;
+        ForbiddenMatches<Mentee, Mentor> forbiddenMatches = new ForbiddenMatches<>();
         
         SupplierList(){}
         
@@ -180,6 +139,7 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
                 result.criteriaSupplier = criteriaSupplier;
                 result.placeholderMenteeSupplier = placeholderMenteeSupplier;
                 result.placeholderMentorSupplier = placeholderMentorSupplier;
+                result.forbiddenMatches = forbiddenMatches;
             }
             return result;
         }
@@ -191,6 +151,7 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
         CriteriaConfiguration<Mentee, Mentor> criteria;
         Mentee placeholderMentee;
         Mentor placeholderMentor;
+        ForbiddenMatches<Mentee, Mentor> forbiddenMatches;
         
         ParametersList(SupplierList suppliers) throws IllegalStateException, InterruptedException,
                 ExecutionException {
@@ -204,6 +165,7 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
             if(suppliers.placeholderMentorSupplier != null){
                 placeholderMentor = suppliers.placeholderMentorSupplier.get();
             }
+            forbiddenMatches = suppliers.forbiddenMatches;
         }
     
         private void verifyMandatorySuppliers(SupplierList suppliers) throws IllegalStateException {

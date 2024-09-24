@@ -26,7 +26,7 @@ public class PersonViewModel extends DataViewModel<Person>{
         for(PropertyName<?> property : configuration.getMultiplePropertiesNames()){
             result.put(property.getName(), property.getStringRepresentation(person));
         }
-        //FIXME: if a column is called "Name", there will be a conflict here
+        //FIXME: if a column is called "Name", there will be a conflict here + internationalise
         result.put("Name", person.getFullName());
         return result.entrySet().iterator();
     }

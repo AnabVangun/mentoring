@@ -96,7 +96,7 @@ public class MainViewModel {
             personConfigurations.put(type, forgePersonConfigurationPickerViewModel());
             personPickers.put(type, forgePersonListPickerViewModel(type));
         }
-        /*FIXME: defaultMentee and defaultMentor should be configured somewhere
+        /*FIXME: defaultMentee and defaultMentor should be configured somewhere else
         (probably in result configuration).
         Additionally, this is really ugly. 
         Maybe a DummyFuture as used in tests would be more appropriate?
@@ -210,9 +210,9 @@ public class MainViewModel {
      */
     public Future<?> addForbiddenMatch(PersonViewModel menteeVM, PersonViewModel mentorVM,
             AbstractTask.TaskCompletionCallback<? super Void> callback){
-        //TODO refactor: forbidding a match should not need to be done twice
         return taskHandler.submit(new ForbiddenMatchTask(extraForbiddenMatches, 
-                menteeVM.getData(), mentorVM.getData(), matchesBuilderHandler, callback));
+                menteeVM.getData(), mentorVM.getData(), matchesBuilderHandler.getForbiddenMatches(), 
+                callback));
     }
     
     /**
@@ -223,9 +223,8 @@ public class MainViewModel {
      */
     public Future<?> removeForbiddenMatch(ForbiddenMatchViewModel toRemove,
             AbstractTask.TaskCompletionCallback<? super Void> callback){
-        //TODO refactor: forbidding a match should not need to be done twice
         return taskHandler.submit(new ForbiddenMatchRemovalTask(extraForbiddenMatches, 
-                toRemove, matchesBuilderHandler,
+                toRemove, matchesBuilderHandler.getForbiddenMatches(),
                 callback));
     }
     

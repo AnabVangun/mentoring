@@ -33,6 +33,7 @@ public final class MatchesBuilder<Mentee, Mentor> {
     private Mentee defaultMentee;
     private Mentor defaultMentor;
     private boolean hasPlaceholderPersons = false;
+    private ForbiddenMatches<Mentee, Mentor> forbiddenMatches = null;
     
     /**
      * Instantiates a default MatchesBuilder instance.
@@ -67,25 +68,26 @@ public final class MatchesBuilder<Mentee, Mentor> {
     }
     
     /**
+     * Sets the handler keeping track of forbidden matches.
+     * @param forbiddenMatches used when building the matches
+     * @return the same builder instance
+     */
+    public MatchesBuilder<Mentee, Mentor> withForbiddenMatches(
+            ForbiddenMatches<Mentee, Mentor> forbiddenMatches){
+        this.forbiddenMatches = forbiddenMatches;
+        return this;
+    }
+    
+    /**
      * Forbids matches between the input mentee and mentor.
      * @param mentee that cannot be matched with the mentor
      * @param mentor that cannot be matched with the mentee
      * @return true if the match was allowed and has been forbidden, false if it was already 
      * forbidden
      */
+    @Deprecated
     public boolean forbidMatch(Mentee mentee, Mentor mentor){
         return costMatrixHandler.forbidMatch(getMenteeIndex(mentee), getMentorIndex(mentor));
-    }
-    
-    /**
-     * Allows matches between the input mentee and mentor.
-     * @param mentee that can be matched with the mentor
-     * @param mentor that can be matched with the mentee
-     * @return true if the match was forbidden and has been allowed, false if it was already 
-     * allowed
-     */
-    public boolean allowMatch(Mentee mentee, Mentor mentor){
-        return costMatrixHandler.allowMatch(getMenteeIndex(mentee), getMentorIndex(mentor));
     }
     
     private int getMenteeIndex(Mentee mentee){
@@ -141,6 +143,9 @@ public final class MatchesBuilder<Mentee, Mentor> {
      * @return an optimal assignment between the mentees and the mentors.
      */
     public Matches<Mentee, Mentor> build(){
+        if (forbiddenMatches != null){
+            forbiddenMatches.apply(costMatrixHandler, this::getMenteeIndex, this::getMentorIndex);
+        }
         Result rawResult = costMatrixHandler.solveCostMatrix(solver);
         return formatResult(rawResult,
                 IntStream.range(0, mentees.size()).boxed().collect(Collectors.toList()),
@@ -159,6 +164,9 @@ public final class MatchesBuilder<Mentee, Mentor> {
             throws IllegalArgumentException{
         List<Integer> menteeIndices = getIndices(mentees, this.mentees, "mentee");
         List<Integer> mentorIndices = getIndices(mentors, this.mentors, "mentor");
+        if (forbiddenMatches != null){
+            forbiddenMatches.apply(costMatrixHandler, this::getMenteeIndex, this::getMentorIndex);
+        }
         Result rawResult = costMatrixHandler.solvePartialCostMatrix(solver, menteeIndices, 
                 mentorIndices);
         return formatResult(rawResult, menteeIndices, mentorIndices);

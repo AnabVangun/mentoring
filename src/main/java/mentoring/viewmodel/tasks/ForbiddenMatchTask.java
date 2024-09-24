@@ -2,7 +2,7 @@ package mentoring.viewmodel.tasks;
 
 import java.util.Objects;
 import mentoring.datastructure.Person;
-import mentoring.match.MatchesBuilderHandler;
+import mentoring.match.ForbiddenMatches;
 import mentoring.viewmodel.datastructure.ForbiddenMatchListViewModel;
 
 /**
@@ -12,10 +12,10 @@ public class ForbiddenMatchTask extends AbstractTask<Void>{
     private final ForbiddenMatchListViewModel list;
     private final Person mentee;
     private final Person mentor;
-    private final MatchesBuilderHandler<Person, Person> handler;
+    private final ForbiddenMatches<Person, Person> handler;
     
     public ForbiddenMatchTask(ForbiddenMatchListViewModel list, Person mentee, Person mentor,
-            MatchesBuilderHandler<Person, Person> handler,
+            ForbiddenMatches<Person, Person> handler,
             TaskCompletionCallback<? super Void> callback){
         super(callback);
         this.list = Objects.requireNonNull(list);
@@ -26,11 +26,15 @@ public class ForbiddenMatchTask extends AbstractTask<Void>{
     
     @Override
     protected Void call(){
+        if(! handler.forbidMatch(mentee, mentor)){
+            throw new RuntimeException("Could not forbid match between mentee %s and mentor %s"
+                    .formatted(mentee, mentor));
+        }
         return null;
     }
     
     @Override
     protected void specificActionOnSuccess(){
-        list.addForbiddenMatch(mentee, mentor, handler);
+        list.addForbiddenMatch(mentee, mentor);
     }
 }

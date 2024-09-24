@@ -1,13 +1,11 @@
 package mentoring.viewmodel.datastructure;
 
-import java.util.List;
 import java.util.stream.Stream;
 import javafx.beans.InvalidationListener;
 import javafx.collections.ObservableList;
 import mentoring.datastructure.Person;
 import mentoring.datastructure.PersonBuilder;
-import mentoring.match.MatchesBuilderHandler;
-import mentoring.match.NecessaryCriterion;
+import mentoring.match.ForbiddenMatches;
 import mentoring.viewmodel.datastructure.ForbiddenMatchListViewModelTest.ForbiddenMatchListViewModelArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
@@ -40,10 +38,9 @@ class ForbiddenMatchListViewModelTest implements TestFramework<ForbiddenMatchLis
             PersonBuilder builder = new PersonBuilder();
             Person mentee = builder.withFullName("mentee").build();
             Person mentor = builder.withFullName("mentor").build();
-            boolean actuallyUpdated = vm.addForbiddenMatch(mentee, mentor, args.mockedHandler);
+            vm.addForbiddenMatch(mentee, mentor);
             ForbiddenMatchViewModel added = vm.getContent().get(0);
             Assertions.assertAll(
-                    () -> Assertions.assertTrue(actuallyUpdated),
                     () -> Mockito.verify(listener).invalidated(observable),
                     () -> Assertions.assertEquals(1, vm.getContent().size()),
                     () -> Assertions.assertEquals(mentee, added.getMentee()),
@@ -60,12 +57,12 @@ class ForbiddenMatchListViewModelTest implements TestFramework<ForbiddenMatchLis
             PersonBuilder builder = new PersonBuilder();
             Person mentee = builder.withFullName("mentee").build();
             Person mentor = builder.withFullName("mentor").build();
-            vm.addForbiddenMatch(mentee, mentor, args.mockedHandler);
+            vm.addForbiddenMatch(mentee, mentor);
+            args.handler.forbidMatch(mentee, mentor);
             ForbiddenMatchViewModel added = vm.getContent().get(0);
             observable.addListener(listener);
-            boolean actuallyUpdated = vm.removeForbiddenMatch(added, args.mockedHandler);
+            vm.removeForbiddenMatch(added, args.handler);
             Assertions.assertAll(
-                    () -> Assertions.assertTrue(actuallyUpdated),
                     () -> Mockito.verify(listener).invalidated(observable),
                     () -> Assertions.assertEquals(0, vm.getContent().size()));
         });
@@ -97,84 +94,21 @@ class ForbiddenMatchListViewModelTest implements TestFramework<ForbiddenMatchLis
     }
     
     @TestFactory
-    Stream<DynamicNode> addForbiddenMatch_noOpIfAlreadyThere(){
-        return test("addForbiddenMatch() is a no-op when adding the same match", args -> {
-            ForbiddenMatchListViewModel vm = args.convert();
-            PersonBuilder builder = new PersonBuilder();
-            Person mentee = builder.withFullName("mentee").build();
-            Person mentor = builder.withFullName("mentor").build();
-            vm.addForbiddenMatch(mentee, mentor, args.mockedHandler);
-            vm.addForbiddenMatch(builder.build(), builder.build(), args.mockedHandler);
-            List<ForbiddenMatchViewModel> expectedContent = List.copyOf(vm.getContent());
-            boolean actuallyUpdated = vm.addForbiddenMatch(mentee, mentor, args.mockedHandler);
-            Assertions.assertAll(
-                    () -> Assertions.assertFalse(actuallyUpdated),
-                    () -> Assertions.assertEquals(expectedContent, vm.getContent()));
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> removeForbiddenMatch_noOpIfAlreadyRemoved(){
-        return test("removeForbiddenMatch() is a no-op when removing the same match", args -> {
-            ForbiddenMatchListViewModel vm = args.convert();
-            PersonBuilder builder = new PersonBuilder();
-            Person mentee = builder.withFullName("mentee").build();
-            Person mentor = builder.withFullName("mentor").build();
-            vm.addForbiddenMatch(mentee, mentor, args.mockedHandler);
-            vm.addForbiddenMatch(builder.build(), builder.build(), args.mockedHandler);
-            ForbiddenMatchViewModel removed = vm.getContent().get(0);
-            List<ForbiddenMatchViewModel> expectedContent = List.of(vm.getContent().get(1));
-            vm.removeForbiddenMatch(removed, args.mockedHandler);
-            boolean actuallyUpdated = vm.removeForbiddenMatch(removed, args.mockedHandler);
-            Assertions.assertAll(
-                    () -> Assertions.assertFalse(actuallyUpdated),
-                    () -> Assertions.assertEquals(expectedContent, vm.getContent()));
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> removeForbiddenMatch_removeOnceMatchAddedTwice(){
-        return test("removeForbiddenMatch() once suffices to remove a match added twice", args -> {
-            ForbiddenMatchListViewModel vm = args.convert();
-            PersonBuilder builder = new PersonBuilder();
-            Person mentee = builder.withFullName("mentee").build();
-            Person mentor = builder.withFullName("mentor").build();
-            vm.addForbiddenMatch(mentee, mentor, args.mockedHandler);
-            vm.addForbiddenMatch(mentee, mentor, args.mockedHandler);
-            ForbiddenMatchViewModel removed = vm.getContent().get(0);
-            vm.removeForbiddenMatch(removed, args.mockedHandler);
-            Assertions.assertTrue(vm.getContent().isEmpty());
-        });
-    }
-    
-    @TestFactory
     Stream<DynamicNode> addForbiddenMatch_canAddAgainARemovedMatch(){
         return test("addForbiddenMatch() can add again a match that has been removed", args -> {
             ForbiddenMatchListViewModel vm = args.convert();
             PersonBuilder builder = new PersonBuilder();
             Person mentee = builder.withFullName("mentee").build();
             Person mentor = builder.withFullName("mentor").build();
-            vm.addForbiddenMatch(mentee, mentor, args.mockedHandler);
+            vm.addForbiddenMatch(mentee, mentor);
+            args.handler.forbidMatch(mentee, mentor);
             ForbiddenMatchViewModel removed = vm.getContent().get(0);
-            vm.removeForbiddenMatch(removed, args.mockedHandler);
-            boolean actuallyUpdated = vm.addForbiddenMatch(mentee, mentor, args.mockedHandler);
+            vm.removeForbiddenMatch(removed, args.handler);
+            vm.addForbiddenMatch(mentee, mentor);
             Assertions.assertAll(
-                    () -> Assertions.assertTrue(actuallyUpdated),
                     () -> Assertions.assertEquals(1, vm.getContent().size()),
                     () -> Assertions.assertEquals(mentee, vm.getContent().get(0).getMentee()),
                     () -> Assertions.assertEquals(mentor, vm.getContent().get(0).getMentor()));
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> addForbiddenMatch_notifyHandler(){
-        return test("addForbiddenMatch() notifies the handler", args -> {
-            ForbiddenMatchListViewModel vm = args.convert();
-            PersonBuilder builder = new PersonBuilder();
-            Person mentee = builder.withFullName("mentee").build();
-            Person mentor = builder.withFullName("mentor").build();
-            vm.addForbiddenMatch(mentee, mentor, args.mockedHandler);
-            Mockito.verify(args.mockedHandler).forbidMatch(mentee, mentor);
         });
     }
     
@@ -185,50 +119,10 @@ class ForbiddenMatchListViewModelTest implements TestFramework<ForbiddenMatchLis
             PersonBuilder builder = new PersonBuilder();
             Person mentee = builder.withFullName("mentee").build();
             Person mentor = builder.withFullName("mentor").build();
-            vm.addForbiddenMatch(mentee, mentor, args.mockedHandler);
-            vm.removeForbiddenMatch(vm.getContent().get(0), args.mockedHandler);
-            Mockito.verify(args.mockedHandler).allowMatch(mentee, mentor);
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> getCriterion_prohibitForbiddenMatches(){
-        return test("getCriterion() returns a criterion prohibiting forbidden matches", args -> {
-            ForbiddenMatchListViewModel vm = args.convert();
-            PersonBuilder builder = new PersonBuilder();
-            Person mentee = builder.withFullName("mentee").build();
-            Person forbiddenMentor = builder.withFullName("forbidden mentor").build();
-            vm.addForbiddenMatch(mentee, forbiddenMentor, args.mockedHandler);
-            NecessaryCriterion<Person, Person> criterion = vm.getCriterion();
-            Assertions.assertFalse(criterion.test(mentee, forbiddenMentor));
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> getCriterion_allowNotForbiddenMatches(){
-        return test("getCriterion() returns a criterion allowing not forbidden matches", args -> {
-            ForbiddenMatchListViewModel vm = args.convert();
-            PersonBuilder builder = new PersonBuilder();
-            Person mentee = builder.withFullName("mentee").build();
-            Person forbiddenMentor = builder.withFullName("forbidden mentor").build();
-            Person allowedMentor = builder.withFullName("allowed mentor").build();
-            vm.addForbiddenMatch(mentee, forbiddenMentor, args.mockedHandler);
-            NecessaryCriterion<Person, Person> criterion = vm.getCriterion();
-            Assertions.assertTrue(criterion.test(mentee, allowedMentor));
-        });
-    }
-    
-    @TestFactory
-    Stream<DynamicNode> getCriterion_allowRemovedForbiddenMatches(){
-        return test("getCriterion() returns a criterion allowing forbidden matches that have been removed", args -> {
-            ForbiddenMatchListViewModel vm = args.convert();
-            PersonBuilder builder = new PersonBuilder();
-            Person mentee = builder.withFullName("mentee").build();
-            Person allowedMentor = builder.withFullName("allowed mentor").build();
-            vm.addForbiddenMatch(mentee, allowedMentor, args.mockedHandler);
-            vm.removeForbiddenMatch(vm.getContent().get(0), args.mockedHandler);
-            NecessaryCriterion<Person, Person> criterion = vm.getCriterion();
-            Assertions.assertTrue(criterion.test(mentee, allowedMentor));
+            vm.addForbiddenMatch(mentee, mentor);
+            args.handler.forbidMatch(mentee, mentor);
+            vm.removeForbiddenMatch(vm.getContent().get(0), args.handler);
+            Assertions.assertTrue(args.handler.forbidMatch(mentee, mentor));
         });
     }
     
@@ -242,7 +136,7 @@ class ForbiddenMatchListViewModelTest implements TestFramework<ForbiddenMatchLis
             PersonBuilder builder = new PersonBuilder();
             Person mentee = builder.withFullName("mentee").build();
             Person mentor = builder.withFullName("mentor").build();
-            vm.addForbiddenMatch(mentee, mentor, args.mockedHandler);
+            vm.addForbiddenMatch(mentee, mentor);
             vm.clear();
             Assertions.assertAll(
                     () -> Mockito.verify(listener, Mockito.times(2)).invalidated(observable),
@@ -260,12 +154,11 @@ class ForbiddenMatchListViewModelTest implements TestFramework<ForbiddenMatchLis
             PersonBuilder builder = new PersonBuilder();
             Person mentee = builder.withFullName("mentee").build();
             Person mentor = builder.withFullName("mentor").build();
-            vm.addForbiddenMatch(mentee, mentor, args.mockedHandler);
+            vm.addForbiddenMatch(mentee, mentor);
             vm.clear();
-            boolean actuallyUpdated = vm.addForbiddenMatch(mentee, mentor, args.mockedHandler);
+            vm.addForbiddenMatch(mentee, mentor);
             ForbiddenMatchViewModel added = vm.getContent().get(0);
             Assertions.assertAll(
-                    () -> Assertions.assertTrue(actuallyUpdated),
                     () -> Mockito.verify(listener, Mockito.times(3)).invalidated(observable),
                     () -> Assertions.assertEquals(1, vm.getContent().size()),
                     () -> Assertions.assertEquals(mentee, added.getMentee()),
@@ -281,14 +174,11 @@ class ForbiddenMatchListViewModelTest implements TestFramework<ForbiddenMatchLis
                     Person validPerson = new PersonBuilder().build();
                     Assertions.assertAll(
                             () -> Assertions.assertThrows(NullPointerException.class, 
-                                    () -> vm.addForbiddenMatch(null, validPerson, args.mockedHandler), 
+                                    () -> vm.addForbiddenMatch(null, validPerson), 
                                     "null mentee"),
                             () -> Assertions.assertThrows(NullPointerException.class,
-                                    () -> vm.addForbiddenMatch(validPerson, null, args.mockedHandler), 
-                                    "null mentor"),
-                            () -> Assertions.assertThrows(NullPointerException.class,
-                                    () -> vm.addForbiddenMatch(validPerson, validPerson, null),
-                                    "null handler"));
+                                    () -> vm.addForbiddenMatch(validPerson, null), 
+                                    "null mentor"));
         });
     }
     
@@ -300,19 +190,17 @@ class ForbiddenMatchListViewModelTest implements TestFramework<ForbiddenMatchLis
                     PersonBuilder builder = new PersonBuilder();
                     Person mentee = builder.withFullName("mentee").build();
                     Person mentor = builder.withFullName("mentor").build();
-                    vm.addForbiddenMatch(mentee, mentor, args.mockedHandler);
+                    vm.addForbiddenMatch(mentee, mentor);
                     Assertions.assertAll(
                         () -> Assertions.assertThrows(NullPointerException.class,
-                                () -> vm.removeForbiddenMatch(null, args.mockedHandler)),
+                                () -> vm.removeForbiddenMatch(null, args.handler)),
                         () -> Assertions.assertThrows(NullPointerException.class,
                                 () -> vm.removeForbiddenMatch(vm.getContent().get(0), null)));
                             });
     }
     
     static class ForbiddenMatchListViewModelArgs extends TestArgs{
-        @SuppressWarnings("unchecked")
-        MatchesBuilderHandler<Person, Person> mockedHandler = 
-                Mockito.mock(MatchesBuilderHandler.class);
+        ForbiddenMatches<Person, Person> handler = new ForbiddenMatches<>();
         ForbiddenMatchListViewModelArgs(String testCase){
             super(testCase);
         }

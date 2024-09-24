@@ -2,7 +2,7 @@ package mentoring.viewmodel.tasks;
 
 import java.util.stream.Stream;
 import mentoring.datastructure.Person;
-import mentoring.match.MatchesBuilderHandler;
+import mentoring.match.ForbiddenMatches;
 import mentoring.viewmodel.datastructure.ForbiddenMatchListViewModel;
 import mentoring.viewmodel.datastructure.ForbiddenMatchViewModel;
 import mentoring.viewmodel.tasks.ForbiddenMatchRemovalTaskTest.ForbiddenMatchRemovalTaskArgs;
@@ -51,7 +51,7 @@ class ForbiddenMatchRemovalTaskTest implements TestFramework<ForbiddenMatchRemov
     }
     
     private static Executable assertConstructorThrowsNPE(ForbiddenMatchListViewModel list,
-            ForbiddenMatchViewModel toRemove, MatchesBuilderHandler<Person, Person> handler,
+            ForbiddenMatchViewModel toRemove, ForbiddenMatches<Person, Person> handler,
             AbstractTask.TaskCompletionCallback<Object> callback){
         return () -> Assertions.assertThrows(NullPointerException.class, 
                 () -> new ForbiddenMatchRemovalTask(list, toRemove, handler, callback));
@@ -60,8 +60,7 @@ class ForbiddenMatchRemovalTaskTest implements TestFramework<ForbiddenMatchRemov
     static class ForbiddenMatchRemovalTaskArgs extends TestArgs {
         final ForbiddenMatchListViewModel list = Mockito.mock(ForbiddenMatchListViewModel.class);
         final ForbiddenMatchViewModel toRemove = Mockito.mock(ForbiddenMatchViewModel.class);
-        @SuppressWarnings("unchecked")
-        final MatchesBuilderHandler<Person, Person> handler = Mockito.mock(MatchesBuilderHandler.class);
+        final ForbiddenMatches<Person, Person> handler = new ForbiddenMatches<>();
         final AbstractTask.TaskCompletionCallback<Object> callback = task -> {};
 
         ForbiddenMatchRemovalTaskArgs(String testCase) {
