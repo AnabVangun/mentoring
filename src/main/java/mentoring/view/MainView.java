@@ -6,6 +6,7 @@ import java.io.UncheckedIOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -88,12 +89,17 @@ public class MainView implements Initializable {
     
     private void configureButtonToMakeManualMatch(Button button, String buttonCaption){
         ViewTools.configureButton(button, buttonCaption, event -> vm.makeSingleMatch(
-                //FIXME: protect against illegal use: no selection, confirmation for multiple selection...
+                //FIXME: if "Run" has not been clicked, builderhandler does not yet have ProgressiveCriteriaSupplier
+                //FIXME: protect against illegal use: confirmation for multiple selection...
                 tableViewController.getSelectedPerson(PersonType.MENTEE),
                 tableViewController.getSelectedPerson(PersonType.MENTOR), 
                 tableViewController.getOneAtATimeMatchesViewModel(),
                 TaskCompletionAlertFactory.alertOnFailure(except -> 
                         "Failed to make manual match: %s".formatted(except))));
+        button.disableProperty().bind(
+                Bindings.not(Bindings.and(
+                        tableViewController.getSelectedPersonProperty(PersonType.MENTEE).isNotNull(),
+                        tableViewController.getSelectedPersonProperty(PersonType.MENTOR).isNotNull())));
     }
     
     private void configureButtonToDeleteManualMatch(Button button, String buttonCaption){

@@ -159,6 +159,19 @@ public class MatchesTableView implements Initializable {
     }
     
     /**
+     * Return this view's selected person as a read-only property.
+     * @param type determines which of the person list to check for selection
+     * @return a property encapsulating the selected person view model
+     */
+    public ReadOnlyObjectProperty<PersonViewModel> getSelectedPersonProperty(PersonType type){
+        TableView<PersonViewModel> personVM = switch(type) {
+            case MENTEE -> menteeTable;
+            case MENTOR -> mentorTable;
+        };
+        return personVM.getSelectionModel().selectedItemProperty();
+    }
+    
+    /**
      * Returns this view's selected manual match.
      * @return the match that is selected in the table corresponding to the manual matches.
      */
