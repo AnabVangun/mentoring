@@ -89,13 +89,13 @@ public class MainView implements Initializable {
     
     private void configureButtonToMakeManualMatch(Button button, String buttonCaption){
         ViewTools.configureButton(button, buttonCaption, event -> vm.makeSingleMatch(
-                //FIXME: if "Run" has not been clicked, builderhandler does not yet have ProgressiveCriteriaSupplier
                 //FIXME: protect against illegal use: confirmation for multiple selection...
                 tableViewController.getSelectedPerson(PersonType.MENTEE),
                 tableViewController.getSelectedPerson(PersonType.MENTOR), 
                 tableViewController.getOneAtATimeMatchesViewModel(),
                 TaskCompletionAlertFactory.alertOnFailure(except -> 
                         "Failed to make manual match: %s".formatted(except))));
+        //TODO improve: do not make manual matches while global matches are en route
         button.disableProperty().bind(
                 Bindings.not(Bindings.and(
                         tableViewController.getSelectedPersonProperty(PersonType.MENTEE).isNotNull(),

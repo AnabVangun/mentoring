@@ -167,6 +167,11 @@ public class MainViewModel {
      */
     public Future<?> makeSingleMatch(PersonViewModel menteeVM, PersonViewModel mentorVM,
             PersonMatchesViewModel resultVM, AbstractTask.TaskCompletionCallback<Object> callback){
+        //FIXME ugly hack to supply the configuration to matchesBuilderHandler.
+        FutureTask<CriteriaConfiguration<Person, Person>> configuration = new FutureTask<>(() -> 
+                matchConfiguration.getConfiguration());
+        taskHandler.submit(configuration);
+        matchesBuilderHandler.setCriteriaSupplier(configuration);
         return taskHandler.submit(new SingleMatchTask(resultVM, matchesBuilderHandler, 
                 menteeVM.getData(), mentorVM.getData(), callback));
     }
