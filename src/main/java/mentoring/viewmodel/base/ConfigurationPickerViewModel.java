@@ -25,25 +25,35 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
     protected final Property<String> selectedItem;
     protected final Property<ConfigurationType> configurationType;
     protected final FilePickerViewModel<T> filePicker;
+    private T lastLoadedConfiguration = null;
+    private ConfigurationType lastLoadedConfigurationType = null;
+    private String lastLoadedConfigurationParameter = null;
     
     /**
      * Type of configuration to pick.
      */
     public static enum ConfigurationType{
         /** The configuration is already a Java object known to the ConfigurationPickerViewModel.*/
-        KNOWN(ConfigurationType::getKnownConfiguration),
+        KNOWN(ConfigurationType::getKnownConfiguration, ConfigurationType::getSelectedItemParameter),
         /**The configuration must be parsed from a file.*/
-        FILE(ConfigurationType::getConfigurationFromFile);
+        FILE(ConfigurationType::getConfigurationFromFile, ConfigurationType::getSelectedFileParameter);
         
-        private final ConfigurationTypeFunction function;
+        private final ConfigurationTypeFunction configurationGetter;
+        private final Function<ConfigurationPickerViewModel<?>, String> parameterGetter;
         
-        private ConfigurationType(ConfigurationTypeFunction function){
-            this.function = function;
+        private ConfigurationType(ConfigurationTypeFunction configurationGetter, 
+                Function<ConfigurationPickerViewModel<?>, String> parameterGetter){
+            this.configurationGetter = configurationGetter;
+            this.parameterGetter = parameterGetter;
         }
         
         <T extends Configuration<T>> T getConfiguration(
                 ConfigurationPickerViewModel<T> viewModel) throws IOException {
-            return function.getConfiguration(viewModel);
+            return configurationGetter.getConfiguration(viewModel);
+        }
+        
+        String getParameter(ConfigurationPickerViewModel<?> viewModel){
+            return parameterGetter.apply(viewModel);
         }
         
         private static <T extends Configuration<T>> T getKnownConfiguration(
@@ -61,6 +71,16 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
         private static <T extends Configuration<T>> T getConfigurationFromFile(
                 ConfigurationPickerViewModel<T> viewModel) throws IOException{
             return viewModel.filePicker.parseCurrentFile();
+        }
+        
+        private static <T extends Configuration<T>> String getSelectedItemParameter(
+                ConfigurationPickerViewModel<T> viewModel){
+            return viewModel.selectedItem.getValue();
+        }
+        
+        private static <T extends Configuration<T>> String getSelectedFileParameter(
+                ConfigurationPickerViewModel<T> viewModel){
+            return viewModel.filePicker.getCurrentFilePath().get();
         }
     }
     
@@ -98,6 +118,9 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
         items = copy.items;
         selectedItem = new SimpleStringProperty(copy.selectedItem.getValue());
         configurationType = new ReadOnlyObjectWrapper<>(copy.configurationType.getValue());
+        lastLoadedConfiguration = copy.lastLoadedConfiguration;
+        lastLoadedConfigurationType = copy.lastLoadedConfigurationType;
+        lastLoadedConfigurationParameter = copy.lastLoadedConfigurationParameter;
     }
     
     /**
@@ -136,8 +159,16 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
      * @throws IOException if the configuration must be loaded from the file but the operation fails
      */
     public T getConfiguration() throws IOException {
-        //TODO: if configuration has already been loaded and nothing has changed, return it from cache
-        return configurationType.getValue().getConfiguration(this);
+        if(lastLoadedConfigurationType != null && 
+                lastLoadedConfigurationType.equals(configurationType.getValue()) && 
+                lastLoadedConfigurationParameter.equals(configurationType.getValue().getParameter(this))){
+            return lastLoadedConfiguration;
+        }
+        T result = configurationType.getValue().getConfiguration(this);
+        lastLoadedConfiguration = result;
+        lastLoadedConfigurationType = configurationType.getValue();
+        lastLoadedConfigurationParameter = configurationType.getValue().getParameter(this);
+        return result;
     }
     
     /**

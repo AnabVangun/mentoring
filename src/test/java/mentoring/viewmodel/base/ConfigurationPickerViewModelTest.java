@@ -185,6 +185,50 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
     }
     
     @TestFactory
+    Stream<DynamicNode> getConfiguration_expectedConfiguration_repeatedWithoutChange(){
+        return test("getConfiguration() returns the expected configuration", args -> {
+            DummyConfigurationPickerViewModel viewModel = args.convert();
+            DummyConfiguration actualConfiguration = new DummyConfiguration("unexpected configuration");
+            try {
+                viewModel.getConfiguration();
+                actualConfiguration = viewModel.getConfiguration();
+            } catch (IOException e){
+                Assertions.fail(e);
+            }
+            //Compare the file name to avoid false negative due to absolute vs relative path
+            String expected = new File(args.expectedConfiguration.toString()).getName();
+            String actual = new File(actualConfiguration.toString()).getName();
+            Assertions.assertEquals(expected, actual);
+        });
+    }
+    
+    
+    @TestFactory
+    Stream<DynamicNode> getConfiguration_expectedConfiguration_repeatedWithChange(){
+        return test("getConfiguration() returns the expected configuration", args -> {
+            DummyConfigurationPickerViewModel viewModel = args.convert();
+            ConfigurationPickerViewModel.ConfigurationType oldType = args.type;
+            ConfigurationPickerViewModel.ConfigurationType otherType = switch(oldType){
+                case FILE -> ConfigurationPickerViewModel.ConfigurationType.KNOWN;
+                case KNOWN -> ConfigurationPickerViewModel.ConfigurationType.FILE;
+            };
+            viewModel.configurationType.setValue(otherType);
+            DummyConfiguration actualConfiguration = new DummyConfiguration("unexpected configuration");
+            try {
+                viewModel.getConfiguration();
+                viewModel.configurationType.setValue(oldType);
+                actualConfiguration = viewModel.getConfiguration();
+            } catch (IOException e){
+                Assertions.fail(e);
+            }
+            //Compare the file name to avoid false negative due to absolute vs relative path
+            String expected = new File(args.expectedConfiguration.toString()).getName();
+            String actual = new File(actualConfiguration.toString()).getName();
+            Assertions.assertEquals(expected, actual);
+        });
+    }
+    
+    @TestFactory
     Stream<DynamicNode> constructor_NPE(){
         return test(Stream.of("unique test case"), "constructor throws NPE on null input", args -> {
             DummyConfiguration configuration = DummyConfiguration.first;
