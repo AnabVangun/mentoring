@@ -12,6 +12,12 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableBooleanValue;
 import javafx.concurrent.Task;
 import javax.inject.Inject;
 import mentoring.concurrency.ConcurrencyHandler;
@@ -54,12 +60,6 @@ import org.apache.commons.lang3.tuple.Pair;
  * ViewModel responsible for handling the main window of the application.
  */
 public class MainViewModel {
-    /*
-    TODO: handle concurrency. For each subtask, test and document method
-        make sure that a global match cannot be run while a single match is running
-        make sure that only one global match can be run at the same time
-        make sure that if several single matches are running, they only handle different persons
-    */
     private final ConcurrencyHandler taskHandler;
     
     private final EnumMap<PersonType, ConfigurationPickerViewModel<PersonConfiguration>> 
@@ -81,6 +81,22 @@ public class MainViewModel {
     
     private final MatchesBuilderHandler<Person, Person> matchesBuilderHandler = 
             new MatchesBuilderHandler<>();
+    
+    //TODO refactor: extract all these properties in an independant subclass
+    //TODO isNotReady should take into account the pending tasks
+    private final BooleanProperty isNotReady = new SimpleBooleanProperty(false);
+    private final ObjectProperty<PersonViewModel> selectedMentee = new SimpleObjectProperty<>();
+    private final ObjectProperty<PersonViewModel> selectedMentor = new SimpleObjectProperty<>();
+    private final ObjectProperty<PersonMatchViewModel> selectedComputedMatch = 
+            new SimpleObjectProperty<>();
+    private final ObjectProperty<PersonMatchViewModel> selectedManualMatch = 
+            new SimpleObjectProperty<>();
+    private final BooleanProperty disableComputedMatch = new SimpleBooleanProperty(false);
+    private final BooleanProperty disableManualMatch = new SimpleBooleanProperty(true);
+    private final BooleanProperty disableDeleteManualMatch = new SimpleBooleanProperty(true);
+    private final BooleanProperty disableForbidMatch = new SimpleBooleanProperty(true);
+    //TODO exportMatches should be disabled when there are no matches to export
+    private final BooleanProperty disableExportMatches = new SimpleBooleanProperty(false);
     
     /**
      * Create a new {@code MainViewModel}.
@@ -111,6 +127,71 @@ public class MainViewModel {
         defaultMentorSupplier.run();
         matchesBuilderHandler.setPlaceholderPersonsSupplier(defaultMenteeSupplier, 
                 defaultMentorSupplier);
+    }
+    
+    /**
+     * Bind the ViewModel to properties describing which items are currently selected. This method
+     * SHOULD be called right after the ViewModel has been initialized: it sets up a number of 
+     * observable properties that describe the state of the ViewModel.
+     * @param selectedMentee the mentee that is currently selected
+     * @param selectedMentor the mentor that is currently selected
+     * @param selectedComputedMatch the computed match that is currently selected
+     * @param selectedManualMatch the manual match that is currently selected
+     */
+    public void BindSelectionProperties(
+            ReadOnlyObjectProperty<? extends PersonViewModel> selectedMentee, 
+            ReadOnlyObjectProperty<? extends PersonViewModel> selectedMentor,
+            ReadOnlyObjectProperty<? extends PersonMatchViewModel> selectedComputedMatch,
+            ReadOnlyObjectProperty<? extends PersonMatchViewModel> selectedManualMatch){
+        this.selectedMentee.bind(selectedMentee);
+        this.selectedMentor.bind(selectedMentor);
+        this.selectedComputedMatch.bind(selectedComputedMatch);
+        this.selectedManualMatch.bind(selectedManualMatch);
+        disableManualMatch.bind(isNotReady
+                .or(this.selectedMentee.isNull())
+                .or(this.selectedMentor.isNull()));
+        disableDeleteManualMatch.bind(isNotReady.or(this.selectedManualMatch.isNull()));
+        disableForbidMatch.bind(disableManualMatch);
+    }
+    
+    /**
+     * Return an observable that is true when the ViewModel cannot compute matches.
+     * @return the described observable
+     */
+    public ObservableBooleanValue disableComputedMatch(){
+        return disableComputedMatch;
+    }
+    
+    /**
+     * Return an observable that is true when the ViewModel cannot make a manual match.
+     * @return the described observable
+     */
+    public ObservableBooleanValue disableManualMatch(){
+        return disableManualMatch;
+    }
+    
+    /**
+     * Return an observable that is true when the ViewModel cannot delete a manual match.
+     * @return the described observable
+     */
+    public ObservableBooleanValue disableDeleteManualMatch(){
+        return disableDeleteManualMatch;
+    }
+    
+    /**
+     * Return an observable that is true when the ViewModel cannot forbid a match.
+     * @return the described observable
+     */
+    public ObservableBooleanValue disableForbidMatch(){
+        return disableForbidMatch;
+    }
+    
+    /**
+     * Return an observable that is true when the ViewModel cannot export matches.
+     * @return the described observable
+     */
+    public ObservableBooleanValue disableExportMatches(){
+        return disableExportMatches;
     }
     
     /**
@@ -158,14 +239,12 @@ public class MainViewModel {
     }
     
     /**
-     * Create a match between two selected persons.
-     * @param menteeVM the ViewModel containing the mentee
-     * @param mentorVM the ViewModel containing the mentor
+     * Create a match between the two selected persons.
      * @param resultVM the ViewModel to update with the results
      * @param callback the method to call when the task has run
      * @return a Future object that can be used to control the execution and completion of the task.
      */
-    public Future<?> makeSingleMatch(PersonViewModel menteeVM, PersonViewModel mentorVM,
+    public Future<?> makeSingleMatch(
             PersonMatchesViewModel resultVM, AbstractTask.TaskCompletionCallback<Object> callback){
         //FIXME ugly hack to supply the configuration to matchesBuilderHandler.
         FutureTask<CriteriaConfiguration<Person, Person>> configuration = new FutureTask<>(() -> 
@@ -173,20 +252,19 @@ public class MainViewModel {
         taskHandler.submit(configuration);
         matchesBuilderHandler.setCriteriaSupplier(configuration);
         return taskHandler.submit(new SingleMatchTask(resultVM, matchesBuilderHandler, 
-                menteeVM.getData(), mentorVM.getData(), callback));
+                selectedMentee.get().getData(), selectedMentor.get().getData(), callback));
     }
     
     /**
-     * Remove a match between two persons.
-     * @param toRemove the ViewModel containing the match to remove
+     * Remove the selected manual match between two persons.
      * @param resultVM the ViewModel to update
      * @param callback the method to call when the task has run
      * @return a Future object that can be used to control the execution and completion of the task.
      */
-    public Future<?> removeSingleMatch(PersonMatchViewModel toRemove, 
-            PersonMatchesViewModel resultVM, 
+    public Future<?> removeSingleMatch(PersonMatchesViewModel resultVM, 
             AbstractTask.TaskCompletionCallback<? super Void> callback){
-        return taskHandler.submit(new SingleMatchRemovalTask(resultVM, toRemove, callback));
+        return taskHandler.submit(new SingleMatchRemovalTask(resultVM, selectedManualMatch.get(), 
+                callback));
     }
     
     /**
@@ -207,16 +285,14 @@ public class MainViewModel {
     }
     
     /**
-     * Declare a match between a mentee and a mentor as forbidden.
-     * @param menteeVM the ViewModel encapsulating the mentee that must not be matched
-     * @param mentorVM the ViewModel encapsulating the mentor that must not be matched
+     * Declare a match between the selected mentee and mentor as forbidden.
      * @param callback the method to call when the task has run
      * @return a Future object that can be used to control the execution and completion of the task.
      */
-    public Future<?> addForbiddenMatch(PersonViewModel menteeVM, PersonViewModel mentorVM,
-            AbstractTask.TaskCompletionCallback<? super Void> callback){
+    public Future<?> addForbiddenMatch(AbstractTask.TaskCompletionCallback<? super Void> callback){
         return taskHandler.submit(new ForbiddenMatchTask(extraForbiddenMatches, 
-                menteeVM.getData(), mentorVM.getData(), matchesBuilderHandler.getForbiddenMatches(), 
+                selectedMentee.get().getData(), selectedMentor.get().getData(), 
+                matchesBuilderHandler.getForbiddenMatches(), 
                 callback));
     }
     

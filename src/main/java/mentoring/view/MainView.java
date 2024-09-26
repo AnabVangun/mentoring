@@ -6,7 +6,6 @@ import java.io.UncheckedIOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
-import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -59,6 +58,10 @@ public class MainView implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         configureButtons();
         showConfigurationPicker();
+        vm.BindSelectionProperties(tableViewController.getSelectedPersonProperty(PersonType.MENTEE), 
+                tableViewController.getSelectedPersonProperty(PersonType.MENTOR), 
+                tableViewController.getSelectedComputedMatchProperty(),
+                tableViewController.getSelectedManualMatchProperty());
     }
     
     private void configureButtons(){
@@ -85,39 +88,32 @@ public class MainView implements Initializable {
                             //TODO internationalise string
                             "Failed to make matches: %s".formatted(except.getLocalizedMessage())));
                     });
+        button.disableProperty().bind(vm.disableComputedMatch());
     }
     
     private void configureButtonToMakeManualMatch(Button button, String buttonCaption){
         ViewTools.configureButton(button, buttonCaption, event -> vm.makeSingleMatch(
-                //FIXME: protect against illegal use: confirmation for multiple selection...
-                tableViewController.getSelectedPerson(PersonType.MENTEE),
-                tableViewController.getSelectedPerson(PersonType.MENTOR), 
                 tableViewController.getOneAtATimeMatchesViewModel(),
                 TaskCompletionAlertFactory.alertOnFailure(except -> 
                         "Failed to make manual match: %s".formatted(except))));
-        //TODO improve: do not make manual matches while global matches are en route
-        button.disableProperty().bind(
-                Bindings.not(Bindings.and(
-                        tableViewController.getSelectedPersonProperty(PersonType.MENTEE).isNotNull(),
-                        tableViewController.getSelectedPersonProperty(PersonType.MENTOR).isNotNull())));
+        button.disableProperty().bind(vm.disableManualMatch());
     }
     
     private void configureButtonToDeleteManualMatch(Button button, String buttonCaption){
         ViewTools.configureButton(button, buttonCaption, event -> vm.removeSingleMatch(
-                tableViewController.getSelectedManualMatch(), 
                 tableViewController.getOneAtATimeMatchesViewModel(),
                 TaskCompletionAlertFactory.alertOnFailure(except -> 
                         //TODO: internationalise string
                         "Failed to remove manual match : %s".formatted(except.getLocalizedMessage()))));
+        button.disableProperty().bind(vm.disableDeleteManualMatch());
     }
     
     private void configureButtonToForbidMatch(Button button, String buttonCaption){
         ViewTools.configureButton(button, buttonCaption, event -> vm.addForbiddenMatch(
-                tableViewController.getSelectedPerson(PersonType.MENTEE), 
-                tableViewController.getSelectedPerson(PersonType.MENTOR),
                 TaskCompletionAlertFactory.alertOnFailure(except -> 
                         //TODO internationalise String
                         "Failed to add match : %s".formatted(except.getLocalizedMessage()))));
+        button.disableProperty().bind(vm.disableForbidMatch());
     }
     
     private void configureButtonToExportMatches(Button button, String buttonCaption){
@@ -139,6 +135,7 @@ public class MainView implements Initializable {
                         tableViewController.getBatchMatchesViewModel());
             }
         });
+        button.disableProperty().bind(vm.disableExportMatches());
     }
     
     private void showConfigurationPicker(){

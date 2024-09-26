@@ -7,6 +7,7 @@ import javafx.beans.WeakInvalidationListener;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javax.inject.Inject;
@@ -115,6 +116,11 @@ public class MatchesTableView implements Initializable {
         mentorVM.addListener(new WeakInvalidationListener(mentorListener));
         matchPane.getDividers().get(0).positionProperty()
                 .bindBidirectional(personPane.getDividers().get(0).positionProperty());
+        //This is supposed to be the default but this application explicitly needs it to hold.
+        menteeTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        mentorTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        computedTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        manualTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         computedTable.getSelectionModel().selectedItemProperty()
                 .addListener(new WeakInvalidationListener(matchSelectionListener));
         manualTable.getSelectionModel().selectedItemProperty()
@@ -177,6 +183,22 @@ public class MatchesTableView implements Initializable {
      */
     public PersonMatchViewModel getSelectedManualMatch(){
         return manualTable.getSelectionModel().getSelectedItem();
+    }
+    
+    /**
+     * Returns this view's selected manual match as a read-only property.
+     * @return a property encapsulating the selected manual match
+     */
+    public ReadOnlyObjectProperty<PersonMatchViewModel> getSelectedManualMatchProperty(){
+        return manualTable.getSelectionModel().selectedItemProperty();
+    }
+    
+    /**
+     * Returns this view's selected computed match as a read-only property.
+     * @return a property encapsulating the selected computed match
+     */
+    public ReadOnlyObjectProperty<PersonMatchViewModel> getSelectedComputedMatchProperty(){
+        return computedTable.getSelectionModel().selectedItemProperty();
     }
     
     private void unselectMatchInTableIfAppropriate(TableView<PersonMatchViewModel> table, 
