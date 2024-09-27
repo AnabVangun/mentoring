@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
+import mentoring.datastructure.PropertyName;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
@@ -82,5 +83,36 @@ public interface SimplePersonConfigurationTest<T extends SimplePersonConfigurati
                 "isValidNameDefinition() returns false on invalid input", args ->
                         Assertions.assertFalse(PersonConfiguration
                                 .isValidNameDefinition(args.getLeft(),args.getRight())));
+    }
+    
+    @TestFactory
+    default Stream<DynamicNode> containsPropertyName_simpleProperty(){
+        return test(argumentsSupplier().filter(args -> !args.convert().getSimplePropertiesNames().isEmpty()),
+                "containsPropertyName() return true on simple property", args -> {
+                    PersonConfiguration configuration = args.convert();
+                    PropertyName<?> property = configuration.getSimplePropertiesNames()
+                            .iterator().next();
+                    Assertions.assertTrue(configuration.containsPropertyName(property.getName()));
+        });
+    }
+    
+    @TestFactory
+    default Stream<DynamicNode> containsPropertyName_multipleProperty(){
+        return test(argumentsSupplier().filter(args -> !args.convert().getMultiplePropertiesNames().isEmpty()),
+                "containsPropertyName() return true on multiple property", args -> {
+                    PersonConfiguration configuration = args.convert();
+                    PropertyName<?> property = configuration.getMultiplePropertiesNames()
+                            .iterator().next();
+                    Assertions.assertTrue(configuration.containsPropertyName(property.getName()));
+        });
+    }
+    
+    @TestFactory
+    default Stream<DynamicNode> containsPropertyName_missingProperty(){
+        return test("containsPropertyName() return false on missing property", args -> {
+            PersonConfiguration configuration = args.convert();
+            String missingProperty = "#%_&MISSING#%_&";
+            Assertions.assertFalse(configuration.containsPropertyName(missingProperty));
+        });
     }
 }

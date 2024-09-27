@@ -22,6 +22,7 @@ public final class PersonConfiguration extends Configuration<PersonConfiguration
     private final String nameFormat;
     private final List<String> nameProperties;
     private final Collection<String> allPropertiesHeaderNames;
+    private final Set<String> allPropertiesNames = new HashSet<>();
     
     /**
      * Create a PersonConfiguration instance.
@@ -40,17 +41,19 @@ public final class PersonConfiguration extends Configuration<PersonConfiguration
                 String separator, String nameFormat,
                 List<String> namePropertiesHeaderNames){
             super(configurationName);
-            Set<String> tmpAllProperties = new HashSet<>();
-            this.properties = properties;
-            this.properties.forEach(p -> tmpAllProperties.add(p.getHeaderName()));
-            this.multipleProperties = multipleProperties;
-            this.multipleProperties.forEach(p -> tmpAllProperties.add(p.getHeaderName()));
-            this.separator = separator;
             if(! isValidNameDefinition(nameFormat, namePropertiesHeaderNames)){
                 throw new IllegalArgumentException("""
                         Tried to build a PersonConfiguration object with invalid name definition: 
                         %s as and %s""".formatted(nameFormat, namePropertiesHeaderNames));
             }
+            Set<String> tmpAllProperties = new HashSet<>();
+            this.properties = properties;
+            this.properties.forEach(p -> tmpAllProperties.add(p.getHeaderName()));
+            this.properties.forEach(p -> allPropertiesNames.add(p.getName()));
+            this.multipleProperties = multipleProperties;
+            this.multipleProperties.forEach(p -> tmpAllProperties.add(p.getHeaderName()));
+            this.multipleProperties.forEach(p -> allPropertiesNames.add(p.getName()));
+            this.separator = separator;
             this.nameFormat = nameFormat;
             this.nameProperties = namePropertiesHeaderNames;
             tmpAllProperties.addAll(namePropertiesHeaderNames);
@@ -102,6 +105,15 @@ public final class PersonConfiguration extends Configuration<PersonConfiguration
      */
     public List<String> getNamePropertiesHeaderNames(){
         return nameProperties;
+    }
+    
+    /**
+     * Checks if this configuration contains a property with the given name.
+     * @param name to verify
+     * @return true if a property exists with the input name in this configuration
+     */
+    public boolean containsPropertyName(String name){
+        return allPropertiesNames.contains(name);
     }
     
     /**

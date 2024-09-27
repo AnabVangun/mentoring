@@ -6,7 +6,7 @@ package mentoring.datastructure;
  * @param <T> the type of element stored in the property.
  */
 public class SimplePropertyName<T> extends PropertyName<T>{
-    
+    //TODO refactor: rename PropertyName into PropertyDescription
     /**
      * Initialises a new PropertyName.
      * @param name of the property in {@link Person} objects
