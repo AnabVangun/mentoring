@@ -1,5 +1,6 @@
 package mentoring.viewmodel.datastructure;
 
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -238,11 +239,11 @@ class PersonListViewModelTest extends ObservableTest<PersonListViewModel,
         void assertItemsAsExpected(PersonListViewModel viewModel, List<Person> data, 
                 PersonConfiguration configuration){
             List<PersonViewModel> toCheck = viewModel.getContent();
-            List<Map<String, Object>> actual = toCheck.stream()
+            Collection<Map<String, Object>> actual = toCheck.stream()
                     .map(element -> element.getFormattedData()).toList();
-            List<Map<String, Object>> expected = data.stream()
-                    .map(element -> new PersonViewModel(configuration, element).getFormattedData())
-                    .toList();
+            PersonViewModelFactory factory = new PersonViewModelFactory(configuration);
+            Collection<Map<String, Object>> expected = factory.create(data).stream()
+                    .map(element -> element.getFormattedData()).toList();
             Assertions.assertEquals(expected, actual);
         }
     }

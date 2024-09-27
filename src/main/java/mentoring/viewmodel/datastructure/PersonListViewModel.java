@@ -27,6 +27,7 @@ public class PersonListViewModel extends SimpleObservable
     private final List<Person> underlyingData = new ArrayList<>();
     private PersonConfiguration configuration = null;
     private boolean invalidated = false;
+    private PersonViewModelFactory viewModelFactory = null;
     
     /**
      * Returns the header of the {@link Person} object.
@@ -77,29 +78,20 @@ public class PersonListViewModel extends SimpleObservable
         if(invalidated){
             prepareHeader(configuration);
             setUnderlyingData(pendingItems);
-            prepareItems(configuration);
+            prepareItems();
             invalidated = false;
         }
     }
     
     private void prepareHeader(PersonConfiguration configuration) {
         this.configuration = configuration;
-        this.modifiableHeaderContent.clear();
-        //TODO rely on a static method in PersonViewModelFactory to generate this
-        String name = "Name";
-        if (configuration.containsPropertyName(name)){
-            name = name + " (%s)";
-            int i = 1;
-            while (configuration.containsPropertyName(name.formatted(i))){
-                i += 1;
-            }
-            name = name.formatted(i);
-        }
-        this.modifiableHeaderContent.add(name);
-        this.modifiableHeaderContent.addAll(
+        modifiableHeaderContent.clear();
+        viewModelFactory = new PersonViewModelFactory(configuration);
+        modifiableHeaderContent.add(viewModelFactory.getFullNamePropertyName());
+        modifiableHeaderContent.addAll(
                 configuration.getSimplePropertiesNames().stream().map(prop -> prop.getName())
                         .collect(Collectors.toList()));
-        this.modifiableHeaderContent.addAll(
+        modifiableHeaderContent.addAll(
                 configuration.getMultiplePropertiesNames().stream().map(prop -> prop.getName())
                         .collect(Collectors.toList()));
     }
@@ -109,12 +101,9 @@ public class PersonListViewModel extends SimpleObservable
         this.underlyingData.addAll(matches);
     }
             
-    private void prepareItems(PersonConfiguration configuration) {
-        //TODO use a PersonViewModelFactory to generate all PersonViewModels
+    private void prepareItems() {
         items.clear();
-        for (Person person : underlyingData){
-            items.add(new PersonViewModel(configuration, person));
-        }
+        items.addAll(viewModelFactory.create(underlyingData));
     }
     
     /**
