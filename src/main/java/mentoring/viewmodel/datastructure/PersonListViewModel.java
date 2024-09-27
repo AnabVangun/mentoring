@@ -18,6 +18,7 @@ import mentoring.viewmodel.base.TabularDataViewModel;
  */
 public class PersonListViewModel extends SimpleObservable 
         implements TabularDataViewModel<PersonViewModel>{
+    //TODO check performance gain of lazy initialization and possibly get rid of it
     private final List<String> modifiableHeaderContent = new ArrayList<>();
     private final List<String> headerContent = Collections.unmodifiableList(modifiableHeaderContent);
     private final ObservableList<PersonViewModel> items = 
@@ -84,7 +85,17 @@ public class PersonListViewModel extends SimpleObservable
     private void prepareHeader(PersonConfiguration configuration) {
         this.configuration = configuration;
         this.modifiableHeaderContent.clear();
-        this.modifiableHeaderContent.add("Name");
+        //TODO rely on a static method in PersonViewModelFactory to generate this
+        String name = "Name";
+        if (configuration.containsPropertyName(name)){
+            name = name + " (%s)";
+            int i = 1;
+            while (configuration.containsPropertyName(name.formatted(i))){
+                i += 1;
+            }
+            name = name.formatted(i);
+        }
+        this.modifiableHeaderContent.add(name);
         this.modifiableHeaderContent.addAll(
                 configuration.getSimplePropertiesNames().stream().map(prop -> prop.getName())
                         .collect(Collectors.toList()));
@@ -99,6 +110,7 @@ public class PersonListViewModel extends SimpleObservable
     }
             
     private void prepareItems(PersonConfiguration configuration) {
+        //TODO use a PersonViewModelFactory to generate all PersonViewModels
         items.clear();
         for (Person person : underlyingData){
             items.add(new PersonViewModel(configuration, person));

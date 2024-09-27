@@ -133,7 +133,7 @@ public class MatchesTableView implements Initializable {
     
     private TableView<?> selectMatchTableToClear(PersonMatchViewModel match){
         //if match was from computedTable, unselect manualTable, and the other way around
-        if(match == computedTable.getSelectionModel().selectedItemProperty().get()){
+        if(match == computedTable.getSelectionModel().getSelectedItem()){
             return manualTable;
         } else {
             return computedTable;
@@ -153,18 +153,6 @@ public class MatchesTableView implements Initializable {
     }
     
     /**
-     * Returns this view's selected person.
-     * @param type determines which of the person list to check for selection
-     * @return the selected person view model corresponding to the input type
-     */
-    public PersonViewModel getSelectedPerson(PersonType type){
-        return switch(type){
-            case MENTEE -> menteeTable.getSelectionModel().getSelectedItem();
-            case MENTOR -> mentorTable.getSelectionModel().getSelectedItem();
-        };
-    }
-    
-    /**
      * Return this view's selected person as a read-only property.
      * @param type determines which of the person list to check for selection
      * @return a property encapsulating the selected person view model
@@ -175,14 +163,6 @@ public class MatchesTableView implements Initializable {
             case MENTOR -> mentorTable;
         };
         return personVM.getSelectionModel().selectedItemProperty();
-    }
-    
-    /**
-     * Returns this view's selected manual match.
-     * @return the match that is selected in the table corresponding to the manual matches.
-     */
-    public PersonMatchViewModel getSelectedManualMatch(){
-        return manualTable.getSelectionModel().getSelectedItem();
     }
     
     /**

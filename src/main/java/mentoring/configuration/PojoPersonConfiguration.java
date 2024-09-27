@@ -18,6 +18,13 @@ public enum PojoPersonConfiguration{
             Set.of(new SetPropertyName<>("Métiers","Activités et métiers", PropertyType.STRING), 
                     new SetPropertyName<>("Motivation", "Motivation", PropertyType.STRING)), 
             ";", "%s %s (X%s)", List.of("Prénom","Nom","Promotion"))),
+    TEST_CONFIGURATION_2(new PersonConfiguration("Test configuration 2",
+            Set.of(new SimplePropertyName<>("Name", "Nom", PropertyType.STRING),
+                    new SimplePropertyName<>("Anglais", "Anglais", PropertyType.BOOLEAN),
+                    new SimplePropertyName<>("Promotion", "Promotion", PropertyType.INTEGER)), 
+            Set.of(new SetPropertyName<>("Métiers","Activités et métiers", PropertyType.STRING), 
+                    new SetPropertyName<>("Motivation", "Motivation", PropertyType.STRING)), 
+            ";", "%s %s (X%s)", List.of("Prénom","Nom","Promotion"))),
     /**Configuration used for real mentee data in the preprocessed 2023 data set. */
     MENTEE_CONFIGURATION_2024_DATA(new PersonConfiguration("Mentee configuration for 2024 data",
             Set.of(new SimplePropertyName<>("Email", "email", PropertyType.STRING),
