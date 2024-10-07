@@ -407,6 +407,85 @@ class ForbiddenMatchesTest implements TestFramework<ForbiddenMatchesTestArgs>{
         });
     }
     
+    @TestFactory
+    Stream<DynamicNode> clear_allMatchesAllowed(){
+        return test("after clear(), all matches are allowed", args -> {
+            ForbiddenMatches<String, String> forbiddenMatches = args.convert();
+            CostMatrixHandler<String, String> matrixHandler = args.createCostMatrix();
+            forbiddenMatches.forbidMatch(ForbiddenMatchesTestArgs.FIRST_MENTEE,
+                    ForbiddenMatchesTestArgs.FIRST_MENTOR);
+            forbiddenMatches.forbidMatch(ForbiddenMatchesTestArgs.FIRST_MENTEE,
+                    ForbiddenMatchesTestArgs.SECOND_MENTOR);
+            forbiddenMatches.allowMatch(ForbiddenMatchesTestArgs.FIRST_MENTEE,
+                    ForbiddenMatchesTestArgs.FIRST_MENTOR);
+            forbiddenMatches.forbidMatch(ForbiddenMatchesTestArgs.SECOND_MENTEE, 
+                    ForbiddenMatchesTestArgs.SECOND_MENTOR);
+            forbiddenMatches.clear();
+            forbiddenMatches.apply(matrixHandler,
+                    ForbiddenMatchesTestArgs.menteeIndexGetter, 
+                    ForbiddenMatchesTestArgs.mentorIndexGetter);
+            Assertions.assertAll(
+                    () -> Assertions.assertTrue(matrixHandler.isMatchAllowed(
+                            ForbiddenMatchesTestArgs.FIRST_MENTEE_INDEX,
+                            ForbiddenMatchesTestArgs.FIRST_MENTOR_INDEX),
+                            "first mentee first mentor"),
+                    () -> Assertions.assertTrue(matrixHandler.isMatchAllowed(
+                            ForbiddenMatchesTestArgs.SECOND_MENTEE_INDEX,
+                            ForbiddenMatchesTestArgs.SECOND_MENTOR_INDEX),
+                            "second mentee second mentor"),
+                    () -> Assertions.assertTrue(matrixHandler.isMatchAllowed(
+                            ForbiddenMatchesTestArgs.FIRST_MENTEE_INDEX,
+                            ForbiddenMatchesTestArgs.SECOND_MENTOR_INDEX),
+                            "first mentee second mentor"),
+                    () -> Assertions.assertTrue(matrixHandler.isMatchAllowed(
+                            ForbiddenMatchesTestArgs.SECOND_MENTEE_INDEX,
+                            ForbiddenMatchesTestArgs.FIRST_MENTOR_INDEX),
+                            "second mentee first mentor")
+            );
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> clear_applyFromLastStateAllowsAllMatches(){
+        return test("after clear(), applyFromLastState() allows all matches", args -> {
+            ForbiddenMatches<String, String> forbiddenMatches = args.convert();
+            CostMatrixHandler<String, String> matrixHandler = args.createCostMatrix();
+            forbiddenMatches.forbidMatch(ForbiddenMatchesTestArgs.FIRST_MENTEE,
+                    ForbiddenMatchesTestArgs.FIRST_MENTOR);
+            forbiddenMatches.forbidMatch(ForbiddenMatchesTestArgs.FIRST_MENTEE,
+                    ForbiddenMatchesTestArgs.SECOND_MENTOR);
+            forbiddenMatches.apply(matrixHandler,
+                    ForbiddenMatchesTestArgs.menteeIndexGetter, 
+                    ForbiddenMatchesTestArgs.mentorIndexGetter);
+            forbiddenMatches.allowMatch(ForbiddenMatchesTestArgs.FIRST_MENTEE,
+                    ForbiddenMatchesTestArgs.FIRST_MENTOR);
+            forbiddenMatches.forbidMatch(ForbiddenMatchesTestArgs.SECOND_MENTEE, 
+                    ForbiddenMatchesTestArgs.SECOND_MENTOR);
+            forbiddenMatches.clear();
+            forbiddenMatches.applyFromLastState(matrixHandler,
+                    ForbiddenMatchesTestArgs.menteeIndexGetter, 
+                    ForbiddenMatchesTestArgs.mentorIndexGetter);
+            Assertions.assertAll(
+                    () -> Assertions.assertTrue(matrixHandler.isMatchAllowed(
+                            ForbiddenMatchesTestArgs.FIRST_MENTEE_INDEX,
+                            ForbiddenMatchesTestArgs.FIRST_MENTOR_INDEX),
+                            "first mentee first mentor"),
+                    () -> Assertions.assertTrue(matrixHandler.isMatchAllowed(
+                            ForbiddenMatchesTestArgs.SECOND_MENTEE_INDEX,
+                            ForbiddenMatchesTestArgs.SECOND_MENTOR_INDEX),
+                            "second mentee second mentor"),
+                    () -> Assertions.assertTrue(matrixHandler.isMatchAllowed(
+                            ForbiddenMatchesTestArgs.FIRST_MENTEE_INDEX,
+                            ForbiddenMatchesTestArgs.SECOND_MENTOR_INDEX),
+                            "first mentee second mentor"),
+                    () -> Assertions.assertTrue(matrixHandler.isMatchAllowed(
+                            ForbiddenMatchesTestArgs.SECOND_MENTEE_INDEX,
+                            ForbiddenMatchesTestArgs.FIRST_MENTOR_INDEX),
+                            "second mentee first mentor")
+            );
+        });
+    }
+    
     static class ForbiddenMatchesTestArgs extends TestArgs{
         @SuppressWarnings("unchecked")
         final CostMatrixHandler<String, String> matrixHandler = Mockito.mock(CostMatrixHandler.class);

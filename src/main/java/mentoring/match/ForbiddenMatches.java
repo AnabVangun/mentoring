@@ -58,6 +58,19 @@ public final class ForbiddenMatches<Mentee, Mentor> {
     }
     
     /**
+     * Removes all forbidden matches.
+     */
+    public synchronized void clear(){
+        for(Map.Entry<Mentee, Set<Mentor>> entry : menteesToMentors.entrySet()){
+            Mentee mentee = entry.getKey();
+            for (Mentor mentor : entry.getValue()){
+                actions.add(new AllowAction<>(mentee, mentor));
+            }
+        }
+        menteesToMentors.clear();
+    }
+    
+    /**
      * Applies all the forbidden matches to the input cost matrix.
      * @param costMatrix that must take the forbidden matches into account
      * @param menteeIndexGetter function returning the index in the cost matrix of each mentee 
