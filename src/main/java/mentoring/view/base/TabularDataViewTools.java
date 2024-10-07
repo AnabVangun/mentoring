@@ -50,13 +50,14 @@ public class TabularDataViewTools {
      * Select an item in a TableView and scroll to it.
      * @param <E> the type of data to display in the table
      * @param table the table to update
-     * @param item to select in the table. Optional: it can be null
+     * @param index to select in the table. Optional: it can be -1
      */
-    public static <E> void selectAndScrollTo(TableView<E> table, E item){
-        //TODO consider using an index instead of an item
-        table.getSelectionModel().select(item);
-        if(item != null){
-            table.scrollTo(item);
+    public static <E> void selectAndScrollTo(TableView<E> table, int index){
+        if (index == -1){
+            table.getSelectionModel().clearSelection();
+        } else {
+            table.getSelectionModel().selectIndices(index);
+            table.scrollTo(index);
         }
     }
 }

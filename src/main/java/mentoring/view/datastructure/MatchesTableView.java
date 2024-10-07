@@ -141,12 +141,12 @@ public class MatchesTableView implements Initializable {
     }
     
     private void selectPersons(PersonMatchViewModel match, TableView<?> tableToClear){
-        PersonViewModel selectedMentee = 
-                menteeVM.getPersonViewModel(match, PersonType.MENTEE);
-        TabularDataViewTools.selectAndScrollTo(menteeTable, selectedMentee);
-        PersonViewModel selectedMentor = 
-                mentorVM.getPersonViewModel(match, PersonType.MENTOR);
-        TabularDataViewTools.selectAndScrollTo(mentorTable, selectedMentor);
+        int selectedMenteeIndex = 
+                menteeVM.getPersonViewModelIndex(match, PersonType.MENTEE);
+        TabularDataViewTools.selectAndScrollTo(menteeTable, selectedMenteeIndex);
+        int selectedMentorIndex = 
+                mentorVM.getPersonViewModelIndex(match, PersonType.MENTOR);
+        TabularDataViewTools.selectAndScrollTo(mentorTable, selectedMentorIndex);
         if(tableToClear != null){
             tableToClear.getSelectionModel().clearSelection();
         }

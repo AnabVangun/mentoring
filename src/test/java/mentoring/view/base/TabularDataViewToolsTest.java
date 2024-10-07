@@ -103,7 +103,7 @@ class TabularDataViewToolsTest implements TestFramework<TabularDataViewToolsArgs
             List<String> items = List.of("foo", "bar");
             TabularDataViewTools.updateTable(view, forgeViewModel(headers, items), 
                     forgeGetterProperty(headers));
-            TabularDataViewTools.selectAndScrollTo(view, "bar");
+            TabularDataViewTools.selectAndScrollTo(view, 1);
             Assertions.assertEquals("bar", view.getSelectionModel().getSelectedItem());
         });
     }
@@ -117,7 +117,7 @@ class TabularDataViewToolsTest implements TestFramework<TabularDataViewToolsArgs
             TabularDataViewTools.updateTable(view, forgeViewModel(headers, items), 
                     forgeGetterProperty(headers));
             view.getSelectionModel().select("foo");
-            TabularDataViewTools.selectAndScrollTo(view, "bar");
+            TabularDataViewTools.selectAndScrollTo(view, 1);
             Assertions.assertEquals(List.of("bar"), view.getSelectionModel().getSelectedItems());
         });
     }
@@ -127,8 +127,8 @@ class TabularDataViewToolsTest implements TestFramework<TabularDataViewToolsArgs
         return test("selectAndScroll() scrolls to show the new selection", args -> {
             @SuppressWarnings("unchecked")
             TableView<String> view = Mockito.spy(TableView.class);
-            TabularDataViewTools.selectAndScrollTo(view, "foo");
-            Mockito.verify(view).scrollTo("foo");
+            TabularDataViewTools.selectAndScrollTo(view, 1);
+            Mockito.verify(view).scrollTo(1);
         });
     }
     
@@ -156,7 +156,7 @@ class TabularDataViewToolsTest implements TestFramework<TabularDataViewToolsArgs
     Stream<DynamicNode> selectAndScroll_NPE(){
         return test("selectAndScroll() throws an NPE on null view", args ->
                 Assertions.assertThrows(NullPointerException.class,
-                        () -> TabularDataViewTools.selectAndScrollTo(null, "foo")));
+                        () -> TabularDataViewTools.selectAndScrollTo(null, 2)));
     }
     
     static record TabularDataViewToolsArgs(String testCase){

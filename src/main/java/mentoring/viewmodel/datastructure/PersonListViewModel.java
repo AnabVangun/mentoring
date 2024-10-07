@@ -114,11 +114,7 @@ public class PersonListViewModel extends SimpleObservable
      * not in this list
      */
     public PersonViewModel getPersonViewModel(PersonMatchViewModel match, PersonType type){
-        Match<Person, Person> actualMatch = match.getData();
-        Person person = switch(type){
-            case MENTEE -> actualMatch.getMentee();
-            case MENTOR -> actualMatch.getMentor();
-        };
+        Person person = getPerson(match, type);
         PersonViewModel result = null;
         for (PersonViewModel vm : getContent()) {
             if (vm.getData().equals(person)){
@@ -127,5 +123,34 @@ public class PersonListViewModel extends SimpleObservable
             }
         }
         return result;
+    }
+    
+    /**
+     * Get the index of the PersonViewModel contained in this list corresponding to the requested 
+     * person.
+     * @param match ViewModel containing the requested person
+     * @param type of person to get from the match
+     * @return the index of the PersonViewModel corresponding to the requested person in this list 
+     * or -1 if the person is not in this list
+     */
+    public int getPersonViewModelIndex(PersonMatchViewModel match, PersonType type){
+        Person person = getPerson(match, type);
+        int result = -1;
+        List<PersonViewModel> persons = getContent();
+        for (int i = 0; i < persons.size(); i++) {
+            if (persons.get(i).getData().equals(person)){
+                result = i;
+                break;
+            }
+        }
+        return result;
+    }
+    
+    private Person getPerson(PersonMatchViewModel match, PersonType type){
+        Match<Person, Person> actualMatch = match.getData();
+        return switch(type){
+            case MENTEE -> actualMatch.getMentee();
+            case MENTOR -> actualMatch.getMentor();
+        };
     }
 }
