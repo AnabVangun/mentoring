@@ -75,19 +75,8 @@ public final class MatchesBuilder<Mentee, Mentor> {
     public MatchesBuilder<Mentee, Mentor> withForbiddenMatches(
             ForbiddenMatches<Mentee, Mentor> forbiddenMatches){
         this.forbiddenMatches = forbiddenMatches;
+        forbiddenMatches.apply(costMatrixHandler, this::getMenteeIndex, this::getMentorIndex);
         return this;
-    }
-    
-    /**
-     * Forbids matches between the input mentee and mentor.
-     * @param mentee that cannot be matched with the mentor
-     * @param mentor that cannot be matched with the mentee
-     * @return true if the match was allowed and has been forbidden, false if it was already 
-     * forbidden
-     */
-    @Deprecated
-    public boolean forbidMatch(Mentee mentee, Mentor mentor){
-        return costMatrixHandler.forbidMatch(getMenteeIndex(mentee), getMentorIndex(mentor));
     }
     
     private int getMenteeIndex(Mentee mentee){
@@ -144,7 +133,8 @@ public final class MatchesBuilder<Mentee, Mentor> {
      */
     public Matches<Mentee, Mentor> build(){
         if (forbiddenMatches != null){
-            forbiddenMatches.apply(costMatrixHandler, this::getMenteeIndex, this::getMentorIndex);
+            forbiddenMatches.applyFromLastState(costMatrixHandler, this::getMenteeIndex, 
+                    this::getMentorIndex);
         }
         Result rawResult = costMatrixHandler.solveCostMatrix(solver);
         return formatResult(rawResult,
