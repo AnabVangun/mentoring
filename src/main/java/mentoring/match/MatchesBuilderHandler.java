@@ -80,10 +80,7 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
         suppliers.menteesSupplier = Objects.requireNonNull(menteesSupplier, 
                 "mentees supplier cannot be null");
         suppliers.hasChanged = true;
-        /*TODO coordinate: it is likely that setMenteesSupplier and SetMentorsSupplier will be both
-        called, no need to create two ForbiddenMatches each time*/
-        //FIXME forbiddenMatches should be cleared rather than replaced
-        suppliers.forbiddenMatches = new ForbiddenMatches<>();
+        suppliers.forbiddenMatches.clear();
     }
     
     /**
@@ -96,7 +93,7 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
         suppliers.mentorsSupplier = Objects.requireNonNull(mentorsSupplier,
                 "mentors supplier cannot be null");
         suppliers.hasChanged = true;
-        suppliers.forbiddenMatches = new ForbiddenMatches<>();
+        suppliers.forbiddenMatches.clear();
     }
     
     /**
