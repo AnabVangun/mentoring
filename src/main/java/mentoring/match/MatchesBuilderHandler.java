@@ -20,8 +20,7 @@ import mentoring.configuration.CriteriaConfiguration;
  */
 public class MatchesBuilderHandler<Mentee, Mentor> {
     private final SupplierList suppliers = new SupplierList();
-    //TODO optimise: when #get() is called several times without changing the parameters, do not
-    //recompute result. Make sure that if a builder is reused, then allowMatch is properly used
+    private MatchesBuilder<Mentee, Mentor> lastBuilder;
     /**
      * Instantiates a MatchesBuilderHandler instance.
      */
@@ -41,6 +40,11 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
      */
     public MatchesBuilder<Mentee, Mentor> get() throws IllegalStateException, InterruptedException,
             ExecutionException{
+        synchronized(this){
+            if (!suppliers.hasChanged){
+                return lastBuilder;
+            }
+        }
         SupplierList synchronizedSuppliers = suppliers.atomicCopy();
         MatchesBuilder<Mentee, Mentor> builder;
         try {
@@ -55,10 +59,13 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
                     && parameters.placeholderMentor != null){
                 builder.withPlaceholderPersons(parameters.placeholderMentee, 
                         parameters.placeholderMentor);
-            builder.withForbiddenMatches(parameters.forbiddenMatches);
             }
+            builder.withForbiddenMatches(parameters.forbiddenMatches);
         } catch (InterruptedException ex) {
             throw new InterruptedException();
+        }
+        synchronized(this){
+            lastBuilder = builder;
         }
         return builder;
     }
@@ -72,8 +79,10 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
     public synchronized void setMenteesSupplier(Future<List<Mentee>> menteesSupplier){
         suppliers.menteesSupplier = Objects.requireNonNull(menteesSupplier, 
                 "mentees supplier cannot be null");
+        suppliers.hasChanged = true;
         /*TODO coordinate: it is likely that setMenteesSupplier and SetMentorsSupplier will be both
         called, no need to create two ForbiddenMatches each time*/
+        //FIXME forbiddenMatches should be cleared rather than replaced
         suppliers.forbiddenMatches = new ForbiddenMatches<>();
     }
     
@@ -86,6 +95,7 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
     public synchronized void setMentorsSupplier(Future<List<Mentor>> mentorsSupplier){
         suppliers.mentorsSupplier = Objects.requireNonNull(mentorsSupplier,
                 "mentors supplier cannot be null");
+        suppliers.hasChanged = true;
         suppliers.forbiddenMatches = new ForbiddenMatches<>();
     }
     
@@ -100,6 +110,7 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
             Future<CriteriaConfiguration<Mentee, Mentor>> criteriaSupplier){
         suppliers.criteriaSupplier = Objects.requireNonNull(criteriaSupplier,
                 "criteria supplier cannot be null");
+        suppliers.hasChanged = true;
     }
     
     /**
@@ -119,6 +130,7 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
         }
         suppliers.placeholderMenteeSupplier = defaultMentee;
         suppliers.placeholderMentorSupplier = defaultMentor;
+        suppliers.hasChanged = true;
     }
     
     private class SupplierList {
@@ -128,6 +140,7 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
         Future<Mentee> placeholderMenteeSupplier;
         Future<Mentor> placeholderMentorSupplier;
         ForbiddenMatches<Mentee, Mentor> forbiddenMatches = new ForbiddenMatches<>();
+        private boolean hasChanged = true;
         
         SupplierList(){}
         
@@ -140,6 +153,8 @@ public class MatchesBuilderHandler<Mentee, Mentor> {
                 result.placeholderMenteeSupplier = placeholderMenteeSupplier;
                 result.placeholderMentorSupplier = placeholderMentorSupplier;
                 result.forbiddenMatches = forbiddenMatches;
+                result.hasChanged = hasChanged;
+                this.hasChanged = false;
             }
             return result;
         }

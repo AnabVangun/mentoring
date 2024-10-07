@@ -60,6 +60,16 @@ final class MatchesBuilderHandlerTest implements TestFramework<MatchesBuilderHan
     }
     
     @TestFactory
+    Stream<DynamicNode> getWorks_successiveCalls(){
+        return test("get() returns the expected builder when called several times without changing the suppliers",
+                args -> {
+                    MatchesBuilderHandler<Integer, Integer> handler = args.convert();
+                    assertMatchesBuilderAsExpected(args.expectedMatches, handler);
+                    assertMatchesBuilderAsExpected(args.expectedMatches, handler);
+                });
+    }
+    
+    @TestFactory
     Stream<DynamicNode> getFailsBeforeNecessarySetters(){
         return test(Stream.of("ad hoc test"), 
                 "get() throws an exception when the necessary setters have not been called",
@@ -329,6 +339,62 @@ final class MatchesBuilderHandlerTest implements TestFramework<MatchesBuilderHan
                     }
                     assertMatchesBuilderAsExpected(expectedMatches, handler);
                 });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> setMenteesSupplier_resetForbiddenMatches(){
+        Future<List<Integer>> secondMenteesSupplier = new DummyFuture<>(List.of(0,3));
+        Matches<Integer,Integer> expectedMatches = new Matches<>(List.of(
+                new Match<>(0,1,STANDARD_COST), new Match<>(3,0,STANDARD_COST)));
+        return test(singleArgumentSupplier(), "setMenteesSupplier() resets the forbidden matches", 
+                args -> {
+                    MatchesBuilderHandler<Integer, Integer> handler = args.convert();
+                    handler.getForbiddenMatches().forbidMatch(0, 1);
+                    handler.setMenteesSupplier(secondMenteesSupplier);
+                    assertMatchesBuilderAsExpected(expectedMatches, handler);
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> setMentorsSupplier_resetForbiddenMatches(){
+        Future<List<Integer>> secondMentorsSupplier = new DummyFuture<>(List.of(0,3));
+        Matches<Integer,Integer> expectedMatches = new Matches<>(List.of(
+                new Match<>(0,3,STANDARD_COST), new Match<>(1,0,STANDARD_COST)));
+        return test(singleArgumentSupplier(), "setMentorsSupplier() resets the forbidden matches",
+                args -> {
+                    MatchesBuilderHandler<Integer, Integer> handler = args.convert();
+                    handler.getForbiddenMatches().forbidMatch(0, 3);
+                    handler.setMentorsSupplier(secondMentorsSupplier);
+                    assertMatchesBuilderAsExpected(expectedMatches, handler);
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> forbiddenMatches_takenIntoAccount(){
+        Matches<Integer,Integer> expectedMatches = new Matches<>(List.of(
+                new Match<>(0,0,PROHIBITIVE_COST), new Match<>(1,1,PROHIBITIVE_COST)));
+        return test(singleArgumentSupplier(), "forbiddenMatches are taken into account", args -> {
+            MatchesBuilderHandler<Integer, Integer> handler = args.convert();
+            handler.getForbiddenMatches().forbidMatch(0, 1);
+            assertMatchesBuilderAsExpected(expectedMatches, handler);
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> forbiddenMatches_modifications(){
+        Matches<Integer,Integer> secondExpectedMatches = new Matches<>(List.of(
+                new Match<>(0,0,PROHIBITIVE_COST), new Match<>(1,1,PROHIBITIVE_COST)));
+        return test(singleArgumentSupplier(),
+                "Modifications to forbiddenMatches between two get() are taken into account", args -> {
+                    MatchesBuilderHandler<Integer, Integer> handler = args.convert();
+                    try{
+                        handler.get();
+                    } catch (InterruptedException | ExecutionException e){
+                        Assertions.fail(e);
+                    }
+                    handler.getForbiddenMatches().forbidMatch(0, 1);
+                    assertMatchesBuilderAsExpected(secondExpectedMatches, handler);
+        });
     }
     
     static void assertMatchesBuilderAsExpected(Matches<Integer, Integer> expectedMatches,
