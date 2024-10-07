@@ -96,9 +96,9 @@ public class PersonListViewModel extends SimpleObservable
                         .collect(Collectors.toList()));
     }
     
-    private void setUnderlyingData(List<Person> matches) {
+    private void setUnderlyingData(List<Person> persons) {
         this.underlyingData.clear();
-        this.underlyingData.addAll(matches);
+        this.underlyingData.addAll(persons);
     }
             
     private void prepareItems() {

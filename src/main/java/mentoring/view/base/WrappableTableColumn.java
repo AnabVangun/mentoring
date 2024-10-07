@@ -1,6 +1,5 @@
 package mentoring.view.base;
 
-import java.util.Comparator;
 import java.util.Objects;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Control;
@@ -19,15 +18,6 @@ class WrappableTableColumn<E> extends TableColumn<E, Object> {
     private final MenuItem unwrapColumnButton = new MenuItem("Unwrap column");
     private final ContextMenu wrapColumnMenu = new ContextMenu(wrapColumnButton);
     private final ContextMenu unwrapColumnMenu = new ContextMenu(unwrapColumnButton);
-    //TODO refactor extract and test properly
-    @SuppressWarnings("unchecked")
-    private static final Comparator<Object> comparator = (first, second) -> {
-        if(first instanceof Integer firstInteger && second instanceof Integer secondInteger){
-            return firstInteger.compareTo(secondInteger);
-        } else {
-            return DEFAULT_COMPARATOR.compare(first, second);
-        }
-    };
 
     WrappableTableColumn(String header) {
         super(Objects.requireNonNull(header));
@@ -40,7 +30,6 @@ class WrappableTableColumn<E> extends TableColumn<E, Object> {
             setContextMenu(wrapColumnMenu);
         });
         setContextMenu(wrapColumnMenu);
-        setComparator(comparator);
     }
     
     private TableCell<E, Object> forgeWrappedCell(TableColumn<E, Object> column){
