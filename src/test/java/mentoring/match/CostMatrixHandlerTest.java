@@ -17,14 +17,21 @@ final class CostMatrixHandlerTest implements TestFramework<CostMatrixHandlerTest
 
     @Override
     public Stream<CostMatrixHandlerArgs> argumentsSupplier() {
+        return Stream.concat(withoutNecessaryCriterionSupplier(), withNecessaryCriterionSupplier());
+    }
+    
+    Stream<CostMatrixHandlerArgs> withoutNecessaryCriterionSupplier(){
         return Stream.of(
                 new CostMatrixHandlerArgs("handler without necessary criterion", 
                         new int[][]{{7,5,3},{11,8,5},{15,11,7},{19,14,9},{23,17,11}}, null,
                         List.of(1,2,3,4,5), List.of(3,2,1),
                         List.of((mentee, mentor) -> mentee*mentor, 
                                 (mentee, mentor) -> mentee + mentor),
-                        List.of(0,1), List.of(0,2), new int[][]{{7,3},{11,5}}),
-                new NecessaryCostMatrixHandlerArgs("handler with necessary criterion", 
+                        List.of(0,1), List.of(0,2), new int[][]{{7,3},{11,5}}));
+    }
+    
+    Stream<NecessaryCostMatrixHandlerArgs> withNecessaryCriterionSupplier(){
+        return Stream.of(new NecessaryCostMatrixHandlerArgs("handler with necessary criterion", 
                         new int[][]{{11,9,7,5,3}, {17,14,11,8,5}, {23,19,15,11,7}},
                         new boolean[][]{{true, true, true, true, false},
                             {false, false, false, false, false},
@@ -36,8 +43,7 @@ final class CostMatrixHandlerTest implements TestFramework<CostMatrixHandlerTest
                                 (mentee, mentor) -> !mentee.equals(mentor)),
                         List.of(0,1), List.of(0,2), 
                         new int[][]{{11, 7},
-                            {MatchesBuilder.PROHIBITIVE_VALUE, MatchesBuilder.PROHIBITIVE_VALUE}}
-                ));
+                            {MatchesBuilder.PROHIBITIVE_VALUE, MatchesBuilder.PROHIBITIVE_VALUE}}));
     }
     
     @TestFactory
@@ -322,6 +328,57 @@ final class CostMatrixHandlerTest implements TestFramework<CostMatrixHandlerTest
             Assertions.assertAll(
                     () -> Assertions.assertFalse(matrixHandler.allowMatch(0, 0)),
                     () -> Assertions.assertTrue(matrixHandler.isMatchAllowed(0, 0)));
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> allowMatch_doesNotOverrideNecessaryCriteria(){
+        return test(withNecessaryCriterionSupplier(), 
+                "allowMatch() does not allow a match forbidden by criteria",
+                args -> {
+                    CostMatrixHandler<Integer, Integer> matrixHandler = args.convert();
+                    int menteeIndex = 1;
+                    int mentorIndex = 3;
+                    Assertions.assertFalse(matrixHandler.isMatchAllowed(menteeIndex,mentorIndex),
+                            "test conditions require match(%s,%s) to be allowed"
+                            .formatted(menteeIndex, mentorIndex));
+                    Assertions.assertAll(
+                            () -> Assertions.assertFalse(matrixHandler.allowMatch(menteeIndex,mentorIndex)),
+                            () -> Assertions.assertFalse(matrixHandler.allowMatch(menteeIndex,mentorIndex)));
+                });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> withNecessaryCriteria_doesNotClearForbiddenMatches(){
+        return test(withNecessaryCriterionSupplier(),
+                "withNecessaryCriteria() does not clear forbidden matches",
+                args -> {
+                    CostMatrixHandler<Integer, Integer> matrixHandler = 
+                            new CostMatrixHandler<>(args.mentees, args.mentors, 
+                                    args.progressiveCriteria);
+                    matrixHandler.forbidMatch(0, 0);
+                    matrixHandler.withNecessaryCriteria(args.necessaryCriteria);
+                    Assertions.assertFalse(matrixHandler.isMatchAllowed(0, 0));
+                });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> clearForbiddenMatches_allMatchesAllowed(){
+        return test("clearForbiddenMatches() makes all matches allowed", args -> {
+            CostMatrixHandler<Integer, Integer> matrixHandler = args.convert();
+            matrixHandler.forbidMatch(0, 0);
+            matrixHandler.forbidMatch(0, 1);
+            matrixHandler.forbidMatch(1, 2);
+            matrixHandler.clearSpecificallyForbiddenMatches();
+            for(int i = 0; i < args.mentees.size(); i++){
+                for (int j = 0; j < args.mentors.size(); j++){
+                    Assertions.assertEquals(args.expectedAllowedMatchMatrix[i][j],
+                            matrixHandler.isMatchAllowed(i, j), 
+                            "Match (i,j) is supposed to be %s but was %s"
+                                    .formatted(args.expectedAllowedMatchMatrix[i][j],
+                                            matrixHandler.isMatchAllowed(i, j)));
+                }
+            }
         });
     }
     
