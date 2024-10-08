@@ -231,7 +231,6 @@ final class MatchesBuilderHandlerTest implements TestFramework<MatchesBuilderHan
     
     @TestFactory
     Stream<DynamicNode> getIsNotChangedByConcurrentSetters(){
-        //FIXME this test fails with caching, find out why
         CountDownLatch startSignal = new CountDownLatch(1);
         CountDownLatch stopSignal = new CountDownLatch(2);
         FutureTask<List<Integer>> secondMenteesSupplier = new FutureTask<>(() -> {

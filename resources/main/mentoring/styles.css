@@ -1,3 +1,16 @@
 .textfield {
     -fx-text-fill: blue;
 }
+.manual-match {
+    -fx-fill: green;
+    -fx-text-fill: yellow;
+}
+
+.computed-match {
+    -fx-fill: red;
+    -fx-text-fill: orange;
+}
+.both-match {
+    -fx-fill: purple;
+    -fx-text-fill: light-orange;
+}

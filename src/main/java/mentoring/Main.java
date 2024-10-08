@@ -9,7 +9,25 @@ public class Main {
     }
     /**
      * TODO: link GUI to code.
-     * Add status for person: "not matched", "manual match", "automated match"
+     * Add status for person: "manual match", "automated match"
+     *      Add MatchStatus Enum in PersonViewModel
+     *      Add a property wrapping an EnumSet of this Enum in PersonViewModel
+     *      Add ways to query its state and add or remove a value (to test)
+     *      When a manual match is made, add "manual match" to the mentee and mentor VM
+     *      Use setRowFactory on mentee and mentor tables to listen to this status 
+     *          (https://stackoverflow.com/questions/73754682/dynamically-change-style-of-multiple-javafx-tablerow/73764770#73764770)
+     *      When a manual match is removed, remove manual match to the mentee and mentor VM
+     *      When a global match is run, update all mentees and mentors VM
+     * Update dependencies:
+     *      Update NetBeans to newest version
+     *      Update JDK to newest version
+     *      Update Gradle to newest version
+     *      Update shadow to com.gradleup.shadow version 8.3.3
+     *      Update snakeyaml engine to 2.8
+     *      Update Guice to 7.0.0
+     *      Update JUnit to 5.11.2
+     *      Update Mockito to 5.14.1
+     *      Update TestFX to 4.0.18
      * 7. Add an indicator for when "Run" should be clicked
      * 9a. Add global configuration parameters for magic numbers.
      * 9b. Internationalize GUI
