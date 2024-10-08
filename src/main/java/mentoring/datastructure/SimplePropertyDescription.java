@@ -1,31 +1,30 @@
 package mentoring.datastructure;
 
 /**
- * Simple implementation of PropertyName.
+ * Simple implementation of PropertyDescription.
  * 
  * @param <T> the type of element stored in the property.
  */
-public class SimplePropertyName<T> extends PropertyName<T>{
-    //TODO refactor: rename PropertyName into PropertyDescription
+public class SimplePropertyDescription<T> extends PropertyDescription<T>{
     /**
-     * Initialises a new PropertyName.
+     * Initialises a new PropertyDescription.
      * @param name of the property in {@link Person} objects
      * @param headerName of the property in the header of data files
      * @param type expected type of the property
      */
-    public SimplePropertyName(String name, String headerName, PropertyType<T> type){
+    public SimplePropertyDescription(String name, String headerName, PropertyType<T> type){
         super(name, headerName, type);
     }
     
     @Override
-    public SimplePropertyName<T> withHeaderName(String headerName){
-        return new SimplePropertyName<>(getName(), headerName, getType());
+    public SimplePropertyDescription<T> withHeaderName(String headerName){
+        return new SimplePropertyDescription<>(getName(), headerName, getType());
     }
     
     
     @Override
     public boolean equals(Object o){
-        return o instanceof SimplePropertyName cast && attributeEquals(cast);
+        return o instanceof SimplePropertyDescription cast && attributeEquals(cast);
     }
     
     @Override

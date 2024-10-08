@@ -7,13 +7,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import mentoring.configuration.PersonConfiguration;
-import mentoring.datastructure.IndexedPropertyName;
-import mentoring.datastructure.MultiplePropertyName;
+import mentoring.datastructure.IndexedPropertyDescription;
+import mentoring.datastructure.MultiplePropertyDescription;
 import mentoring.datastructure.Person;
 import mentoring.datastructure.PersonBuilder;
 import mentoring.datastructure.PropertyType;
-import mentoring.datastructure.SetPropertyName;
-import mentoring.datastructure.SimplePropertyName;
+import mentoring.datastructure.SetPropertyDescription;
+import mentoring.datastructure.SimplePropertyDescription;
 import mentoring.match.Match;
 import mentoring.match.MatchTest;
 import mentoring.viewmodel.base.ObservableTest;
@@ -288,13 +288,11 @@ class PersonListViewModelTest extends ObservableTest<PersonListViewModel,
         }
         
         PersonConfiguration getSimpleConfiguration(){
-            Set<MultiplePropertyName<?,?>> multipleProperties = new LinkedHashSet<>();
-            multipleProperties.add(
-                    new IndexedPropertyName<>("indexed", "indexed header", PropertyType.BOOLEAN));
-            multipleProperties.add(
-                    new SetPropertyName<>("set", "set header", PropertyType.STRING));
+            Set<MultiplePropertyDescription<?,?>> multipleProperties = new LinkedHashSet<>();
+            multipleProperties.add(new IndexedPropertyDescription<>("indexed", "indexed header", PropertyType.BOOLEAN));
+            multipleProperties.add(new SetPropertyDescription<>("set", "set header", PropertyType.STRING));
             return new PersonConfiguration("configuration", 
-                    Set.of(new SimplePropertyName<>("simple", "simple header", PropertyType.INTEGER)), 
+                    Set.of(new SimplePropertyDescription<>("simple", "simple header", PropertyType.INTEGER)), 
                     multipleProperties,
                     "|", "%s", List.of("simple header"));
         }

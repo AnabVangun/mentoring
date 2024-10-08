@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
-import mentoring.datastructure.PropertyName;
+import mentoring.datastructure.PropertyDescription;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
@@ -90,7 +90,7 @@ public interface SimplePersonConfigurationTest<T extends SimplePersonConfigurati
         return test(argumentsSupplier().filter(args -> !args.convert().getSimplePropertiesNames().isEmpty()),
                 "containsPropertyName() return true on simple property", args -> {
                     PersonConfiguration configuration = args.convert();
-                    PropertyName<?> property = configuration.getSimplePropertiesNames()
+                    PropertyDescription<?> property = configuration.getSimplePropertiesNames()
                             .iterator().next();
                     Assertions.assertTrue(configuration.containsPropertyName(property.getName()));
         });
@@ -101,7 +101,7 @@ public interface SimplePersonConfigurationTest<T extends SimplePersonConfigurati
         return test(argumentsSupplier().filter(args -> !args.convert().getMultiplePropertiesNames().isEmpty()),
                 "containsPropertyName() return true on multiple property", args -> {
                     PersonConfiguration configuration = args.convert();
-                    PropertyName<?> property = configuration.getMultiplePropertiesNames()
+                    PropertyDescription<?> property = configuration.getMultiplePropertiesNames()
                             .iterator().next();
                     Assertions.assertTrue(configuration.containsPropertyName(property.getName()));
         });

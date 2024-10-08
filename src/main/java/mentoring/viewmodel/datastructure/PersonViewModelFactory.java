@@ -4,12 +4,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.Person;
-import mentoring.datastructure.PropertyName;
+import mentoring.datastructure.PropertyDescription;
 
 /**
  * Factory used to build a list of {@link PersonViewModel} instances with the same configuration.
@@ -47,10 +46,10 @@ class PersonViewModelFactory {
     
     private static void fillMapWithProperties(Map<String, Object> map, 
             PersonConfiguration configuration, Person person){
-        for(PropertyName<?> property : configuration.getSimplePropertiesNames()){
+        for(PropertyDescription<?> property : configuration.getSimplePropertiesNames()){
             map.put(property.getName(), property.getStringRepresentation(person));
         }
-        for(PropertyName<?> property : configuration.getMultiplePropertiesNames()){
+        for(PropertyDescription<?> property : configuration.getMultiplePropertiesNames()){
             map.put(property.getName(), property.getStringRepresentation(person));
         }
     }

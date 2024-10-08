@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import mentoring.configuration.PersonConfiguration;
-import mentoring.datastructure.MultiplePropertyName;
-import mentoring.datastructure.PropertyName;
-import mentoring.datastructure.SimplePropertyName;
+import mentoring.datastructure.MultiplePropertyDescription;
+import mentoring.datastructure.PropertyDescription;
+import mentoring.datastructure.SimplePropertyDescription;
 import mentoring.io.datareader.DataReader;
 
 /**
@@ -34,10 +34,10 @@ public final class PersonConfigurationParser extends Parser<PersonConfiguration>
     protected PersonConfiguration buildObject(Map<String, Object> data) 
             throws IllegalArgumentException {
         String configurationName = extractAttribute(data, CONFIGURATION_NAME_KEY, String.class);
-        Set<SimplePropertyName<?>> properties = extractProperties(data, PROPERTIES_KEY, 
-                new SimplePropertyNameDecoder());
-        Set<MultiplePropertyName<?,?>> multipleProperties = 
-                extractProperties(data, MULTIPLE_PROPERTIES_KEY, new MultiplePropertyNameDecoder());
+        Set<SimplePropertyDescription<?>> properties = extractProperties(data, PROPERTIES_KEY, 
+                new SimplePropertyDescriptionDecoder());
+        Set<MultiplePropertyDescription<?,?>> multipleProperties = 
+                extractProperties(data, MULTIPLE_PROPERTIES_KEY, new MultiplePropertyDescriptionDecoder());
         String separator = extractAttribute(data, SEPARATOR_KEY, String.class);
         String nameFormat = extractAttribute(data, NAME_FORMAT_KEY, String.class);
         List<String> nameProperties = (List<String>) extractAttributeList(data, NAME_PROPERTIES_KEY, 
@@ -50,9 +50,9 @@ public final class PersonConfigurationParser extends Parser<PersonConfiguration>
     }
     
     @SuppressWarnings("unchecked")
-    private static <T extends PropertyName<?>> Set<T> extractProperties(Map<String, Object> data, 
-            String propertyKey, PropertyNameDecoder<T> parser){
-        return parser.decodePropertyNames(
+    private static <T extends PropertyDescription<?>> Set<T> extractProperties(Map<String, Object> data, 
+            String propertyKey, PropertyDescriptionDecoder<T> parser){
+        return parser.decodePropertyDescriptions(
                 (Iterable<Map<String, String>>) extractAttribute(data, propertyKey));
     }
     

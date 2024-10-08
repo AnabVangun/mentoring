@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import mentoring.datastructure.MultiplePropertyName;
+import mentoring.datastructure.MultiplePropertyDescription;
 import mentoring.datastructure.PropertyType;
-import mentoring.datastructure.SimplePropertyName;
+import mentoring.datastructure.SimplePropertyDescription;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 
@@ -14,9 +14,9 @@ public interface ExtendedPersonConfigurationArgs extends SimplePersonConfigurati
     
     String getExpectedName();
     
-    Set<SimplePropertyName<?>> getExpectedProperties();
+    Set<SimplePropertyDescription<?>> getExpectedProperties();
     
-    Set<MultiplePropertyName<?,?>> getExpectedMultipleProperties();
+    Set<MultiplePropertyDescription<?,?>> getExpectedMultipleProperties();
     
     String getExpectedSeparator();
     
@@ -42,8 +42,8 @@ public interface ExtendedPersonConfigurationArgs extends SimplePersonConfigurati
                             actual.getNameFormat(), actual.getNamePropertiesHeaderNames())));
     }
     
-    static void assertSimplePropertiesAsExpected(Set<SimplePropertyName<?>> expected, 
-            Set<SimplePropertyName<?>> actual){
+    static void assertSimplePropertiesAsExpected(Set<SimplePropertyDescription<?>> expected, 
+            Set<SimplePropertyDescription<?>> actual){
         String nameSeparator = "###@###";
         Map<String, PropertyType<?>> expectedAsMap = new HashMap<>();
         expected.forEach(item -> expectedAsMap.put(
@@ -54,8 +54,8 @@ public interface ExtendedPersonConfigurationArgs extends SimplePersonConfigurati
         Assertions.assertEquals(expectedAsMap, actualAsMap);
     }
     
-    static void assertMultiplePropertiesAsExpected(Set<MultiplePropertyName<?,?>> expected,
-            Set<MultiplePropertyName<?,?>> actual){
+    static void assertMultiplePropertiesAsExpected(Set<MultiplePropertyDescription<?,?>> expected,
+            Set<MultiplePropertyDescription<?,?>> actual){
         String nameSeparator = "###@###";
         Map<String, Pair<PropertyType<?>, PropertyType<?>>> expectedAsMap = new HashMap<>();
         expected.forEach(item -> expectedAsMap.put(

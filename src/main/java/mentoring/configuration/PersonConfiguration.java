@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import mentoring.datastructure.MultiplePropertyName;
-import mentoring.datastructure.SimplePropertyName;
+import mentoring.datastructure.MultiplePropertyDescription;
+import mentoring.datastructure.SimplePropertyDescription;
 import org.apache.commons.lang3.StringUtils;
 /**
  * The definition of a person's properties.
@@ -16,8 +16,8 @@ import org.apache.commons.lang3.StringUtils;
  */
 public final class PersonConfiguration extends Configuration<PersonConfiguration> {
     
-    private final Set<SimplePropertyName<?>> properties;
-    private final Set<MultiplePropertyName<?,?>> multipleProperties;
+    private final Set<SimplePropertyDescription<?>> properties;
+    private final Set<MultiplePropertyDescription<?,?>> multipleProperties;
     private final String separator;
     private final String nameFormat;
     private final List<String> nameProperties;
@@ -36,8 +36,8 @@ public final class PersonConfiguration extends Configuration<PersonConfiguration
      * of a person.
      */
     public PersonConfiguration(String configurationName,
-                Set<SimplePropertyName<?>> properties, 
-                Set<MultiplePropertyName<?,?>> multipleProperties, 
+                Set<SimplePropertyDescription<?>> properties, 
+                Set<MultiplePropertyDescription<?,?>> multipleProperties, 
                 String separator, String nameFormat,
                 List<String> namePropertiesHeaderNames){
             super(configurationName);
@@ -61,19 +61,19 @@ public final class PersonConfiguration extends Configuration<PersonConfiguration
     }
     
     /**
-     * Returns the {@link SimplePropertyName} instances describing single-valued properties.
+     * Returns the {@link SimplePropertyDescription} instances describing single-valued properties.
      * @return the identification of single-valued properties for this configuration
      */
-    public Set<SimplePropertyName<?>> getSimplePropertiesNames(){
+    public Set<SimplePropertyDescription<?>> getSimplePropertiesNames(){
         return properties;
     }
     
     /**
-     * Returns the {@link SimplePropertyName} instances describing multi-valued properties. Multi-valued
+     * Returns the {@link SimplePropertyDescription} instances describing multi-valued properties. Multi-valued
      * properties are properties associated with collections of values.
      * @return the identification of multi-valued properties for this configuration
      */
-    public Set<MultiplePropertyName<?,?>> getMultiplePropertiesNames(){
+    public Set<MultiplePropertyDescription<?,?>> getMultiplePropertiesNames(){
         return multipleProperties;
     }
     

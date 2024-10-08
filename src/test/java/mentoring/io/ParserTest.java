@@ -37,7 +37,7 @@ interface ParserTest<T, U extends Parser<T>, V extends ParserArgs<T,U>> extends 
     
     /**
      * Generate a stream of arguments that would generate errors in the decoder.
-     * @return arguments such that {@link PropertyNameDecoder#decodePropertyNames(java.lang.Iterable) }
+     * @return arguments such that {@link PropertyDescriptionDecoder#decodePropertyDescriptions(java.lang.Iterable) }
      * raises an exception.
      */
     default Stream<V> invalidArgumentsSupplier(){

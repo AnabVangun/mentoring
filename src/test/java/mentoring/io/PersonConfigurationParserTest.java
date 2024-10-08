@@ -12,11 +12,11 @@ import java.util.stream.Stream;
 import mentoring.configuration.ExtendedPersonConfigurationArgs;
 import mentoring.configuration.ExtendedPersonConfigurationTest;
 import mentoring.configuration.PersonConfiguration;
-import mentoring.datastructure.MultiplePropertyName;
-import mentoring.datastructure.IndexedPropertyName;
+import mentoring.datastructure.MultiplePropertyDescription;
+import mentoring.datastructure.IndexedPropertyDescription;
 import mentoring.datastructure.PropertyType;
-import mentoring.datastructure.SetPropertyName;
-import mentoring.datastructure.SimplePropertyName;
+import mentoring.datastructure.SetPropertyDescription;
+import mentoring.datastructure.SimplePropertyDescription;
 import mentoring.io.ParserTest.ParserArgs;
 import mentoring.io.PersonConfigurationParserTest.PersonConfigurationParserArgs;
 import mentoring.io.datareader.DataReader;
@@ -28,21 +28,19 @@ class PersonConfigurationParserTest implements
 
     @Override
     public Stream<PersonConfigurationParserArgs> argumentsSupplier() {
-        return Stream.of(
-                new PersonConfigurationParserArgs("validTestConfiguration.yaml", 
+        return Stream.of(new PersonConfigurationParserArgs("validTestConfiguration.yaml", 
                         "standard valid test",
-                        Set.of(new SimplePropertyName<>("Anglais", "Anglais", PropertyType.BOOLEAN), 
-                                new SimplePropertyName<>("Promotion", "Promotion", PropertyType.INTEGER)),
-                        Set.of(
-                                new SetPropertyName<>("Métiers", "Activités et métiers", 
+                        Set.of(new SimplePropertyDescription<>("Anglais", "Anglais", PropertyType.BOOLEAN), 
+                                new SimplePropertyDescription<>("Promotion", "Promotion", PropertyType.INTEGER)),
+                        Set.of(new SetPropertyDescription<>("Métiers", "Activités et métiers", 
                                         PropertyType.STRING),
-                                new IndexedPropertyName<>("Motivation", "Motivation", 
+                                new IndexedPropertyDescription<>("Motivation", "Motivation", 
                                         PropertyType.STRING)),
                         ",", "%s %s (X%s)", List.of("Prénom", "Nom", "Promotion"), new YamlReader()),
                 new PersonConfigurationParserArgs("validSecondTestConfiguration.yaml", 
                         "standard second valid test",
-                        Set.of(new SimplePropertyName<>("Anglais", "Anglais", PropertyType.YEAR)),
-                        Set.of(new SetPropertyName<>("Métiers", "Métiers", 
+                        Set.of(new SimplePropertyDescription<>("Anglais", "Anglais", PropertyType.YEAR)),
+                        Set.of(new SetPropertyDescription<>("Métiers", "Métiers", 
                                 PropertyType.SIMPLIFIED_LOWER_STRING)),
                         ",", "%s", List.of("Prénom"), new YamlReader()));
     }
@@ -92,16 +90,16 @@ class PersonConfigurationParserTest implements
     
     static record PersonConfigurationParserArgs(String filePath, 
         String configurationName,
-        Set<SimplePropertyName<?>> propertiesNames, 
-        Set<MultiplePropertyName<?,?>> multiplePropertiesNames, 
+        Set<SimplePropertyDescription<?>> propertiesNames, 
+        Set<MultiplePropertyDescription<?,?>> multiplePropertiesNames, 
         String separator, String nameFormat, List<String> namePropertiesHeader, DataReader reader,
         int specificErrorsCount)
             implements ExtendedPersonConfigurationArgs, 
                     ParserArgs<PersonConfiguration, PersonConfigurationParser>{
         
         PersonConfigurationParserArgs(String filePath, String configurationName, 
-                Set<SimplePropertyName<?>> propertiesNames, 
-                Set<MultiplePropertyName<?,?>> multiplePropertiesNames, 
+                Set<SimplePropertyDescription<?>> propertiesNames, 
+                Set<MultiplePropertyDescription<?,?>> multiplePropertiesNames, 
                 String separator, String nameFormat, List<String> namePropertiesHeader, 
                 DataReader reader){
             this(filePath, configurationName, propertiesNames, multiplePropertiesNames, separator,
@@ -139,12 +137,12 @@ class PersonConfigurationParserTest implements
         }
 
         @Override
-        public Set<SimplePropertyName<?>> getExpectedProperties() {
+        public Set<SimplePropertyDescription<?>> getExpectedProperties() {
             return propertiesNames;
         }
 
         @Override
-        public Set<MultiplePropertyName<?, ?>> getExpectedMultipleProperties() {
+        public Set<MultiplePropertyDescription<?, ?>> getExpectedMultipleProperties() {
             return multiplePropertiesNames;
         }
 
