@@ -12,4 +12,10 @@ public class PersonViewModel extends DataViewModel<Person>{
     PersonViewModel(Person person, Function<Person, Iterator<Map.Entry<String, Object>>> formatter){
         super(person, formatter);
     }
+    
+    private final MatchStatus status = new MatchStatus();
+    
+    public MatchStatus getStatus(){
+        return status;
+    }
 }

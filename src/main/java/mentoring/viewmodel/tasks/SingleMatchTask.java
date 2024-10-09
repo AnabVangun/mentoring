@@ -6,14 +6,16 @@ import mentoring.datastructure.Person;
 import mentoring.match.Match;
 import mentoring.match.MatchesBuilder;
 import mentoring.match.MatchesBuilderHandler;
+import mentoring.viewmodel.datastructure.MatchStatus;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
+import mentoring.viewmodel.datastructure.PersonViewModel;
 
 public class SingleMatchTask extends AbstractTask<Match<Person, Person>> {
     
     private final PersonMatchesViewModel resultVM;
     private final MatchesBuilderHandler<Person, Person> builderHandler;
-    private final Person mentee;
-    private final Person mentor;
+    private final PersonViewModel mentee;
+    private final PersonViewModel mentor;
     private Match<Person, Person> result;
 
     /**
@@ -26,7 +28,7 @@ public class SingleMatchTask extends AbstractTask<Match<Person, Person>> {
      */
     public SingleMatchTask(PersonMatchesViewModel resultVM,
             MatchesBuilderHandler<Person, Person> builderHandler,
-            Person mentee, Person mentor, 
+            PersonViewModel mentee, PersonViewModel mentor, 
             TaskCompletionCallback<? super Match<Person, Person>> callback) {
         super(callback);
         this.resultVM = Objects.requireNonNull(resultVM);
@@ -37,13 +39,15 @@ public class SingleMatchTask extends AbstractTask<Match<Person, Person>> {
 
     @Override
     protected Match<Person, Person> call() throws Exception {
-        result = makeMatchWithException(builderHandler, mentee, mentor);
+        result = makeMatchWithException(builderHandler, mentee.getData(), mentor.getData());
         return result;
     }
 
     @Override
     protected void specificActionOnSuccess() {
         resultVM.add(result);
+        mentee.getStatus().add(MatchStatus.MatchFlag.MANUAL_MATCH);
+        mentor.getStatus().add(MatchStatus.MatchFlag.MANUAL_MATCH);
     }
 
     private static Match<Person, Person> makeMatchWithException(

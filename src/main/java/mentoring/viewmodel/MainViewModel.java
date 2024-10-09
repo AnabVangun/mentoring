@@ -252,7 +252,7 @@ public class MainViewModel {
         taskHandler.submit(configuration);
         matchesBuilderHandler.setCriteriaSupplier(configuration);
         return taskHandler.submit(new SingleMatchTask(resultVM, matchesBuilderHandler, 
-                selectedMentee.get().getData(), selectedMentor.get().getData(), callback));
+                selectedMentee.get(), selectedMentor.get(), callback));
     }
     
     /**

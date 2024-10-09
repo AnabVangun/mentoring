@@ -9,7 +9,9 @@ import mentoring.match.Match;
 import mentoring.match.MatchTest;
 import mentoring.match.MatchesBuilder;
 import mentoring.match.MatchesBuilderHandler;
+import mentoring.viewmodel.datastructure.MatchStatus;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
+import mentoring.viewmodel.datastructure.PersonViewModel;
 import mentoring.viewmodel.tasks.SingleMatchTaskTest.SingleMatchTaskArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
@@ -36,11 +38,13 @@ class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
         return test("call() returns the expected match", args -> {
             SingleMatchTask task = args.convert();
             Match<Person,Person> expectedMatch = 
-                    new MatchTest.MatchArgs("foo", args.mentee, args.mentor, args.expectedCost)
+                    new MatchTest.MatchArgs("foo", args.mentee.getData(), args.mentor.getData(), 
+                            args.expectedCost)
                     .convertAs(Person.class, Person.class);
             Assertions.assertEquals(expectedMatch, callTask(task));
         });
     }
+    
     @TestFactory
     Stream<DynamicNode> makeSingleMatch_updateViewModel(){
         return test("succeeded() updates the input view model", args -> {
@@ -50,6 +54,28 @@ class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
             ArgumentCaptor<Match<Person, Person>> captor = captureAddedMatch(args.updatedVM);
             Match<Person, Person> actualMatch = captor.getValue();
             Assertions.assertEquals(expectedMatch, actualMatch);
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> makeSingleMatch_updateMenteeViewModel(){
+        return test("succeeded() updates the mentee view model", args -> {
+            SingleMatchTask task = args.convert();
+            callTask(task);
+            task.succeeded();
+            Assertions.assertTrue(args.menteeStatus.getStyleClass()
+                    .contains(MatchStatus.MatchFlag.MANUAL_MATCH.getStyleClass()));
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> makeSingleMatch_updateMentorViewModel(){
+        return test("succeeded() updates the mentee view model", args -> {
+            SingleMatchTask task = args.convert();
+            callTask(task);
+            task.succeeded();
+            Assertions.assertTrue(args.mentorStatus.getStyleClass()
+                    .contains(MatchStatus.MatchFlag.MANUAL_MATCH.getStyleClass()));
         });
     }
     
@@ -87,7 +113,8 @@ class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
     
     static Executable assertConstructorThrowsNPE(PersonMatchesViewModel vm, 
             MatchesBuilderHandler<Person, Person> builderHandler, 
-            Person mentee, Person mentor, AbstractTask.TaskCompletionCallback<Object> callback){
+            PersonViewModel mentee, PersonViewModel mentor, 
+            AbstractTask.TaskCompletionCallback<Object> callback){
         return () -> Assertions.assertThrows(NullPointerException.class, 
                 () -> new SingleMatchTask(vm, builderHandler, mentee, mentor, callback));
     }
@@ -97,8 +124,10 @@ class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
         @SuppressWarnings("unchecked")
         final MatchesBuilderHandler<Person, Person> builderHandler = 
                 Mockito.mock(MatchesBuilderHandler.class);
-        final Person mentee;
-        final Person mentor;
+        final PersonViewModel mentee;
+        final MatchStatus menteeStatus = new MatchStatus();
+        final PersonViewModel mentor;
+        final MatchStatus mentorStatus = new MatchStatus();
         final int expectedCost;
         final AbstractTask.TaskCompletionCallback<Object> callback = task -> {};
         
@@ -111,8 +140,12 @@ class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
         
         SingleMatchTaskArgs(String testCase, Person mentee, Person mentor, int expectedCost){
             super(testCase);
-            this.mentee = mentee;
-            this.mentor = mentor;
+            this.mentee = Mockito.mock(PersonViewModel.class);
+            Mockito.when(this.mentee.getData()).thenReturn(mentee);
+            Mockito.when(this.mentee.getStatus()).thenReturn(menteeStatus);
+            this.mentor = Mockito.mock(PersonViewModel.class);
+            Mockito.when(this.mentor.getData()).thenReturn(mentor);
+            Mockito.when(this.mentor.getStatus()).thenReturn(mentorStatus);
             MatchesBuilder<Person, Person> builder = 
                     new MatchesBuilder<>(List.of(MENTEE, PROHIBITED_MENTEE),
                             List.of(MENTOR), List.of((x, y) -> PROGRESSIVE_COST));

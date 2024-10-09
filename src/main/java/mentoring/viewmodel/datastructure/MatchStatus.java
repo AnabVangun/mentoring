@@ -19,6 +19,10 @@ public class MatchStatus {
         private MatchFlag(String pseudoClass){
             this.styleClass = pseudoClass;
         }
+        
+        public String getStyleClass(){
+            return styleClass;
+        }
     }
     
     private final Set<MatchFlag> status = EnumSet.noneOf(MatchFlag.class);
