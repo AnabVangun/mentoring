@@ -10,7 +10,7 @@
     -fx-fill: red;
     -fx-text-fill: orange;
 }
-.both-match {
+.manual-match.computed-match {
     -fx-fill: purple;
     -fx-text-fill: light-orange;
 }

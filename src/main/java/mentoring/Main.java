@@ -10,13 +10,12 @@ public class Main {
     /**
      * TODO: link GUI to code.
      * Add status for person: "manual match", "automated match"
-     *      Add MatchStatus Enum in PersonViewModel
-     *      Add a property wrapping an EnumSet of this Enum in PersonViewModel
-     *      Add ways to query its state and add or remove a value (to test)
+     *      Add a final MatchStatus in PersonViewModel and an associated getter
      *      When a manual match is made, add "manual match" to the mentee and mentor VM
-     *      Use setRowFactory on mentee and mentor tables to listen to this status 
+     *      Use setRowFactory on mentee and mentor tables to listen to this status and update self style
      *          (https://stackoverflow.com/questions/73754682/dynamically-change-style-of-multiple-javafx-tablerow/73764770#73764770)
      *      When a manual match is removed, remove manual match to the mentee and mentor VM
+     *      Check how to style elements that have both pseudoclasses
      *      When a global match is run, update all mentees and mentors VM
      * Update dependencies:
      *      Update NetBeans to newest version
