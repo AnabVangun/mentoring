@@ -5,10 +5,13 @@ import java.util.ResourceBundle;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javax.inject.Inject;
 import mentoring.view.base.TabularDataViewTools;
@@ -110,6 +113,28 @@ public class MatchesTableView implements Initializable {
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        menteeTable.setRowFactory(tr -> {
+            TableRow<PersonViewModel> row = new TableRow<>();
+            ObservableList<String> rowStyleClass = row.getStyleClass();
+            ListChangeListener<String> changeListener = change -> {
+                while(change.next()){
+                    if(change.wasUpdated()){
+                        throw new UnsupportedOperationException("List changed in an unsupported way");
+                    }
+                    change.getRemoved().forEach(styleClass -> rowStyleClass.remove(styleClass));
+                    change.getAddedSubList().forEach(styleClass -> rowStyleClass.add(styleClass));
+                }
+            };
+            row.itemProperty().addListener((observable, oldItem, newItem) -> {
+                if (oldItem != null){
+                    oldItem.getStatus().getStyleClass().removeListener(changeListener);
+                }
+                if (newItem != null){
+                    newItem.getStatus().getStyleClass().addListener(changeListener);
+                }
+            });
+            return row;
+        });
         batchVM.addListener(new WeakInvalidationListener(batchMatchesListener));
         oneAtATimeVM.addListener(new WeakInvalidationListener(oneAtATimeListener));
         menteeVM.addListener(new WeakInvalidationListener(menteeListener));

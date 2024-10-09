@@ -10,8 +10,7 @@ public class Main {
     /**
      * TODO: link GUI to code.
      * Add status for person: "manual match", "automated match"
-     *      Use setRowFactory on mentee and mentor tables to listen to this status and update self style
-     *          (https://stackoverflow.com/questions/73754682/dynamically-change-style-of-multiple-javafx-tablerow/73764770#73764770)
+     *      Fix styles.css to set up a style that is visible for the table rows
      *      When a manual match is removed, remove manual match to the mentee and mentor VM
      *      Check how to style elements that have both pseudoclasses
      *      When a global match is run, update all mentees and mentors VM
