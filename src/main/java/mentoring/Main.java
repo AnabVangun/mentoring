@@ -10,9 +10,7 @@ public class Main {
     /**
      * TODO: link GUI to code.
      * Add status for person: "manual match", "automated match"
-     *      Fix styles.css to set up a style that is visible for the table rows
-     *      When a manual match is removed, remove manual match to the mentee and mentor VM
-     *      Check how to style elements that have both pseudoclasses
+     *      Fix styles.css to set up proper styles for manual and automated matches
      *      When a global match is run, update all mentees and mentors VM
      * Update dependencies:
      *      Update NetBeans to newest version

@@ -264,7 +264,7 @@ public class MainViewModel {
     public Future<?> removeSingleMatch(PersonMatchesViewModel resultVM, 
             AbstractTask.TaskCompletionCallback<? super Void> callback){
         return taskHandler.submit(new SingleMatchRemovalTask(resultVM, selectedManualMatch.get(), 
-                callback));
+                selectedMentee.get(), selectedMentor.get(), callback));
     }
     
     /**

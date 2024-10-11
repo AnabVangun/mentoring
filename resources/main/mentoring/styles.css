@@ -4,13 +4,16 @@
 .manual-match {
     -fx-fill: green;
     -fx-text-fill: yellow;
+    -fx-cell-size: 40;
 }
 
 .computed-match {
     -fx-fill: red;
     -fx-text-fill: orange;
+    -fx-cell-size: 60;
 }
 .manual-match.computed-match {
     -fx-fill: purple;
     -fx-text-fill: light-orange;
+    -fx-cell-size: 80;
 }
