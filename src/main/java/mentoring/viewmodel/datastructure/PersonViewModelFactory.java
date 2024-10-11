@@ -1,9 +1,9 @@
 package mentoring.viewmodel.datastructure;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import mentoring.configuration.PersonConfiguration;
@@ -67,8 +67,8 @@ class PersonViewModelFactory {
      * @param persons to encapsulate
      * @return a collection representing the input persons
      */
-    Collection<PersonViewModel> create(Iterable<Person> persons){
-        Collection<PersonViewModel> result = new ArrayList<>();
+    List<PersonViewModel> create(Iterable<Person> persons){
+        List<PersonViewModel> result = new ArrayList<>();
         for(Person person: persons){
             result.add(new PersonViewModel(person, dataFormatter));
         }

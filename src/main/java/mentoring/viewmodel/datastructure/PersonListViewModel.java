@@ -2,7 +2,9 @@ package mentoring.viewmodel.datastructure;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import javafx.collections.FXCollections;
@@ -24,7 +26,11 @@ public class PersonListViewModel extends SimpleObservable
     private final ObservableList<PersonViewModel> items = 
             FXCollections.observableArrayList();
     private List<Person> pendingItems;
+    //TODO consider whether it is useful to guarantee order on underlying data
+    //Take into account the fact that underlyingMap cannot accept duplicates
+    //See impact on #getPersonViewModelIndex: is it still useful?
     private final List<Person> underlyingData = new ArrayList<>();
+    private final Map<Person, PersonViewModel> underlyingMap = new LinkedHashMap<>();
     private PersonConfiguration configuration = null;
     private boolean invalidated = false;
     private PersonViewModelFactory viewModelFactory = null;
@@ -48,6 +54,23 @@ public class PersonListViewModel extends SimpleObservable
     public ObservableList<PersonViewModel> getContent(){
         updateIfNecessary();
         return items;
+    }
+    
+    /**
+     * Returns the {@link PersonViewModel} encapsulating the given person. 
+     * @param person whose ViewModel is queried
+     * @return the queried ViewModel if the person is contained in this list
+     * @throws IllegalArgumentException if the person is not contained in this list
+     */
+    public PersonViewModel getPersonViewModel(Person person) throws IllegalArgumentException{
+        updateIfNecessary();
+        PersonViewModel result = underlyingMap.get(person);
+        if(result != null){
+            return result;
+        } else {
+            throw new IllegalArgumentException("Person %s is not in list %s"
+                    .formatted(person.getFullName(), this));
+        }
     }
     
     public List<Person> getUnderlyingData(){
@@ -76,14 +99,13 @@ public class PersonListViewModel extends SimpleObservable
     
     private synchronized void actuallyUpdate(){
         if(invalidated){
-            prepareHeader(configuration);
-            setUnderlyingData(pendingItems);
-            prepareItems();
+            buildHeader(configuration);
+            buildItems(pendingItems);
             invalidated = false;
         }
     }
     
-    private void prepareHeader(PersonConfiguration configuration) {
+    private void buildHeader(PersonConfiguration configuration) {
         this.configuration = configuration;
         modifiableHeaderContent.clear();
         viewModelFactory = new PersonViewModelFactory(configuration);
@@ -96,14 +118,15 @@ public class PersonListViewModel extends SimpleObservable
                         .collect(Collectors.toList()));
     }
     
-    private void setUnderlyingData(List<Person> persons) {
-        this.underlyingData.clear();
-        this.underlyingData.addAll(persons);
-    }
-            
-    private void prepareItems() {
-        items.clear();
-        items.addAll(viewModelFactory.create(underlyingData));
+    private void buildItems(List<Person> persons) {
+        underlyingData.clear();
+        underlyingData.addAll(persons);
+        List<PersonViewModel> viewModels = viewModelFactory.create(underlyingData);
+        items.addAll(viewModels);
+        underlyingMap.clear();
+        for (int i = 0; i < persons.size(); i++){
+            underlyingMap.put(persons.get(i), viewModels.get(i));
+        }
     }
     
     /**
@@ -115,14 +138,11 @@ public class PersonListViewModel extends SimpleObservable
      */
     public PersonViewModel getPersonViewModel(PersonMatchViewModel match, PersonType type){
         Person person = getPerson(match, type);
-        PersonViewModel result = null;
-        for (PersonViewModel vm : getContent()) {
-            if (vm.getData().equals(person)){
-                result = vm;
-                break;
-            }
+        try {
+            return getPersonViewModel(person);
+        } catch (IllegalArgumentException e){
+            return null;
         }
-        return result;
     }
     
     /**

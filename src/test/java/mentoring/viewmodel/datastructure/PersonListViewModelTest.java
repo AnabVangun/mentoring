@@ -271,6 +271,39 @@ class PersonListViewModelTest extends ObservableTest<PersonListViewModel,
         });
     }
     
+    @TestFactory
+    Stream<DynamicNode> getPersonViewModel_validInput(){
+        return test("getPersonViewModel() returns the expected view model", args -> {
+            PersonListViewModel list = args.convert();
+            PersonBuilder builder = new PersonBuilder();
+            Person first = builder.withFullName("first").withProperty("simple", 8)
+                    .withPropertyMap("indexed", Map.of())
+                    .withPropertyMap("set", Map.of()).build();
+            Person second = builder.withFullName("second").withProperty("simple", 3)
+                    .withPropertyMap("indexed", Map.of())
+                    .withPropertyMap("set", Map.of()).build();
+            list.update(args.getSimpleConfiguration(), List.of(first, second));
+            Assertions.assertSame(list.getContent().get(1), list.getPersonViewModel(second));
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> getPersonViewModel_invalidInput(){
+        return test("getPersonViewModel() throws an exception on invalid input", args -> {
+            PersonListViewModel list = args.convert();
+            PersonBuilder builder = new PersonBuilder();
+            Person first = builder.withFullName("first").withProperty("simple", 8)
+                    .withPropertyMap("indexed", Map.of())
+                    .withPropertyMap("set", Map.of()).build();
+            Person second = builder.withFullName("second").withProperty("simple", 3)
+                    .withPropertyMap("indexed", Map.of())
+                    .withPropertyMap("set", Map.of()).build();
+            list.update(args.getSimpleConfiguration(), List.of(first, second));
+            Assertions.assertThrows(IllegalArgumentException.class, 
+                    () -> list.getPersonViewModel(builder.build()));
+        });
+    }
+    
     static class PersonListViewModelArgs extends ObservableArgs<PersonListViewModel>{
         
         PersonListViewModelArgs(String testCase){

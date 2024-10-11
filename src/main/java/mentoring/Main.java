@@ -11,7 +11,6 @@ public class Main {
      * TODO: link GUI to code.
      * Add status for person: "manual match", "automated match"
      *      Fix styles.css to set up proper styles for manual and automated matches
-     *      When a global match is run, update all mentees and mentors VM
      * Update dependencies:
      *      Update NetBeans to newest version
      *      Update JDK to newest version
@@ -37,6 +36,6 @@ public class Main {
      * 16. Check good practice for storing FXML files (resources vs in packages)
      * 16a. Handle "Unsupported JavaFX configuration: classes were loaded from" warning because of TestFX
      * 17. Add undo/redo option (see command design pattern)
+     * Handle person asking for several matches
      */
-    /*TODO add CLI*/
 }

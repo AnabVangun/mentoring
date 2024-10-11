@@ -234,8 +234,7 @@ public class MainViewModel {
         matchesBuilderHandler.setCriteriaSupplier(configuration);
         return taskHandler.submit(new MultipleMatchTask(resultVM, excludedMatchesVM, 
                 matchesBuilderHandler,
-                menteeVM.getUnderlyingData(),
-                mentorVM.getUnderlyingData(), callback));
+                menteeVM, mentorVM, callback));
     }
     
     /**

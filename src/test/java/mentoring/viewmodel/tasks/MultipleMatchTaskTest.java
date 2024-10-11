@@ -2,10 +2,12 @@ package mentoring.viewmodel.tasks;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import mentoring.configuration.CriteriaConfiguration;
+import mentoring.configuration.PersonConfiguration;
 import mentoring.configuration.PojoCriteriaConfiguration;
 import mentoring.datastructure.Person;
 import mentoring.datastructure.PersonBuilder;
@@ -15,8 +17,11 @@ import mentoring.match.Matches;
 import mentoring.match.MatchesBuilder;
 import mentoring.match.MatchesBuilderHandler;
 import mentoring.match.MatchesTest;
+import mentoring.viewmodel.datastructure.MatchStatus;
+import mentoring.viewmodel.datastructure.PersonListViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
+import mentoring.viewmodel.datastructure.PersonViewModel;
 import mentoring.viewmodel.tasks.MultipleMatchTaskTest.MultipleMatchTaskArgs;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
@@ -54,7 +59,8 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
     Stream<DynamicNode> makeMultipleMatches_excludeManualMatches(){
         return test(argumentsSupplier().filter(args -> args.excludedMatchesVM != null), 
                 "call() updates the input view model excluding the manual matches", args -> {
-                    args.setManualMatch(args.mentees.get(0), args.mentors.get(1));
+                    args.setManualMatch(args.mentees.getUnderlyingData().get(0), 
+                            args.mentors.getUnderlyingData().get(1));
                     MultipleMatchTask task = args.convert();
                     runTask(task);
                     task.succeeded();
@@ -63,6 +69,97 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
                     Matches<Person,Person> expectedMatches = args.makeMatches(Stream.of(
                             Pair.of(1,2),Pair.of(2,0)));
                     assertMatchesEquals(expectedMatches, captor.getValue());
+                });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> makeMultipleMatches_updateMenteeMatchStatus(){
+        return test("call() updates the mentees match status", args -> {
+            MultipleMatchTask task = args.convert();
+            runTask(task);
+            task.succeeded();
+            String expected = MatchStatus.MatchFlag.COMPUTED_MATCH.getStyleClass();
+            Assertions.assertAll(
+                    args.mentees.getContent().stream().map(vm -> 
+                            () -> Assertions.assertTrue(
+                                    vm.getStatus().getStyleClass().contains(expected),
+                                    "%s should contain %s".formatted(vm.getData().getFullName(), 
+                                            expected))));
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> makeMultipleMatches_updateMentorMatchStatus(){
+        return test("call() updates the mentors match status", args -> {
+            MultipleMatchTask task = args.convert();
+            runTask(task);
+            task.succeeded();
+            String expected = MatchStatus.MatchFlag.COMPUTED_MATCH.getStyleClass();
+            Assertions.assertAll(
+                    args.mentors.getContent().stream().map(vm -> 
+                            () -> Assertions.assertTrue(
+                                    vm.getStatus().getStyleClass().contains(expected),
+                                    "%s should contain %s".formatted(vm.getData().getFullName(), 
+                                            expected))));
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> makeMultipleMatches_updateMatchStatus_includedMatches(){
+        return test(argumentsSupplier().filter(args -> args.excludedMatchesVM != null), 
+                "call() updates the match status excluding the manual matches", args -> {
+                    args.setManualMatch(args.mentees.getUnderlyingData().get(0), 
+                            args.mentors.getUnderlyingData().get(1));
+                    MultipleMatchTask task = args.convert();
+                    runTask(task);
+                    task.succeeded();
+                    String expected = MatchStatus.MatchFlag.COMPUTED_MATCH.getStyleClass();
+                    List<PersonViewModel> mentees = List.of(args.mentees.getContent().get(1),
+                            args.mentees.getContent().get(2));
+                    List<PersonViewModel> mentors = List.of(args.mentors.getContent().get(0),
+                            args.mentors.getContent().get(2));
+                    Assertions.assertAll(
+                            () -> Assertions.assertTrue(mentees.get(0)
+                                    .getStatus().getStyleClass().contains(expected),
+                                    "Mentee %s should contain %s".formatted(
+                                            mentees.get(0).getData().getFullName(), expected)),
+                            () -> Assertions.assertTrue(mentees.get(1)
+                                    .getStatus().getStyleClass().contains(expected),
+                                    "Mentee %s should contain %s".formatted(
+                                            mentees.get(1).getData().getFullName(), expected)),
+                            () -> Assertions.assertTrue(mentors.get(0)
+                                    .getStatus().getStyleClass().contains(expected),
+                                    "Mentor %s should contain %s".formatted(
+                                            mentors.get(0).getData().getFullName(), expected)),
+                            () -> Assertions.assertTrue(mentors.get(1)
+                                    .getStatus().getStyleClass().contains(expected),
+                                    "Mentor %s should contain %s".formatted(
+                                            mentors.get(1).getData().getFullName(), expected)));
+                });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> makeMultipleMatches_updateMatchStatus_excludedMatches(){
+        return test(argumentsSupplier().filter(args -> args.excludedMatchesVM != null), 
+                "call() updates the match status of the excluded manual matches", args -> {
+                    PersonViewModel mentee = args.mentees.getContent().get(0);
+                    PersonViewModel mentor = args.mentors.getContent().get(1);
+                    mentee.getStatus().add(MatchStatus.MatchFlag.COMPUTED_MATCH);
+                    mentor.getStatus().add(MatchStatus.MatchFlag.COMPUTED_MATCH);
+                    args.setManualMatch(mentee.getData(),mentor.getData());
+                    MultipleMatchTask task = args.convert();
+                    runTask(task);
+                    task.succeeded();
+                    String expected = MatchStatus.MatchFlag.COMPUTED_MATCH.getStyleClass();
+                    Assertions.assertAll(
+                            () -> Assertions.assertFalse(
+                                    mentee.getStatus().getStyleClass().contains(expected),
+                                    "Mentee %s should not contain %s".formatted(
+                                            mentee.getData().getFullName(), expected)),
+                            () -> Assertions.assertFalse(
+                                    mentor.getStatus().getStyleClass().contains(expected),
+                                    "Mentor %s should not contain %s".formatted(
+                                            mentor.getData().getFullName(), expected)));
                 });
     }
     
@@ -126,8 +223,8 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
     Executable assertConstructorThrowsNPE(String label, PersonMatchesViewModel resultVM, 
             PersonMatchesViewModel excludedMatchesVM,
             MatchesBuilderHandler<Person, Person> handler,
-            List<Person> mentees, 
-            List<Person> mentors,
+            PersonListViewModel mentees, 
+            PersonListViewModel mentors,
             AbstractTask.TaskCompletionCallback<? super Void> callback){
         return () -> Assertions.assertThrows(NullPointerException.class, 
                 () -> new MultipleMatchTask(resultVM, excludedMatchesVM, handler, 
@@ -137,8 +234,8 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
     static class MultipleMatchTaskArgs extends TestArgs{
         final PersonMatchesViewModel resultVM = Mockito.mock(PersonMatchesViewModel.class);
         final PersonMatchesViewModel excludedMatchesVM;
-        final List<Person> mentees;
-        final List<Person> mentors;
+        final PersonListViewModel mentees;
+        final PersonListViewModel mentors;
         @SuppressWarnings("unchecked")
         final MatchesBuilderHandler<Person, Person> handler = Mockito.mock(MatchesBuilderHandler.class);
         final AbstractTask.TaskCompletionCallback<Object> callback = task -> {};
@@ -147,20 +244,27 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
             super(testCase);
             excludedMatchesVM = withExclusionVM ? Mockito.mock(PersonMatchesViewModel.class) : null;
             PersonBuilder builder = new PersonBuilder();
-            mentees = List.of(buildIndexedPerson(1, builder),
+            List<Person> menteesList = List.of(buildIndexedPerson(1, builder),
                     buildIndexedPerson(2, builder),
                     buildIndexedPerson(3, builder));
-            mentors = List.of(buildIndexedPerson(1, builder),
+            List<Person> mentorsList = List.of(buildIndexedPerson(1, builder),
                     buildIndexedPerson(2, builder),
                     buildIndexedPerson(3, builder));
+            PersonConfiguration configuration = new PersonConfiguration("configuration", Set.of(), 
+                    Set.of(), "", "", List.of());
+            mentees = new PersonListViewModel();
+            mentees.update(configuration, menteesList);
+            mentors = new PersonListViewModel();
+            mentors.update(configuration, mentorsList);
             CriteriaConfiguration<Person, Person> criteria = new PojoCriteriaConfiguration(
                     "ad-hoc configuration", List.of((mentee, mentor) -> 
                             mentee.getPropertyAs("value", Integer.class) 
                                     * mentor.getPropertyAs("value", Integer.class)), 
                     List.of());
             try {
-                Mockito.when(handler.get()).thenReturn(new MatchesBuilder<>(mentees, mentors, 
-                        criteria.getProgressiveCriteria())
+                Mockito.when(handler.get())
+                        .thenReturn(new MatchesBuilder<>(mentees.getUnderlyingData(), 
+                                mentors.getUnderlyingData(), criteria.getProgressiveCriteria())
                         .withNecessaryCriteria(criteria.getNecessaryCriteria()));
             } catch (InterruptedException | ExecutionException e){
                 Assertions.fail("normally unreachable code", e);
@@ -168,12 +272,13 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
         }
         
         private static Person buildIndexedPerson(int index, PersonBuilder builder){
-            return builder.withFullName("" + index).withProperty("value", index).build();
+            return builder.withFullName(Integer.toString(index)).withProperty("value", index).build();
         }
         
         Matches<Person, Person> makeMatches(Stream<Pair<Integer, Integer>> indices){
             List<Pair<? extends Person, ? extends Person>> personPairs = indices
-                    .map(pair -> Pair.of(mentees.get(pair.getLeft()), mentors.get(pair.getRight())))
+                    .map(pair -> Pair.of(mentees.getUnderlyingData().get(pair.getLeft()), 
+                            mentors.getUnderlyingData().get(pair.getRight())))
                     .collect(Collectors.toList());
             return (new MatchesTest.MatchesArgs<>(personPairs)).convert();
         }
