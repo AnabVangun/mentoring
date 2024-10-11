@@ -5,7 +5,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.util.Callback;
 import mentoring.viewmodel.base.TabularDataViewModel;
@@ -59,5 +62,38 @@ public class TabularDataViewTools {
             table.getSelectionModel().selectIndices(index);
             table.scrollTo(index);
         }
+    }
+    
+    /**
+     * Bind the style of the rows to the style recommended by their items.
+     * @param <E> type of items in the TableView
+     * @param itemStyleClassGetter method providing, for each item, its recommended style classes
+     * @return a row factory
+     */
+    public static <E> Callback<TableView<E>, TableRow<E>> boundStyleRowFactory(
+            Function<E, ObservableList<String>> itemStyleClassGetter){
+        Objects.requireNonNull(itemStyleClassGetter);
+        return view -> {
+            TableRow<E> row = new TableRow<>();
+            ObservableList<String> rowStyleClass = row.getStyleClass();
+            ListChangeListener<String> styleClassChangeListener = change -> {
+                while(change.next()){
+                    if(change.wasUpdated()){
+                        throw new UnsupportedOperationException("List changed in an unsupported way");
+                    }
+                    change.getRemoved().forEach(styleClass -> rowStyleClass.remove(styleClass));
+                    change.getAddedSubList().forEach(styleClass -> rowStyleClass.add(styleClass));
+                }
+            };
+            row.itemProperty().addListener((observable, oldItem, newItem) -> {
+                if (oldItem != null){
+                    itemStyleClassGetter.apply(oldItem).removeListener(styleClassChangeListener);
+                }
+                if (newItem != null){
+                    itemStyleClassGetter.apply(newItem).addListener(styleClassChangeListener);
+                }
+            });
+            return row;
+        };
     }
 }

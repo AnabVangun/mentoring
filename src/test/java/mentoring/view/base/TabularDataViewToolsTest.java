@@ -5,8 +5,12 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import mentoring.view.base.TabularDataViewToolsTest.TabularDataViewToolsArgs;
 import mentoring.viewmodel.base.TabularDataViewModel;
 import org.junit.jupiter.api.Assertions;
@@ -157,6 +161,45 @@ class TabularDataViewToolsTest implements TestFramework<TabularDataViewToolsArgs
         return test("selectAndScroll() throws an NPE on null view", args ->
                 Assertions.assertThrows(NullPointerException.class,
                         () -> TabularDataViewTools.selectAndScrollTo(null, 2)));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> boundStyleRowFactory_bindProperItem(){
+        return test("boundStyleRowFactory properly binds the current item", args -> {
+            TableView<String> view = new TableView<>();
+            ObservableList<String> styleClass = FXCollections.observableArrayList();
+            Callback<TableView<String>, TableRow<String>> callback = 
+                    TabularDataViewTools.boundStyleRowFactory(item -> styleClass);
+            TableRow<String> row = callback.call(view);
+            row.setItem("foo");
+            String expected = "foo style";
+            styleClass.add(expected);
+            Assertions.assertTrue(row.getStyleClass().contains(expected));
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> boundStyleRowFactory_unbindOldItems(){
+        return test("boundStyleRowFactory properly unbinds old items", args -> {
+            TableView<String> view = new TableView<>();
+            ObservableList<String> styleClass = FXCollections.observableArrayList();
+            Callback<TableView<String>, TableRow<String>> callback = 
+                    TabularDataViewTools.boundStyleRowFactory(item -> styleClass);
+            TableRow<String> row = callback.call(view);
+            row.setItem("foo");
+            String expected = "foo style";
+            styleClass.add("bar style");
+            row.setItem(null);
+            styleClass.add(expected);
+            Assertions.assertFalse(row.getStyleClass().contains(expected));
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> boundStyleRowFactory_NPE(){
+        return test("boundStyleRowFactory throws an NPE on null input", args -> 
+                Assertions.assertThrows(NullPointerException.class,
+                        () -> TabularDataViewTools.boundStyleRowFactory(null)));
     }
     
     static record TabularDataViewToolsArgs(String testCase){
