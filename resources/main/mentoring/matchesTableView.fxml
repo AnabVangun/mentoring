@@ -13,8 +13,8 @@
       </SplitPane>
       <SplitPane fx:id="matchPane" dividerPositions="0.5" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0">
         <items>
-            <TableView fx:id="computedTable" />
-            <TableView fx:id="manualTable" />
+            <TableView id="computed-table" fx:id="computedTable" />
+            <TableView id="manual-table" fx:id="manualTable" />
         </items>
       </SplitPane>
    </items>

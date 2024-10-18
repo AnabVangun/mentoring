@@ -1,5 +1,6 @@
 package mentoring.view.base;
 
+import javafx.application.Application;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
@@ -15,7 +16,8 @@ import javafx.stage.Window;
  */
 public class StageBuilder {
     private Stage stage = new Stage();
-    final String MAIN_CSS = StageBuilder.class.getResource("/mentoring/styles.css").toExternalForm();
+    final String MAIN_CSS = StageBuilder.class.getResource("/mentoring/custom_modena.css")
+            .toExternalForm();
     /**
      * Finalise the creation of a new {@link Stage} instance. After this, the builder instance 
      * is reinitialised.
@@ -23,8 +25,8 @@ public class StageBuilder {
      * @return the newly created instance
      */
     public Stage build(Parent root){
+        Application.setUserAgentStylesheet(MAIN_CSS);
         Scene scene = new Scene(root);
-        scene.getStylesheets().add(MAIN_CSS);
         stage.setScene(scene);
         Stage result = stage;
         stage = new Stage();

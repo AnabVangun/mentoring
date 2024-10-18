@@ -9,8 +9,7 @@ public class Main {
     }
     /**
      * TODO: link GUI to code.
-     * Add status for person: "manual match", "automated match"
-     *      Fix styles.css to set up proper styles for manual and automated matches
+     * Fix handling of selected mentee and mentor when selecting match when tables are sorted
      * Update dependencies:
      *      Update NetBeans to newest version
      *      Update JDK to newest version
