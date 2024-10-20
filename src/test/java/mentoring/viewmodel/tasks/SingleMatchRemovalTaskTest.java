@@ -50,8 +50,8 @@ class SingleMatchRemovalTaskTest implements TestFramework<SingleMatchRemovalTask
                 Assertions.fail(e);
             }
             task.succeeded();
-            Assertions.assertFalse(args.menteeVM.getStatus().getStyleClass()
-                    .contains(MatchStatus.MatchFlag.MANUAL_MATCH.getStyleClass()));
+            Assertions.assertFalse(args.menteeVM.getStatus().getPseudoClassState()
+                    .contains(MatchStatus.MatchFlag.MANUAL_MATCH.getPseudoClass()));
         });
     }
     
@@ -65,8 +65,8 @@ class SingleMatchRemovalTaskTest implements TestFramework<SingleMatchRemovalTask
                 Assertions.fail(e);
             }
             task.succeeded();
-            Assertions.assertFalse(args.mentorVM.getStatus().getStyleClass()
-                    .contains(MatchStatus.MatchFlag.MANUAL_MATCH.getStyleClass()));
+            Assertions.assertFalse(args.mentorVM.getStatus().getPseudoClassState()
+                    .contains(MatchStatus.MatchFlag.MANUAL_MATCH.getPseudoClass()));
         });
     }
     

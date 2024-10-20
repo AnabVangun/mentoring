@@ -6,7 +6,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
+import javafx.css.PseudoClass;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.stage.Stage;
@@ -167,14 +168,15 @@ class TabularDataViewToolsTest implements TestFramework<TabularDataViewToolsArgs
     Stream<DynamicNode> boundStyleRowFactory_bindProperItem(){
         return test("boundStyleRowFactory properly binds the current item", args -> {
             TableView<String> view = new TableView<>();
-            ObservableList<String> styleClass = FXCollections.observableArrayList();
+            ObservableSet<PseudoClass> stylePseudoClass = FXCollections.observableSet();
             Callback<TableView<String>, TableRow<String>> callback = 
-                    TabularDataViewTools.boundStyleRowFactory(item -> styleClass);
+                    TabularDataViewTools.boundStyleRowFactory(item -> stylePseudoClass);
             TableRow<String> row = callback.call(view);
             row.setItem("foo");
-            String expected = "foo style";
-            styleClass.add(expected);
-            Assertions.assertTrue(row.getStyleClass().contains(expected));
+            PseudoClass expected = PseudoClass.getPseudoClass("foo style");
+            stylePseudoClass.add(expected);
+            Assertions.assertTrue(row.getPseudoClassStates()
+                    .contains(expected));
         });
     }
     
@@ -182,16 +184,17 @@ class TabularDataViewToolsTest implements TestFramework<TabularDataViewToolsArgs
     Stream<DynamicNode> boundStyleRowFactory_unbindOldItems(){
         return test("boundStyleRowFactory properly unbinds old items", args -> {
             TableView<String> view = new TableView<>();
-            ObservableList<String> styleClass = FXCollections.observableArrayList();
+            ObservableSet<PseudoClass> stylePseudoClass = FXCollections.observableSet();
             Callback<TableView<String>, TableRow<String>> callback = 
-                    TabularDataViewTools.boundStyleRowFactory(item -> styleClass);
+                    TabularDataViewTools.boundStyleRowFactory(item -> stylePseudoClass);
             TableRow<String> row = callback.call(view);
             row.setItem("foo");
-            String expected = "foo style";
-            styleClass.add("bar style");
+            PseudoClass expected = PseudoClass.getPseudoClass("foo style");
+            stylePseudoClass.add(PseudoClass.getPseudoClass("bar style"));
             row.setItem(null);
-            styleClass.add(expected);
-            Assertions.assertFalse(row.getStyleClass().contains(expected));
+            stylePseudoClass.add(expected);
+            Assertions.assertFalse(row.getPseudoClassStates()
+                    .contains(expected));
         });
     }
     

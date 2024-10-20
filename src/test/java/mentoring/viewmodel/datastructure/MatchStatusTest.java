@@ -1,9 +1,10 @@
 package mentoring.viewmodel.datastructure;
 
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 import javafx.beans.InvalidationListener;
-import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
+import javafx.css.PseudoClass;
 import mentoring.viewmodel.datastructure.MatchStatusTest.MatchStatusArgs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
@@ -72,48 +73,48 @@ class MatchStatusTest implements TestFramework<MatchStatusArgs>{
     }
     
     @TestFactory
-    Stream<DynamicNode> getStyleClass_reflectState(){
-        return test("getStyleClass() returns the expected status", args -> {
+    Stream<DynamicNode> getPseudoClassState_reflectState(){
+        return test("getPseudoClassState() returns the expected state", args -> {
             MatchStatus status = args.convert();
             MatchStatus.MatchFlag flag = MatchStatus.MatchFlag.COMPUTED_MATCH;
             status.add(flag);
-            Assertions.assertEquals(List.of(flag.styleClass), status.getStyleClass());
+            Assertions.assertEquals(Set.of(flag.getPseudoClass()), status.getPseudoClassState());
         });
     }
     
     @TestFactory
-    Stream<DynamicNode> getStyleClass_reflectMultipleState(){
-        return test("getStyleClass() returns the expected status for multiple flags", args -> {
+    Stream<DynamicNode> getPseudoClassState_reflectMultipleState(){
+        return test("getPseudoClassState() returns the expected status for multiple flags", args -> {
             MatchStatus status = args.convert();
             MatchStatus.MatchFlag firstFlag = MatchStatus.MatchFlag.COMPUTED_MATCH;
             MatchStatus.MatchFlag secondFlag = MatchStatus.MatchFlag.MANUAL_MATCH;
             status.add(firstFlag);
             status.add(secondFlag);
-            Assertions.assertEquals(List.of(firstFlag.styleClass, secondFlag.styleClass),
-                    status.getStyleClass());
+            Assertions.assertEquals(Set.of(firstFlag.getPseudoClass(), secondFlag.getPseudoClass()),
+                    status.getPseudoClassState());
         });
     }
     
     @TestFactory
-    Stream<DynamicNode> getStyleClass_reflectStateAfterRemoval(){
-        return test("getStyleClass() returns the expected status after flag removal", args -> {
+    Stream<DynamicNode> getPseudoClassState_reflectStateAfterRemoval(){
+        return test("getPseudoClassState() returns the expected status after flag removal", args -> {
             MatchStatus status = args.convert();
             MatchStatus.MatchFlag firstFlag = MatchStatus.MatchFlag.COMPUTED_MATCH;
             MatchStatus.MatchFlag secondFlag = MatchStatus.MatchFlag.MANUAL_MATCH;
             status.add(firstFlag);
             status.add(secondFlag);
             status.remove(firstFlag);
-            Assertions.assertEquals(List.of(secondFlag.styleClass), status.getStyleClass());
+            Assertions.assertEquals(Set.of(secondFlag.getPseudoClass()), status.getPseudoClassState());
         });
     }
     
     @TestFactory
-    Stream<DynamicNode> getStyleClass_ObservableProperlyUpdated(){
-        return test("getStyleClass() fires invalidation listeners as expected", args -> {
+    Stream<DynamicNode> getPseudoClassState_ObservableProperlyUpdated(){
+        return test("getPseudoClassState() fires invalidation listeners as expected", args -> {
             MatchStatus status = args.convert();
             MatchStatus.MatchFlag firstFlag = MatchStatus.MatchFlag.COMPUTED_MATCH;
             MatchStatus.MatchFlag secondFlag = MatchStatus.MatchFlag.MANUAL_MATCH;
-            ObservableList<String> observable = status.getStyleClass();
+            ObservableSet<PseudoClass> observable = status.getPseudoClassState();
             int[] counter = new int[]{0};
             InvalidationListener listener = event -> counter[0] += 1;
             observable.addListener(listener);

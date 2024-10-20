@@ -1,9 +1,8 @@
 package mentoring.viewmodel.datastructure;
 
-import java.util.EnumSet;
-import java.util.Set;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
+import javafx.css.PseudoClass;
 import mentoring.viewmodel.base.Parameters;
 
 /**
@@ -15,20 +14,19 @@ public class MatchStatus {
         MANUAL_MATCH(Parameters.MANUAL_MATCH_PSEUDOCLASS),
         COMPUTED_MATCH(Parameters.COMPUTED_MATCH_PSEUDOCLASS);
         
-        final String styleClass;
+        private final PseudoClass pseudoClass;
         private MatchFlag(String pseudoClass){
-            this.styleClass = pseudoClass;
+            this.pseudoClass = PseudoClass.getPseudoClass(pseudoClass);
         }
         
-        public String getStyleClass(){
-            return styleClass;
+        public PseudoClass getPseudoClass(){
+            return pseudoClass;
         }
     }
     
-    private final Set<MatchFlag> status = EnumSet.noneOf(MatchFlag.class);
-    private final ObservableList<String> modifiableStyleClass = FXCollections.observableArrayList();
-    private final ObservableList<String> styleClass = 
-            FXCollections.unmodifiableObservableList(modifiableStyleClass);
+    private final ObservableSet<PseudoClass> modifiablePseudoClassState = FXCollections.observableSet();
+    private final ObservableSet<PseudoClass> pseudoClassState = 
+            FXCollections.unmodifiableObservableSet(modifiablePseudoClassState);
     
     
     /**
@@ -38,11 +36,7 @@ public class MatchStatus {
      * @return true if the operation was performed, false otherwise
      */
     public boolean add(MatchFlag flag){
-        boolean result = status.add(flag);
-        if(result){
-            modifiableStyleClass.add(flag.styleClass);
-        }
-        return result;
+        return modifiablePseudoClassState.add(flag.pseudoClass);
     }
     
     /**
@@ -52,18 +46,14 @@ public class MatchStatus {
      * @return true if the operation was performed, false otherwise
      */
     public boolean remove(MatchFlag flag){
-        boolean result = status.remove(flag);
-        if(result){
-            modifiableStyleClass.remove(flag.styleClass);
-        }
-        return result;
+        return modifiablePseudoClassState.remove(flag.pseudoClass);
     }
     
     /**
      * Get the style classes that represent the current status.
      * @return an observable representing the current status
      */
-    public ObservableList<String> getStyleClass(){
-        return styleClass;
+    public ObservableSet<PseudoClass> getPseudoClassState(){
+        return pseudoClassState;
     }
 }

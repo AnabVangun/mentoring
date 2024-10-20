@@ -3385,48 +3385,48 @@
     -fx-border-color: -fx-background-automated-match;
     -fx-border-width: 0.3em;
 }
-.manual-match {
+.table-row-cell:manual-match {
     -fx-background-color: -fx-background-manual-match;
 }
-.computed-match {
+.table-row-cell:computed-match {
     -fx-background-color: -fx-background-automated-match;
 }
-.manual-match.computed-match {
+.table-row-cell:manual-match:computed-match {
     -fx-background-color: -fx-background-manual-and-automated-match;
 }
 
 /* Selected rows */
-.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell.manual-match:filled:selected,
-.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell .table-cell.manual-match:selected {
+.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell:manual-match:filled:selected,
+.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell .table-cell:manual-match:selected {
     -fx-background-color: -fx-background-manual-match-selected-focused;
     -fx-table-cell-border-color: derive(-fx-background-manual-match-selected-focused, 20%);
 }
 /* Selected when control is not focused */
-.table-row-cell.manual-match:filled:selected{
+.table-row-cell:manual-match:filled:selected{
     -fx-background-color: -fx-background-manual-match-selected-unfocused;
     -fx-table-cell-border-color: derive(-fx-background-manual-match-selected-unfocused, 20%);
 }
 
 /* Selected rows */
-.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell.computed-match:filled:selected,
-.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell .table-cell.computed-match:selected {
+.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell:computed-match:filled:selected,
+.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell .table-cell:computed-match:selected {
     -fx-background-color: -fx-background-automated-match-selected-focused;
     -fx-table-cell-border-color: derive(-fx-background-automated-match-selected-focused, 20%);
 }
 /* Selected when control is not focused */
-.table-row-cell.computed-match:filled:selected{
+.table-row-cell:computed-match:filled:selected{
     -fx-background-color: -fx-background-automated-match-selected-unfocused;
     -fx-table-cell-border-color: derive(-fx-background-automated-match-selected-unfocused, 20%);
 }
 
 /* Selected rows */
-.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell.manual-match.computed-match:filled:selected,
-.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell .table-cell.manual-match.computed-match:selected {
+.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell:manual-match:computed-match:filled:selected,
+.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell .table-cell:manual-match:computed-match:selected {
     -fx-background-color: -fx-background-manual-and-automated-match-selected-focused;
     -fx-table-cell-border-color: derive(-fx-background-manual-and-automated-match-selected-focused, 20%);
 }
 /* Selected when control is not focused */
-.table-row-cell.manual-match.computed-match:filled:selected{
+.table-row-cell:manual-match:computed-match:filled:selected{
     -fx-background-color: -fx-background-manual-and-automated-match-selected-unfocused;
     -fx-table-cell-border-color: derive(-fx-background-manual-and-automated-match-selected-unfocused, 20%);
 }

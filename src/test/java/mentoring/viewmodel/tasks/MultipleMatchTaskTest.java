@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javafx.css.PseudoClass;
 import mentoring.configuration.CriteriaConfiguration;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.configuration.PojoCriteriaConfiguration;
@@ -78,11 +79,11 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
             MultipleMatchTask task = args.convert();
             runTask(task);
             task.succeeded();
-            String expected = MatchStatus.MatchFlag.COMPUTED_MATCH.getStyleClass();
+            PseudoClass expected = MatchStatus.MatchFlag.COMPUTED_MATCH.getPseudoClass();
             Assertions.assertAll(
                     args.mentees.getContent().stream().map(vm -> 
                             () -> Assertions.assertTrue(
-                                    vm.getStatus().getStyleClass().contains(expected),
+                                    vm.getStatus().getPseudoClassState().contains(expected),
                                     "%s should contain %s".formatted(vm.getData().getFullName(), 
                                             expected))));
         });
@@ -94,11 +95,11 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
             MultipleMatchTask task = args.convert();
             runTask(task);
             task.succeeded();
-            String expected = MatchStatus.MatchFlag.COMPUTED_MATCH.getStyleClass();
+            PseudoClass expected = MatchStatus.MatchFlag.COMPUTED_MATCH.getPseudoClass();
             Assertions.assertAll(
                     args.mentors.getContent().stream().map(vm -> 
                             () -> Assertions.assertTrue(
-                                    vm.getStatus().getStyleClass().contains(expected),
+                                    vm.getStatus().getPseudoClassState().contains(expected),
                                     "%s should contain %s".formatted(vm.getData().getFullName(), 
                                             expected))));
         });
@@ -113,26 +114,26 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
                     MultipleMatchTask task = args.convert();
                     runTask(task);
                     task.succeeded();
-                    String expected = MatchStatus.MatchFlag.COMPUTED_MATCH.getStyleClass();
+                    PseudoClass expected = MatchStatus.MatchFlag.COMPUTED_MATCH.getPseudoClass();
                     List<PersonViewModel> mentees = List.of(args.mentees.getContent().get(1),
                             args.mentees.getContent().get(2));
                     List<PersonViewModel> mentors = List.of(args.mentors.getContent().get(0),
                             args.mentors.getContent().get(2));
                     Assertions.assertAll(
                             () -> Assertions.assertTrue(mentees.get(0)
-                                    .getStatus().getStyleClass().contains(expected),
+                                    .getStatus().getPseudoClassState().contains(expected),
                                     "Mentee %s should contain %s".formatted(
                                             mentees.get(0).getData().getFullName(), expected)),
                             () -> Assertions.assertTrue(mentees.get(1)
-                                    .getStatus().getStyleClass().contains(expected),
+                                    .getStatus().getPseudoClassState().contains(expected),
                                     "Mentee %s should contain %s".formatted(
                                             mentees.get(1).getData().getFullName(), expected)),
                             () -> Assertions.assertTrue(mentors.get(0)
-                                    .getStatus().getStyleClass().contains(expected),
+                                    .getStatus().getPseudoClassState().contains(expected),
                                     "Mentor %s should contain %s".formatted(
                                             mentors.get(0).getData().getFullName(), expected)),
                             () -> Assertions.assertTrue(mentors.get(1)
-                                    .getStatus().getStyleClass().contains(expected),
+                                    .getStatus().getPseudoClassState().contains(expected),
                                     "Mentor %s should contain %s".formatted(
                                             mentors.get(1).getData().getFullName(), expected)));
                 });
@@ -150,14 +151,14 @@ class MultipleMatchTaskTest implements TestFramework<MultipleMatchTaskArgs>{
                     MultipleMatchTask task = args.convert();
                     runTask(task);
                     task.succeeded();
-                    String expected = MatchStatus.MatchFlag.COMPUTED_MATCH.getStyleClass();
+                    PseudoClass expected = MatchStatus.MatchFlag.COMPUTED_MATCH.getPseudoClass();
                     Assertions.assertAll(
                             () -> Assertions.assertFalse(
-                                    mentee.getStatus().getStyleClass().contains(expected),
+                                    mentee.getStatus().getPseudoClassState().contains(expected),
                                     "Mentee %s should not contain %s".formatted(
                                             mentee.getData().getFullName(), expected)),
                             () -> Assertions.assertFalse(
-                                    mentor.getStatus().getStyleClass().contains(expected),
+                                    mentor.getStatus().getPseudoClassState().contains(expected),
                                     "Mentor %s should not contain %s".formatted(
                                             mentor.getData().getFullName(), expected)));
                 });

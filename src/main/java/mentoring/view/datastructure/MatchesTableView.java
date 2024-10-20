@@ -114,7 +114,7 @@ public class MatchesTableView implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         Callback<TableView<PersonViewModel>, TableRow<PersonViewModel>> personRowFactory =
                 TabularDataViewTools.boundStyleRowFactory(person -> 
-                        person.getStatus().getStyleClass());
+                        person.getStatus().getPseudoClassState());
         menteeTable.setRowFactory(personRowFactory);
         mentorTable.setRowFactory(personRowFactory);
         batchVM.addListener(new WeakInvalidationListener(batchMatchesListener));
@@ -148,12 +148,12 @@ public class MatchesTableView implements Initializable {
     }
     
     private void selectPersons(PersonMatchViewModel match, TableView<?> tableToClear){
-        int selectedMenteeIndex = 
-                menteeVM.getPersonViewModelIndex(match, PersonType.MENTEE);
-        TabularDataViewTools.selectAndScrollTo(menteeTable, selectedMenteeIndex);
-        int selectedMentorIndex = 
-                mentorVM.getPersonViewModelIndex(match, PersonType.MENTOR);
-        TabularDataViewTools.selectAndScrollTo(mentorTable, selectedMentorIndex);
+        PersonViewModel selectedMentee = 
+                menteeVM.getPersonViewModel(match, PersonType.MENTEE);
+        TabularDataViewTools.selectAndScrollTo(menteeTable, selectedMentee);
+        PersonViewModel selectedMentor = 
+                mentorVM.getPersonViewModel(match, PersonType.MENTOR);
+        TabularDataViewTools.selectAndScrollTo(mentorTable, selectedMentor);
         if(tableToClear != null){
             tableToClear.getSelectionModel().clearSelection();
         }

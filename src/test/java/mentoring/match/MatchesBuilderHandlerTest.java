@@ -263,7 +263,7 @@ final class MatchesBuilderHandlerTest implements TestFramework<MatchesBuilderHan
                             });
                     otherSetter.start();//ran as a thread to pool its state
                     EnumSet<Thread.State> blockedOrFinishedState = EnumSet.of(Thread.State.BLOCKED,
-                            Thread.State.TERMINATED, Thread.State.TIMED_WAITING, Thread.State.WAITING);
+                            Thread.State.TERMINATED);
                     Assertions.assertTimeoutPreemptively(Duration.ofMillis(500), () -> {
                         while (! blockedOrFinishedState.contains(otherSetter.getState())){
                             try {

@@ -63,8 +63,8 @@ class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
             SingleMatchTask task = args.convert();
             callTask(task);
             task.succeeded();
-            Assertions.assertTrue(args.menteeStatus.getStyleClass()
-                    .contains(MatchStatus.MatchFlag.MANUAL_MATCH.getStyleClass()));
+            Assertions.assertTrue(args.menteeStatus.getPseudoClassState()
+                    .contains(MatchStatus.MatchFlag.MANUAL_MATCH.getPseudoClass()));
         });
     }
     
@@ -74,8 +74,8 @@ class SingleMatchTaskTest implements TestFramework<SingleMatchTaskArgs>{
             SingleMatchTask task = args.convert();
             callTask(task);
             task.succeeded();
-            Assertions.assertTrue(args.mentorStatus.getStyleClass()
-                    .contains(MatchStatus.MatchFlag.MANUAL_MATCH.getStyleClass()));
+            Assertions.assertTrue(args.mentorStatus.getPseudoClassState()
+                    .contains(MatchStatus.MatchFlag.MANUAL_MATCH.getPseudoClass()));
         });
     }
     

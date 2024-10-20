@@ -5,8 +5,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
+import javafx.collections.SetChangeListener;
+import javafx.css.PseudoClass;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
@@ -65,32 +66,48 @@ public class TabularDataViewTools {
     }
     
     /**
+     * Select an item in a TableView and scroll to it.
+     * @param <E> the type of data to display in the table
+     * @param table the table to update
+     * @param item to select in the table. Optional: it can be null
+     */
+    public static <E> void selectAndScrollTo(TableView<E> table, E item){
+        //TODO test
+        if (item == null){
+            table.getSelectionModel().clearSelection();
+        } else {
+            table.getSelectionModel().select(item);
+            table.scrollTo(item);
+        }
+    }
+    
+    /**
      * Bind the style of the rows to the style recommended by their items.
      * @param <E> type of items in the TableView
-     * @param itemStyleClassGetter method providing, for each item, its recommended style classes
+     * @param itemStyleClassGetter method providing, for each item, its recommended style pseudo classes
      * @return a row factory
      */
     public static <E> Callback<TableView<E>, TableRow<E>> boundStyleRowFactory(
-            Function<E, ObservableList<String>> itemStyleClassGetter){
+            Function<E, ObservableSet<PseudoClass>> itemStyleClassGetter){
         Objects.requireNonNull(itemStyleClassGetter);
         return view -> {
             TableRow<E> row = new TableRow<>();
-            ObservableList<String> rowStyleClass = row.getStyleClass();
-            ListChangeListener<String> styleClassChangeListener = change -> {
-                while(change.next()){
-                    if(change.wasUpdated()){
-                        throw new UnsupportedOperationException("List changed in an unsupported way");
-                    }
-                    change.getRemoved().forEach(styleClass -> rowStyleClass.remove(styleClass));
-                    change.getAddedSubList().forEach(styleClass -> rowStyleClass.add(styleClass));
+            SetChangeListener<PseudoClass> stylePseudoClassChangeListener = change -> {
+                if (change.wasAdded()){
+                    PseudoClass style = change.getElementAdded();
+                    row.pseudoClassStateChanged(style, true);
+                }
+                if (change.wasRemoved()){
+                    PseudoClass style = change.getElementRemoved();
+                    row.pseudoClassStateChanged(style, false);
                 }
             };
             row.itemProperty().addListener((observable, oldItem, newItem) -> {
                 if (oldItem != null){
-                    itemStyleClassGetter.apply(oldItem).removeListener(styleClassChangeListener);
+                    itemStyleClassGetter.apply(oldItem).removeListener(stylePseudoClassChangeListener);
                 }
                 if (newItem != null){
-                    itemStyleClassGetter.apply(newItem).addListener(styleClassChangeListener);
+                    itemStyleClassGetter.apply(newItem).addListener(stylePseudoClassChangeListener);
                 }
             });
             return row;

@@ -284,8 +284,8 @@ final class MatchesBuilderTest implements TestFramework<MatchesBuilderTest.Match
             }
         }
         if (!found.isEmpty()){
-            Assertions.fail("Matches " + actual + "differs from expected " + expected + 
-                    ": too many matches, remains " + found);
+            Assertions.fail("Matches " + actual + " differs from expected " + expected + 
+                    ": too few actual matches, remains " + found);
         }
     }
     
