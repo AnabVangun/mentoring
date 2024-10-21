@@ -122,6 +122,7 @@ public class PersonListViewModel extends SimpleObservable
         underlyingData.clear();
         underlyingData.addAll(persons);
         List<PersonViewModel> viewModels = viewModelFactory.create(underlyingData);
+        items.clear();
         items.addAll(viewModels);
         underlyingMap.clear();
         for (int i = 0; i < persons.size(); i++){

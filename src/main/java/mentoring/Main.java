@@ -9,7 +9,6 @@ public class Main {
     }
     /**
      * TODO: link GUI to code.
-     * Fix configure: when applying a new configuration, the mentee and mentor lists are not cleared
      * Update dependencies:
      *      Update NetBeans to newest version
      *      Update JDK to newest version
