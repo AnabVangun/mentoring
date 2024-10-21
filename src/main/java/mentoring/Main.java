@@ -9,7 +9,6 @@ public class Main {
     }
     /**
      * TODO: link GUI to code.
-     * Fix styling of mentees and mentors when columns are sorted
      * Fix configure: when applying a new configuration, the mentee and mentor lists are not cleared
      * Update dependencies:
      *      Update NetBeans to newest version

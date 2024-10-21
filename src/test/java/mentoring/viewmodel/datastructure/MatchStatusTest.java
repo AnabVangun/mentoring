@@ -1,5 +1,6 @@
 package mentoring.viewmodel.datastructure;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Stream;
 import javafx.beans.InvalidationListener;
@@ -16,6 +17,13 @@ class MatchStatusTest implements TestFramework<MatchStatusArgs>{
     @Override
     public Stream<MatchStatusArgs> argumentsSupplier(){
         return Stream.of(new MatchStatusArgs("unique test case"));
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> getAllPseudoClasses_containsAllPseudoClasses(){
+        return test(Arrays.stream(MatchStatus.MatchFlag.values()),
+                "getAllPseudoClasses() contains all the MatchFlag values", args -> 
+                        MatchStatus.getAllPseudoClasses().contains(args.getPseudoClass()));
     }
     
     @TestFactory

@@ -105,9 +105,15 @@ public class TabularDataViewTools {
             row.itemProperty().addListener((observable, oldItem, newItem) -> {
                 if (oldItem != null){
                     itemStyleClassGetter.apply(oldItem).removeListener(stylePseudoClassChangeListener);
+                    for (PseudoClass pseudoclass : itemStyleClassGetter.apply(oldItem)) {
+                        row.pseudoClassStateChanged(pseudoclass,false);
+                    }
                 }
                 if (newItem != null){
                     itemStyleClassGetter.apply(newItem).addListener(stylePseudoClassChangeListener);
+                    for (PseudoClass pseudoclass : itemStyleClassGetter.apply(newItem)) {
+                        row.pseudoClassStateChanged(pseudoclass,true);
+                    }
                 }
             });
             return row;

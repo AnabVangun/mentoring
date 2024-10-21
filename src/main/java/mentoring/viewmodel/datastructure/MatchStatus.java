@@ -1,5 +1,9 @@
 package mentoring.viewmodel.datastructure;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
 import javafx.css.PseudoClass;
@@ -22,6 +26,18 @@ public class MatchStatus {
         public PseudoClass getPseudoClass(){
             return pseudoClass;
         }
+    }
+    
+    private static final List<PseudoClass> ALL_PSEUDO_CLASSES = Collections.unmodifiableList(
+            Arrays.stream(MatchFlag.values()).map(MatchFlag::getPseudoClass)
+                    .collect(Collectors.toList()));
+    
+    /**
+     * Get all the {@link PseudoClass} that can be associated with {@link MatchStatus}.
+     * @return an unmodifiable list.
+     */
+    public static List<PseudoClass> getAllPseudoClasses(){
+        return ALL_PSEUDO_CLASSES;
     }
     
     private final ObservableSet<PseudoClass> modifiablePseudoClassState = FXCollections.observableSet();

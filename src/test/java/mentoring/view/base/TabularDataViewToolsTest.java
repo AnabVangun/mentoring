@@ -1,5 +1,6 @@
 package mentoring.view.base;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -195,6 +196,46 @@ class TabularDataViewToolsTest implements TestFramework<TabularDataViewToolsArgs
             stylePseudoClass.add(expected);
             Assertions.assertFalse(row.getPseudoClassStates()
                     .contains(expected));
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> boundStyleRowFactory_bindProperItem_itemChanges(){
+        return test("boundStyleRowFactory properly binds the new item when it changes", args -> {
+            TableView<String> view = new TableView<>();
+            Map<String, ObservableSet<PseudoClass>> stylePseudoClass = new HashMap<>();
+            PseudoClass unexpected = PseudoClass.getPseudoClass("foo");
+            PseudoClass expected = PseudoClass.getPseudoClass("bar");
+            stylePseudoClass.put(unexpected.getPseudoClassName(), FXCollections.observableSet(unexpected));
+            stylePseudoClass.put(expected.getPseudoClassName(), FXCollections.observableSet(expected));
+            Callback<TableView<String>, TableRow<String>> callback = 
+                    TabularDataViewTools.boundStyleRowFactory(item -> 
+                            stylePseudoClass.get(item));
+            TableRow<String> row = callback.call(view);
+            row.setItem(unexpected.getPseudoClassName());
+            row.setItem(expected.getPseudoClassName());
+            Assertions.assertTrue(row.getPseudoClassStates()
+                    .contains(expected));
+        });
+    }
+    
+    @TestFactory
+    Stream<DynamicNode> boundStyleRowFactory_unbindOldItem_itemChanges(){
+        return test("boundStyleRowFactory properly unbinds the old item when it changes", args -> {
+            TableView<String> view = new TableView<>();
+            Map<String, ObservableSet<PseudoClass>> stylePseudoClass = new HashMap<>();
+            PseudoClass unexpected = PseudoClass.getPseudoClass("foo");
+            PseudoClass expected = PseudoClass.getPseudoClass("bar");
+            stylePseudoClass.put(unexpected.getPseudoClassName(), FXCollections.observableSet(unexpected));
+            stylePseudoClass.put(expected.getPseudoClassName(), FXCollections.observableSet(expected));
+            Callback<TableView<String>, TableRow<String>> callback = 
+                    TabularDataViewTools.boundStyleRowFactory(item -> 
+                            stylePseudoClass.get(item));
+            TableRow<String> row = callback.call(view);
+            row.setItem(unexpected.getPseudoClassName());
+            row.setItem(expected.getPseudoClassName());
+            Assertions.assertFalse(row.getPseudoClassStates()
+                    .contains(unexpected));
         });
     }
     
