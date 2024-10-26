@@ -79,7 +79,7 @@ public class MultipleMatchTask extends AbstractTask<Void> {
         }
         //FIXME when default mentee and default mentor are defined somewhere reasonnable, link to it
         Person defaultMentee = new PersonBuilder().withProperty("Email", "")
-                .withFullName("PAS DE MENTORÉ").build();
+                .withFullName("PAS DE MENTORÃ‰").build();
         Person defaultMentor = new PersonBuilder().withProperty("Email", "")
                 .withFullName("PAS DE MENTOR").build();
         for (Match<Person, Person> match : results){

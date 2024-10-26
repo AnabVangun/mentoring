@@ -1,5 +1,6 @@
 package mentoring.view;
 
+import jakarta.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -16,7 +17,6 @@ import javafx.scene.control.MenuItem;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javax.inject.Inject;
 import mentoring.view.base.StageBuilder;
 import mentoring.view.base.TaskCompletionAlertFactory;
 import mentoring.view.base.ViewTools;

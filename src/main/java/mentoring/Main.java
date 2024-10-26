@@ -9,13 +9,6 @@ public class Main {
     }
     /**
      * TODO: link GUI to code.
-     * Update dependencies:
-     *      Update shadow to com.gradleup.shadow version 8.3.3
-     *      Update snakeyaml engine to 2.8
-     *      Update Guice to 7.0.0
-     *      Update JUnit to 5.11.2
-     *      Update Mockito to 5.14.1
-     *      Update TestFX to 4.0.18
      * 7. Add an indicator for when "Run" should be clicked
      * 9a. Add global configuration parameters for magic numbers.
      * 9b. Internationalize GUI

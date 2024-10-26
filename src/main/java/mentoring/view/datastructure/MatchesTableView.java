@@ -1,5 +1,6 @@
 package mentoring.view.datastructure;
 
+import jakarta.inject.Inject;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.InvalidationListener;
@@ -12,7 +13,6 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.util.Callback;
-import javax.inject.Inject;
 import mentoring.view.base.TabularDataViewTools;
 import mentoring.viewmodel.datastructure.PersonListViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;

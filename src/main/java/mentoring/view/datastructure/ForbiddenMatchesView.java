@@ -1,17 +1,16 @@
 package mentoring.view.datastructure;
 
+import jakarta.inject.Inject;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.function.BiConsumer;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javax.inject.Inject;
 import mentoring.viewmodel.datastructure.ForbiddenMatchListViewModel;
 import mentoring.viewmodel.datastructure.ForbiddenMatchViewModel;
 

@@ -1,6 +1,7 @@
 package mentoring.viewmodel;
 
 import mentoring.viewmodel.tasks.PersonGetterTask;
+import jakarta.inject.Inject;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -19,7 +20,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableBooleanValue;
 import javafx.concurrent.Task;
-import javax.inject.Inject;
 import mentoring.concurrency.ConcurrencyHandler;
 import mentoring.configuration.Configuration;
 import mentoring.configuration.CriteriaConfiguration;
@@ -117,9 +117,8 @@ public class MainViewModel {
         Additionally, this is really ugly. 
         Maybe a DummyFuture as used in tests would be more appropriate?
         */
-        //TODO remplace "MENTOR" with all caps "mentoré"
         Person defaultMentee = new PersonBuilder().withProperty("Email", "")
-                .withFullName("PAS DE MENTORE").build();
+                .withFullName("PAS DE MENTORÉ").build();
         Person defaultMentor = new PersonBuilder().withProperty("Email", "")
                 .withFullName("PAS DE MENTOR").build();
         FutureTask<Person> defaultMenteeSupplier = new FutureTask<>(() -> defaultMentee);

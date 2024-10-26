@@ -15,9 +15,10 @@ import mentoring.match.Match;
  * Decoder used to decode functions from strings.
  */
 class MatchFunctionDecoder {
-    static final String STANDARD_TOKEN = "งง";
-    static final String CUSTOM_PROPERTY_TOKEN = "ง_ง";
-    static final String CUSTOM_MULTIPLE_PROPERTY_TOKEN = "ง_Mง";
+    static final String STANDARD_TOKEN = "ยงยง";
+    //TODO refactor rename CUSTOM_SIMPLE_PROPERTY_TOKEN
+    static final String CUSTOM_PROPERTY_TOKEN = "ยง_ยง";
+    static final String CUSTOM_MULTIPLE_PROPERTY_TOKEN = "ยง_Mยง";
     static final String MENTOR_TOKEN = STANDARD_TOKEN + "Mentor";
     static final String MENTEE_TOKEN = STANDARD_TOKEN + "Mentee";
     static final String NAME_PROPERTY_TOKEN = STANDARD_TOKEN + "Name";

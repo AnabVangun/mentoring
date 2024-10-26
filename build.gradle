@@ -1,6 +1,6 @@
 plugins {
     id 'org.openjfx.javafxplugin' version '0.1.0'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'com.gradleup.shadow' version '8.3.3'
 }
 //apply plugin: 'java' //included in 'application'
 apply plugin: 'jacoco'
@@ -37,13 +37,13 @@ dependencies {
     implementation files('libs/AssignmentProblem-2.0.1.jar')
     implementation 'com.opencsv:opencsv:5.9'
     implementation 'org.apache.commons:commons-lang3:3.17.0'
-    implementation 'org.snakeyaml:snakeyaml-engine:2.5'
-    implementation 'com.google.inject:guice:5.1.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
-    testImplementation 'org.mockito:mockito-core:4.11.0'
-    testImplementation "org.testfx:testfx-junit5:4.0.16-alpha"
+    implementation 'org.snakeyaml:snakeyaml-engine:2.8'
+    implementation 'com.google.inject:guice:7.0.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.2'
+    testImplementation 'org.mockito:mockito-core:5.14.1'
+    testImplementation "org.testfx:testfx-junit5:4.0.18"
     runtimeOnly "org.openjfx:javafx-graphics:$javafx.version:win"
     runtimeOnly "org.openjfx:javafx-graphics:$javafx.version:mac"
 }
