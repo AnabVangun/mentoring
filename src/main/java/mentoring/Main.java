@@ -10,9 +10,6 @@ public class Main {
     /**
      * TODO: link GUI to code.
      * Update dependencies:
-     *      Update NetBeans to newest version
-     *      Update JDK to newest version
-     *      Update Gradle to newest version
      *      Update shadow to com.gradleup.shadow version 8.3.3
      *      Update snakeyaml engine to 2.8
      *      Update Guice to 7.0.0

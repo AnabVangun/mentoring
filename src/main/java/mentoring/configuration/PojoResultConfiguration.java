@@ -11,26 +11,26 @@ import mentoring.match.Match;
  */
 public enum PojoResultConfiguration{
     /** Writes the names and the total cost of a pair. */
-    NAMES_AND_SCORE("names and score", List.of("Mentoré", "Mentor", "Coût"),
-            match -> Map.of("Mentoré", match.getMentee().getFullName(),
+    NAMES_AND_SCORE("names and score", List.of("MentorÃ©", "Mentor", "CoÃ»t"),
+            match -> Map.of("MentorÃ©", match.getMentee().getFullName(),
                 "Mentor", match.getMentor().getFullName(), 
-                "Coût", match.getCost())),
+                "CoÃ»t", match.getCost())),
     /** Writes the names, e-mail addresses and the total cost of a pair. */
     NAMES_EMAILS_AND_SCORE("names, e-mails and scores", 
-            List.of("Mentoré", "email mentoré", "Mentor", "email mentor", "Coût"),
-            match -> Map.of("Mentoré", match.getMentee().getFullName(),
-                "email mentoré", match.getMentee().getPropertyAs("Email", Object.class),
+            List.of("MentorÃ©", "email mentorÃ©", "Mentor", "email mentor", "CoÃ»t"),
+            match -> Map.of("MentorÃ©", match.getMentee().getFullName(),
+                "email mentorÃ©", match.getMentee().getPropertyAs("Email", Object.class),
                 "Mentor", match.getMentor().getFullName(),
                 "email mentor", match.getMentor().getPropertyAs("Email", Object.class),
-                "Coût", match.getCost())),
+                "CoÃ»t", match.getCost())),
     NAMES_EMAILS_DUPLICATE_AND_SCORE("names, e-mails with duplicate column and score", 
-            List.of("Mentor", "email mentor", "Mentoré", "email mentoré", "email mentor", 
-                    "Coût"),
+            List.of("Mentor", "email mentor", "MentorÃ©", "email mentorÃ©", "email mentor", 
+                    "CoÃ»t"),
             match -> Map.of("Mentor", match.getMentor().getFullName(),
                 "email mentor", match.getMentor().getPropertyAs("Email", Object.class),
-                "Mentoré", match.getMentee().getFullName(),
-                "email mentoré", match.getMentee().getPropertyAs("Email", Object.class),
-                "Coût", match.getCost()));
+                "MentorÃ©", match.getMentee().getFullName(),
+                "email mentorÃ©", match.getMentee().getPropertyAs("Email", Object.class),
+                "CoÃ»t", match.getCost()));
     
     private final ResultConfiguration<Person, Person> configuration;
     

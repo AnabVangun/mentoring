@@ -19,11 +19,11 @@ public final class PojoCriteriaConfiguration extends CriteriaConfiguration<Perso
     private static final int YEAR_WEIGHT = 1;
     private static final int MENTEE_YEAR = 2020;
     private static final String YEAR_PROPERTY = "Promotion";
-    private static final String ACTIVITIES_PROPERTY = "Métiers";
+    private static final String ACTIVITIES_PROPERTY = "MÃ©tiers";
     private static final String MOTIVATION_PROPERTY = "Motivation";
     private static final String SECTOR2024 = "Secteur";
-    private static final String MATURITY2024 = "Maturité";
-    private static final String JOB2024 = "Métier";
+    private static final String MATURITY2024 = "MaturitÃ©";
+    private static final String JOB2024 = "MÃ©tier";
     private static final String COMPANY2024 = "Entreprise";
     private static final int MATURITY_WEIGHT = 10;
     private static final Map<String, Integer> MEETING_INDICES = Map.of("oui",0,"sipossible",1,

@@ -97,30 +97,6 @@ public final class CriteriaToolbox {
         return defaultFromWeight*fromFactor + defaultToWeight*toFactor;
     }
     
-    @Deprecated
-    public static <E> int computeBrutalAsymetricDistance(Map<? extends E, ? extends Integer> map, 
-            Set<? extends E> set){
-        int result = 0;
-        //1. Si je trouve le premier, alors je renvoie 0
-        //2. Si je trouve le deuxième, alors je renvoie 1;
-        //3. Si je trouve le troisième, alors je renvoie 2.
-        boolean[] found = new boolean[3];
-        for(E key: map.keySet()){
-            if(set.contains(key)){
-                found[map.get(key)] = true;
-            }
-        }
-        if (found[0]){
-            return 0;
-        } else if (found[1]){
-            return 1;
-        } else if (found[2]){
-            return 2;
-        } else {
-            return 3;
-        }
-    }
-    
     /**
      * Computes an exponential cost between two elements of a sorted set of values.
      * @param <E> the type of the elements

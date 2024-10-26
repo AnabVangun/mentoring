@@ -117,8 +117,9 @@ public class MainViewModel {
         Additionally, this is really ugly. 
         Maybe a DummyFuture as used in tests would be more appropriate?
         */
+        //TODO remplace "MENTOR" with all caps "mentor√©"
         Person defaultMentee = new PersonBuilder().withProperty("Email", "")
-                .withFullName("PAS DE MENTOR…").build();
+                .withFullName("PAS DE MENTORE").build();
         Person defaultMentor = new PersonBuilder().withProperty("Email", "")
                 .withFullName("PAS DE MENTOR").build();
         FutureTask<Person> defaultMenteeSupplier = new FutureTask<>(() -> defaultMentee);
