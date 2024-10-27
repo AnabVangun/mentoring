@@ -10,6 +10,7 @@ public class Main {
     /**
      * TODO: link GUI to code.
      * 7. Add an indicator for when "Run" should be clicked
+     * Fix Gradle deprecation warning
      * 9a. Add global configuration parameters for magic numbers.
      * 9b. Internationalize GUI
      * 9e. Add save/load button to load configuration (including forbidden matches) and results from a file
