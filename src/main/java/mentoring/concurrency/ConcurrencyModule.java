@@ -8,7 +8,6 @@ import jakarta.inject.Singleton;
  * Provides {@link ConcurrencyHandler} binding.
  */
 public class ConcurrencyModule extends AbstractModule {
-    //FIXME: Singleton annotation should not be needed here but it seems to be.
     @Provides @Singleton
     public ConcurrencyHandler provideConcurrencyHandler() {
         return new ConcurrencyHandler();

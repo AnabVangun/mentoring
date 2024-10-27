@@ -32,17 +32,17 @@ class PersonConfigurationParserTest implements
                         "standard valid test",
                         Set.of(new SimplePropertyDescription<>("Anglais", "Anglais", PropertyType.BOOLEAN), 
                                 new SimplePropertyDescription<>("Promotion", "Promotion", PropertyType.INTEGER)),
-                        Set.of(new SetPropertyDescription<>("Métiers", "Activités et métiers", 
+                        Set.of(new SetPropertyDescription<>("MÃ©tiers", "ActivitÃ©s et mÃ©tiers", 
                                         PropertyType.STRING),
                                 new IndexedPropertyDescription<>("Motivation", "Motivation", 
                                         PropertyType.STRING)),
-                        ",", "%s %s (X%s)", List.of("Prénom", "Nom", "Promotion"), new YamlReader()),
+                        ",", "%s %s (X%s)", List.of("PrÃ©nom", "Nom", "Promotion"), new YamlReader()),
                 new PersonConfigurationParserArgs("validSecondTestConfiguration.yaml", 
                         "standard second valid test",
                         Set.of(new SimplePropertyDescription<>("Anglais", "Anglais", PropertyType.YEAR)),
-                        Set.of(new SetPropertyDescription<>("Métiers", "Métiers", 
+                        Set.of(new SetPropertyDescription<>("MÃ©tiers", "MÃ©tiers", 
                                 PropertyType.SIMPLIFIED_LOWER_STRING)),
-                        ",", "%s", List.of("Prénom"), new YamlReader()));
+                        ",", "%s", List.of("PrÃ©nom"), new YamlReader()));
     }
     
     @Override

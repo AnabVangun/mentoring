@@ -10,7 +10,7 @@ class SimplePropertyDescriptionTest extends PropertyDescriptionTest<SimpleProper
 
     @Override
     public Stream<SimplePropertyDescriptionArgs> argumentsSupplier() {
-        return Stream.of(new SimplePropertyDescriptionArgs("Simple property", "propriété", "headerName", 
+        return Stream.of(new SimplePropertyDescriptionArgs("Simple property", "propriÃ©tÃ©", "headerName", 
                         PropertyType.STRING),
                 new SimplePropertyDescriptionArgs("Property with equal names", "name", "name", 
                         PropertyType.INTEGER),

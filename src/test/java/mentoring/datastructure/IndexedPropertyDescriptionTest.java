@@ -12,7 +12,7 @@ class IndexedPropertyDescriptionTest extends MultiplePropertyDescriptionTest<Ind
     @Override
     public Stream<IndexedPropertyArgs> argumentsSupplier() {
         return Stream.of(
-                new IndexedPropertyArgs("Simple property", "propriété", "headerName", 
+                new IndexedPropertyArgs("Simple property", "propriÃ©tÃ©", "headerName", 
                         PropertyType.STRING,
                         new String[]{"first", "second", "third"}, 
                         Map.of("first",0, "second", 1, "third", 2)),
@@ -31,7 +31,7 @@ class IndexedPropertyDescriptionTest extends MultiplePropertyDescriptionTest<Ind
     @Override
     @TestFactory
     Stream<DynamicNode> getStringRepresentation_expectedValue(){
-        return test(Stream.of(new IndexedPropertyArgs("specific test case", "propriété", 
+        return test(Stream.of(new IndexedPropertyArgs("specific test case", "propriÃ©tÃ©", 
                 "headerName", PropertyType.STRING, new String[]{"first", "second", "third"}, 
                         Map.of("first",0, "second", 1, "third", 2))), 
                 "getStringRepresentation() returns the expected value",

@@ -1,6 +1,5 @@
 package mentoring.concurrency;
 
-import jakarta.inject.Singleton;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -13,11 +12,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Utility class handling providing concurrency services.
- * A singleton SHOULD be shared throughout the application, and properly shutdown by the main thread
- * at application shutdown.
+ * Utility class providing concurrency services.
+ * All instances of this class SHOULD be properly shutdown after use.
  */
-@Singleton
 public final class ConcurrencyHandler {
     private ExecutorService privateExecutor = null;
     

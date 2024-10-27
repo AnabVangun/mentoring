@@ -21,7 +21,7 @@ final class PersonAndPersonBuilderTest implements
                         Map.of("First",1,"Second",-1000),
                         Map.of(), Map.of(), "person with integer properties"),
                 new PersonArgs("Person with simple string properties", Map.of(),
-                        Map.of("première","string","seconde",""), Map.of(), 
+                        Map.of("premiÃ¨re","string","seconde",""), Map.of(), 
                         "person with string properties"),
                 new PersonArgs("Person with map properties", Map.of(), Map.of(),
                         Map.of("foo", Map.of(1,false), "bar", Map.of(2,true)), 

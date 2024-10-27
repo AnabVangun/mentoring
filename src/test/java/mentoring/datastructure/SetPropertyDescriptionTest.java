@@ -13,7 +13,7 @@ class SetPropertyDescriptionTest extends MultiplePropertyDescriptionTest<SetProp
     @Override
     public Stream<SetPropertyArgs> argumentsSupplier() {
         return Stream.of(
-                new SetPropertyArgs("Simple property", "propriété", "headerName", 
+                new SetPropertyArgs("Simple property", "propriÃ©tÃ©", "headerName", 
                         PropertyType.STRING,
                         new String[]{"first", "second", "third"}, 
                         Set.of("first", "second", "third")),
@@ -33,7 +33,7 @@ class SetPropertyDescriptionTest extends MultiplePropertyDescriptionTest<SetProp
     @TestFactory
     Stream<DynamicNode> getStringRepresentation_expectedValue(){
         return test(Stream.of(
-                new SetPropertyArgs("specific test case", "propriété", "headerName", 
+                new SetPropertyArgs("specific test case", "propriÃ©tÃ©", "headerName", 
                         PropertyType.STRING, new String[]{"value"}, Set.of("value"))), 
                 "getStringRepresentation() returns the expected value",
                 args -> {

@@ -20,7 +20,7 @@ class PropertyTypeTest implements TestFramework<PropertyTypeTest.PropertyTypeArg
                     new PropertyTypeArgs("string", STRING, "string", "string"),
                     new PropertyTypeArgs("Simple string", SIMPLIFIED_LOWER_STRING, "string", "string"),
                     new PropertyTypeArgs("Complex string", SIMPLIFIED_LOWER_STRING, 
-                            "éèàäëïöüÿâêîôû? ÈÀÂÎñ", "eeaaeiouyaeiou?eaain"),
+                            "Ã©Ã¨Ã Ã¤Ã«Ã¯Ã¶Ã¼Ã¿Ã¢ÃªÃ®Ã´Ã»? ÃˆÃ€Ã‚ÃŽÃ±", "eeaaeiouyaeiou?eaain"),
                     new PropertyTypeArgs("year", YEAR, "X1978", Year.getYear("X1978")));
         }
     

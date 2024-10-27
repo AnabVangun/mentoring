@@ -28,7 +28,7 @@ class ResultConfigurationParserTest implements ParserTest<ResultConfiguration<Pe
         return Stream.of(
                 new ResultConfigurationParserArgs("standard configuration", 
                         "validResultConfigurationTest.yaml", 
-                        List.of("Mentoré", "Mentor", "Coût", "Propriété"),
+                        List.of("MentorÃ©", "Mentor", "CoÃ»t", "PropriÃ©tÃ©"),
                         new Object[][]{{"foo", "bar", 5, "Paris"},{"bar", "foo", 12, "Reims"}},
                         List.of(
                                 new MatchArgs("", builder.withFullName("foo").build(),
@@ -41,20 +41,20 @@ class ResultConfigurationParserTest implements ParserTest<ResultConfiguration<Pe
                                         12).convertAs(Person.class, Person.class))),
                 new ResultConfigurationParserArgs("configuration with complex persons",
                         "validComplexResultConfigurationTest.yaml",
-                        List.of("Mentoré", "Première propriété", "Mentor", "Coût", 
-                            "Deuxième propriété"),
+                        List.of("MentorÃ©", "PremiÃ¨re propriÃ©tÃ©", "Mentor", "CoÃ»t", 
+                            "DeuxiÃ¨me propriÃ©tÃ©"),
                         new Object[][]{{"foo1", Map.of(3,6,5,false), "bar1", 962, 180}, 
                             {"bar2", Map.of(true,"blood","taken",2), "foo2", 0, -51}},
                         List.of(
                                 new MatchArgs("", 
                                         builder.withFullName("foo1").withProperty("Anglais", true)
-                                                .withPropertyMap("Goûts", Map.of(3,6,5,false)).build(),
+                                                .withPropertyMap("GoÃ»ts", Map.of(3,6,5,false)).build(),
                                         builder.withFullName("bar1").withProperty("Taille", 180)
                                                 .withProperty("taille", 3).build(),
                                         962).convertAs(Person.class, Person.class),
                                 new MatchArgs("",
                                         builder.withFullName("bar2").withProperty("Anglais", false)
-                                                .withPropertyMap("Goûts", 
+                                                .withPropertyMap("GoÃ»ts", 
                                                         Map.of(true,"blood","taken",2)).build(),
                                         builder.withFullName("foo2").withProperty("Taille", -51).build(),
                                         0).convertAs(Person.class, Person.class))));
