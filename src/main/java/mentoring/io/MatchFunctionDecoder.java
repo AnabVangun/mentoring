@@ -16,8 +16,7 @@ import mentoring.match.Match;
  */
 class MatchFunctionDecoder {
     static final String STANDARD_TOKEN = "§§";
-    //TODO refactor rename CUSTOM_SIMPLE_PROPERTY_TOKEN
-    static final String CUSTOM_PROPERTY_TOKEN = "§_§";
+    static final String CUSTOM_SIMPLE_PROPERTY_TOKEN = "§_§";
     static final String CUSTOM_MULTIPLE_PROPERTY_TOKEN = "§_M§";
     static final String MENTOR_TOKEN = STANDARD_TOKEN + "Mentor";
     static final String MENTEE_TOKEN = STANDARD_TOKEN + "Mentee";
@@ -56,8 +55,8 @@ class MatchFunctionDecoder {
     static Function<Person, Object> decodePersonPropertyGetter(String input){
         if (input.startsWith(NAME_PROPERTY_TOKEN)){
             return person -> person.getFullName();
-        } else if (input.startsWith(CUSTOM_PROPERTY_TOKEN)){
-            return decodePersonGenericPropertyGetter(input.substring(CUSTOM_PROPERTY_TOKEN.length()));
+        } else if (input.startsWith(CUSTOM_SIMPLE_PROPERTY_TOKEN)){
+            return decodePersonGenericPropertyGetter(input.substring(CUSTOM_SIMPLE_PROPERTY_TOKEN.length()));
         } else if (input.startsWith(CUSTOM_MULTIPLE_PROPERTY_TOKEN)){
             return decodePersonGenericMultiplePropertyGetter(
                     input.substring(CUSTOM_MULTIPLE_PROPERTY_TOKEN.length()));

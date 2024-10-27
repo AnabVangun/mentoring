@@ -27,7 +27,7 @@ class MatchFunctionDecoderTest implements TestFramework<MatchFunctionDecoderArgs
         return test(Stream.of(
                 new MatchFunctionDecoderArgs("simple string property", 
                         MatchFunctionDecoder.MENTOR_TOKEN 
-                                + MatchFunctionDecoder.CUSTOM_PROPERTY_TOKEN + "Ville",
+                                + MatchFunctionDecoder.CUSTOM_SIMPLE_PROPERTY_TOKEN + "Ville",
                         Map.of(
                                 new MatchTest.MatchArgs("", 
                                         builder.withProperty("Ville","Londres").build(),
@@ -61,7 +61,7 @@ class MatchFunctionDecoderTest implements TestFramework<MatchFunctionDecoderArgs
     Stream<DynamicNode> decodeMatchFunction_invalidInput() {
         return test(Stream.of(new MatchFunctionDecoderArgs("invalid object accessor", 
                 MatchFunctionDecoder.STANDARD_TOKEN + "foo" 
-                        + MatchFunctionDecoder.CUSTOM_PROPERTY_TOKEN + "bar")),
+                        + MatchFunctionDecoder.CUSTOM_SIMPLE_PROPERTY_TOKEN + "bar")),
                 "decodeMatchFunction() throws the expected exception on invalid input",
                 args -> Assertions.assertThrows(IllegalArgumentException.class,
                         () -> args.convert()));
@@ -72,7 +72,7 @@ class MatchFunctionDecoderTest implements TestFramework<MatchFunctionDecoderArgs
         PersonBuilder builder = new PersonBuilder();
         return test(Stream.of(
                 new PropertyGetterBuilderArgs("simple property", 
-                        MatchFunctionDecoder.CUSTOM_PROPERTY_TOKEN + "Ville",
+                        MatchFunctionDecoder.CUSTOM_SIMPLE_PROPERTY_TOKEN + "Ville",
                         Map.of(builder.withProperty("Ville","Londres").build(), "Londres",
                                 builder.withFullName("foo").withProperty("Ville", 3).build(), 3)),
                 new PropertyGetterBuilderArgs("name property", 

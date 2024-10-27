@@ -6,9 +6,10 @@ plugins {
 apply plugin: 'jacoco'
 apply plugin: 'application'
 
-mainClassName = 'mentoring.Main'
+application {
+    mainClass.set('mentoring.Main')
+}
 version '2.0.0-epsilon'
-
 repositories {
     mavenCentral()
 }
@@ -20,7 +21,8 @@ jar {
 }
 
 test {
-	useJUnitPlatform()
+    useJUnitPlatform()
+    jvmArgs(['-XX:+EnableDynamicAgentLoading', '-Xshare:off'])
 }
 compileJava {
     options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
@@ -41,6 +43,7 @@ dependencies {
     implementation 'com.google.inject:guice:7.0.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.2'
     testImplementation 'org.mockito:mockito-core:5.14.1'
     testImplementation "org.testfx:testfx-junit5:4.0.18"
