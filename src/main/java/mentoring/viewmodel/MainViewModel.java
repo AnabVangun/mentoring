@@ -116,6 +116,8 @@ public class MainViewModel {
         (probably in result configuration).
         Additionally, this is really ugly. 
         Maybe a DummyFuture as used in tests would be more appropriate?
+        When defining defaultMentee and defaultMentor, be sure to set 
+        placeholder values for all expected fields in result configuration
         */
         Person defaultMentee = new PersonBuilder().withProperty("Email", "")
                 .withFullName("PAS DE MENTORÉ").build();
