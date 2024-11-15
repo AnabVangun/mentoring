@@ -29,7 +29,26 @@ import mentoring.viewmodel.base.ConfigurationPickerViewModel.ConfigurationType;
  * view to the stage.
  */
 public class ConfigurationPickerView implements Initializable{
-    //TODO: make it easy to select one of the example configurations from resources.
+    /*TODO: make it easy to select one of the example configurations from resources.
+        1. Split OpenChoiceFilePickerViewModel between abstract class FilePickerViewModel, 
+            concrete class OpenChoiceFilePickerViewModel for input files and 
+            concrete class ClosedChoiceFilePickerViewModel for resource
+        2. Create supervisor class ObjectPickerViewModel (name TBC) with 
+            one of each and a way to distinguish when both are active or when 
+            only one is
+        3. Modify FilePickerView and fileSelectionView.fxml to use an
+            ObjectPickerViewModel instead of a OpenChoiceFilePickerViewModel
+        3. Modify ConfigurationPickerViewModel to use an ObjectPickerViewModel
+            instead of a OpenChoiceFilePickerViewModel
+        4. Modify FilePickerView and fileSelectionView.fxml to use an 
+            ObjectPickerViewModel, be careful about the binding:
+                a. Create ToggleGroup to link to the selected item in VM
+                b. Bind each selector to its proper subVM
+                c. Allow to force the apparition of the radio of the unique item
+                    if needed for external reasons (or do it when toggle group
+                    contains more than a single visible toggle)
+        5. TBD
+    */
     
     @FXML
     private ComboBox<String> configurationSelector;
@@ -130,31 +149,6 @@ public class ConfigurationPickerView implements Initializable{
     
     private void setConfigurationType(Toggle toggle){
         viewModel.getConfigurationSelectionType().setValue(toggleToTypeMap.get(toggle));
-    }
-    
-    @Deprecated
-    static ObjectBinding<ConfigurationType> forgeConfigurationTypeGetterBinding(ToggleGroup group, 
-            Map<Toggle, ConfigurationType> map){
-        Objects.requireNonNull(map);
-        return new ObjectBinding<>(){
-            {
-                super.bind(group.selectedToggleProperty());
-            }
-            
-            @Override
-            protected ConfigurationType computeValue(){
-                Toggle toggle = group.selectedToggleProperty().getValue();
-                if (toggle == null){
-                    throw new IllegalStateException("Illegal state: no toggle is selected");
-                }
-                if(map.containsKey(toggle)){
-                    return map.get(toggle);
-                } else {
-                    throw new UnsupportedOperationException("Toggle " + toggle.toString() +
-                            " is unknown");
-                }
-            }
-        };
     }
     
     static ObjectBinding<Toggle> forgeToggleGetterBinding(Property<ConfigurationType> typeProperty, 

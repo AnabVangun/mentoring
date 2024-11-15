@@ -6,57 +6,52 @@ import java.util.stream.Stream;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
-import mentoring.viewmodel.base.FilePickerViewModelTest.FilePickerViewModelArgs;
+import mentoring.viewmodel.base.OpenChoiceFilePickerViewModelTest.DummyFilePickerViewModel;
+import mentoring.viewmodel.base.OpenChoiceFilePickerViewModelTest.OpenChoiceFilePickerViewModelArgs;
 import mentoring.viewmodel.base.function.FileParser;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import org.mockito.Mockito;
-import test.tools.TestArgs;
-import test.tools.TestFramework;
 
-class FilePickerViewModelTest implements TestFramework<FilePickerViewModelArgs> {
+class OpenChoiceFilePickerViewModelTest extends FilePickerViewModelTest<String, 
+        DummyFilePickerViewModel, OpenChoiceFilePickerViewModelArgs> {
     
     @Override
-    public Stream<FilePickerViewModelArgs> argumentsSupplier(){
-        return Stream.of(new FilePickerViewModelArgs("default file", DEFAULT_FILE_DATA, 
+    public Stream<OpenChoiceFilePickerViewModelArgs> argumentsSupplier(){
+        return Stream.of(new OpenChoiceFilePickerViewModelArgs("default file", DEFAULT_FILE_DATA, 
                 List.of(Pair.of("foo", List.of("*.foo", "*.bar")))),
                 new CopyFilePickerViewModelArgs("default file", DEFAULT_FILE_DATA, 
                 List.of(Pair.of("foo", List.of("*.foo", "*.bar")))));
     }
     
-    @TestFactory
-    Stream<DynamicNode> getCurrentFile_defaultInstance(){
-        return test("getCurrentFile() returns the default file before any action", args -> {
-            DummyFilePickerViewModel viewModel = args.convert();
-            Assertions.assertEquals(args.defaultFileData.defaultFile, 
-                    viewModel.getCurrentFile().getValue());
-        });
+    @Override
+    protected void verifyDefaultBehavior(OpenChoiceFilePickerViewModelArgs args,
+            DummyFilePickerViewModel viewModel){
+        Assertions.assertEquals(args.defaultFileData.defaultFile,
+                viewModel.getCurrentFile().getValue());
     }
     
-    @TestFactory
-    Stream<DynamicNode> getCurrentFile_modifiedBySetCurrentFile(){
-        return test("getCurrentFile() returns an observable invalidated by setCurrentFile()", args -> {
-            DummyFilePickerViewModel viewModel = args.convert();
-            ReadOnlyObjectProperty<File> observable = viewModel.getCurrentFile();
-            InvalidationListener listener = Mockito.mock(InvalidationListener.class);
-            observable.addListener(listener);
-            File expected = OTHER_FILE;
-            viewModel.setCurrentFile(expected);
-            Assertions.assertAll(
-                    () -> Mockito.verify(listener).invalidated(observable),
-                    () -> Assertions.assertEquals(expected, observable.getValue()));
-        });
+    @Override
+    protected File getOtherFile(OpenChoiceFilePickerViewModelArgs args){
+        return OTHER_FILE;
     }
     
+    @Override
+    protected void assertVerifyOrCureFileOnValidInput(OpenChoiceFilePickerViewModelArgs args, 
+            DummyFilePickerViewModel viewModel){
+        //No modification on valid file
+        Assertions.assertEquals(OTHER_FILE, viewModel.verifyOrCureFile(OTHER_FILE));
+    }
+    
+    @Override
     @TestFactory
-    Stream<DynamicNode> getCurrentFile_sameReturnValue(){
-        return test("getCurrentFile() always return the same observable", args -> {
-            DummyFilePickerViewModel viewModel = args.convert();
-            ReadOnlyObjectProperty<File> expected = viewModel.getCurrentFile();
-            viewModel.setCurrentFile(new File("foo"));
-            Assertions.assertSame(expected, viewModel.getCurrentFile());
+    protected Stream<DynamicNode> verifyOrCureFile_invalidInput(){
+        return test("verifyOrCureFile returns a default file on invalid input", args -> {
+            DummyFilePickerViewModel vm = args.convert();
+            File expected = Parameters.getDefaultDirectory();
+            Assertions.assertEquals(expected, vm.verifyOrCureFile(new File("/&&/")));
         });
     }
     
@@ -102,7 +97,7 @@ class FilePickerViewModelTest implements TestFramework<FilePickerViewModelArgs> 
     
     @TestFactory
     Stream<DynamicNode> getCurrentFilePath_sameReturnValue(){
-        return test("getSeCurrentFilePath() always return the same observable", args -> {
+        return test("getCurrentFilePath() always return the same observable", args -> {
             DummyFilePickerViewModel viewModel = args.convert();
             ReadOnlyStringProperty expected = viewModel.getCurrentFilePath();
             viewModel.setCurrentFile(OTHER_FILE);
@@ -192,7 +187,7 @@ class FilePickerViewModelTest implements TestFramework<FilePickerViewModelArgs> 
                                 () -> new DummyFilePickerViewModel(null))));
     }
     
-    static class DummyFilePickerViewModel extends FilePickerViewModel<String>{
+    static class DummyFilePickerViewModel extends OpenChoiceFilePickerViewModel<String>{
         DummyFilePickerViewModel(String defaultPath, FileParser<String> parser, 
                 List<Pair<String, List<String>>> extensions){
             super(defaultPath, parser, extensions);
@@ -203,31 +198,33 @@ class FilePickerViewModelTest implements TestFramework<FilePickerViewModelArgs> 
         }
     }
     
-    static class FilePickerViewModelArgs extends TestArgs {
+    static class OpenChoiceFilePickerViewModelArgs 
+            extends FilePickerViewModelArgs<String, DummyFilePickerViewModel> {
         final FileData defaultFileData;
         final List<Pair<String, List<String>>> expectedExtensions;
         
-        FilePickerViewModelArgs(String testCase, FileData defaultFileData, 
+        OpenChoiceFilePickerViewModelArgs(String testCase, FileData defaultFileData, 
                 List<Pair<String, List<String>>> extensions){
             super(testCase);
             this.defaultFileData = defaultFileData;
             this.expectedExtensions = extensions;
         }
         
-        DummyFilePickerViewModel convert(){
+        @Override
+        protected DummyFilePickerViewModel convert(){
             return new DummyFilePickerViewModel(defaultFileData.defaultFilePath, 
                     input -> input.getName(), expectedExtensions);
         }
     }
     
-    static class CopyFilePickerViewModelArgs extends FilePickerViewModelArgs {
+    static class CopyFilePickerViewModelArgs extends OpenChoiceFilePickerViewModelArgs {
         CopyFilePickerViewModelArgs(String testCase, FileData defaultFileData,
                 List<Pair<String, List<String>>> extensions){
             super(testCase, defaultFileData, extensions);
         }
         
         @Override
-        DummyFilePickerViewModel convert(){
+        protected DummyFilePickerViewModel convert(){
             return new DummyFilePickerViewModel(super.convert());
         }
     }

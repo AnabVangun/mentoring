@@ -5,7 +5,7 @@ import java.util.Objects;
 import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.Person;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
-import mentoring.viewmodel.base.FilePickerViewModel;
+import mentoring.viewmodel.base.OpenChoiceFilePickerViewModel;
 import mentoring.viewmodel.datastructure.PersonListViewModel;
 
 /**
@@ -15,7 +15,7 @@ public class PersonGetterTask extends AbstractTask<List<Person>> {
     private final PersonListViewModel resultVM;
     private PersonConfiguration personConfiguration;
     private List<Person> persons;
-    private final FilePickerViewModel<List<Person>> personPicker;
+    private final OpenChoiceFilePickerViewModel<List<Person>> personPicker;
     private final ConfigurationPickerViewModel<PersonConfiguration> configurationPicker;
     
     /**
@@ -26,7 +26,7 @@ public class PersonGetterTask extends AbstractTask<List<Person>> {
      * @param callback the method to call when the task has run
      */
     public PersonGetterTask(PersonListViewModel resultVM, 
-            FilePickerViewModel<List<Person>> personPicker,
+            OpenChoiceFilePickerViewModel<List<Person>> personPicker,
             ConfigurationPickerViewModel<PersonConfiguration> configurationPicker,
             TaskCompletionCallback<? super List<Person>> callback) {
         super(callback);

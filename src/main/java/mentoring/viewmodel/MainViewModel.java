@@ -37,7 +37,7 @@ import mentoring.io.datareader.YamlReader;
 import mentoring.match.MatchesBuilderHandler;
 import mentoring.viewmodel.base.BoundableConfigurationPickerViewModel;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
-import mentoring.viewmodel.base.FilePickerViewModel;
+import mentoring.viewmodel.base.OpenChoiceFilePickerViewModel;
 import mentoring.viewmodel.datastructure.PersonListViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchViewModel;
 import mentoring.viewmodel.datastructure.PersonMatchesViewModel;
@@ -67,7 +67,7 @@ public class MainViewModel {
     private final ConfigurationPickerViewModel<CriteriaConfiguration<Person, Person>> matchConfiguration;
     private final ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> resultConfiguration;
     private final ConfigurationPickerViewModel<ResultConfiguration<Person, Person>> exportConfiguration;
-    private final EnumMap<PersonType, FilePickerViewModel<List<Person>>> personPickers =
+    private final EnumMap<PersonType, OpenChoiceFilePickerViewModel<List<Person>>> personPickers =
             new EnumMap<>(PersonType.class);
     private final ForbiddenMatchListViewModel extraForbiddenMatches = 
             new ForbiddenMatchListViewModel();
@@ -343,9 +343,9 @@ public class MainViewModel {
     /**
      * Get the ViewModel responsible for picking a list of {@link Person}.
      * @param type of persons selected by the ViewModel
-     * @return a FilePickerViewModel specialised for lists of Person
+     * @return a OpenChoiceFilePickerViewModel specialised for lists of Person
      */
-    public FilePickerViewModel<List<Person>> getPersonPicker(PersonType type){
+    public OpenChoiceFilePickerViewModel<List<Person>> getPersonPicker(PersonType type){
         return personPickers.get(type);
     }
     
@@ -384,7 +384,7 @@ public class MainViewModel {
                         .collect(Collectors.toList());
         IOFunction<ResultConfiguration<Person, Person>> parser = reader ->
                 new ResultConfigurationParser(new YamlReader()).parse(reader);
-        FilePickerViewModel<ResultConfiguration<Person, Person>> filePicker = 
+        OpenChoiceFilePickerViewModel<ResultConfiguration<Person, Person>> filePicker = 
                 forgeFilePickerViewModel(parser, YAML_EXTENSIONS);
         return forgeConfigurationPickerViewModel(configuration, values, filePicker);
     }
@@ -398,7 +398,7 @@ public class MainViewModel {
                         .collect(Collectors.toList());
         IOFunction<PersonConfiguration> parser = reader -> 
                 new PersonConfigurationParser(new YamlReader()).parse(reader);
-        FilePickerViewModel<PersonConfiguration> filePicker = 
+        OpenChoiceFilePickerViewModel<PersonConfiguration> filePicker = 
                 forgeFilePickerViewModel(parser, YAML_EXTENSIONS);
         return forgeConfigurationPickerViewModel(configuration, values, filePicker);
     }
@@ -413,25 +413,25 @@ public class MainViewModel {
         IOFunction<CriteriaConfiguration<Person, Person>> parser = file -> {
             throw new UnsupportedOperationException("not implemented yet");
         };
-        FilePickerViewModel<CriteriaConfiguration<Person, Person>> filePicker = 
+        OpenChoiceFilePickerViewModel<CriteriaConfiguration<Person, Person>> filePicker = 
                 forgeFilePickerViewModel(parser, YAML_EXTENSIONS);
         return forgeConfigurationPickerViewModel(configuration, values, filePicker);
     }
     
     private <T extends Configuration<T>> ConfigurationPickerViewModel<T> forgeConfigurationPickerViewModel(
-            T initialValue, List<T> knownValues, FilePickerViewModel<T> filePicker){
+            T initialValue, List<T> knownValues, OpenChoiceFilePickerViewModel<T> filePicker){
         return new ConfigurationPickerViewModel<>(initialValue, knownValues, filePicker, 
                 ConfigurationPickerViewModel.ConfigurationType.KNOWN);
     }
             
-    private FilePickerViewModel<List<Person>> forgePersonListPickerViewModel(PersonType type){
+    private OpenChoiceFilePickerViewModel<List<Person>> forgePersonListPickerViewModel(PersonType type){
         IOFunction<List<Person>> parser = reader -> 
                 new PersonFileParser(personConfigurations.get(type).getConfiguration())
                         .parse(reader);
         return forgeFilePickerViewModel(parser, CSV_EXTENSIONS);
     }
     
-    private <T> FilePickerViewModel<T> forgeFilePickerViewModel(IOFunction<T> parser, 
+    private <T> OpenChoiceFilePickerViewModel<T> forgeFilePickerViewModel(IOFunction<T> parser, 
             List<Pair<String, List<String>>> extensions) {
         String defaultPath = "";
         FileParser<T> actualParser = file -> {
@@ -439,7 +439,7 @@ public class MainViewModel {
                 return parser.apply(reader);
             }
         };
-        return new FilePickerViewModel<>(defaultPath, actualParser, extensions);
+        return new OpenChoiceFilePickerViewModel<>(defaultPath, actualParser, extensions);
     }
     
     @FunctionalInterface

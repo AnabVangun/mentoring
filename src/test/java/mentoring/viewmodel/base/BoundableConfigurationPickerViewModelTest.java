@@ -139,8 +139,8 @@ class BoundableConfigurationPickerViewModelTest implements
             ConfigurationPickerViewModel.ConfigurationType.KNOWN;
     static final ConfigurationPickerViewModel.ConfigurationType OTHER_TYPE = 
             ConfigurationPickerViewModel.ConfigurationType.FILE;
-    static final File INITIAL_FILE = FilePickerViewModelTest.FILE;
-    static final File OTHER_FILE = FilePickerViewModelTest.OTHER_FILE;
+    static final File INITIAL_FILE = OpenChoiceFilePickerViewModelTest.FILE;
+    static final File OTHER_FILE = OpenChoiceFilePickerViewModelTest.OTHER_FILE;
     
     static class BoundableConfigurationPickerViewModelArgs extends TestArgs{
         
@@ -150,7 +150,7 @@ class BoundableConfigurationPickerViewModelTest implements
         
         DummyConfigurationPickerViewModel getTwin(){
             return new DummyConfigurationPickerViewModel(INITIAL_CONFIGURATION, VALUES,
-                    new FilePickerViewModel<>(INITIAL_FILE.getPath(), input -> null, List.of()), 
+                    new OpenChoiceFilePickerViewModel<>(INITIAL_FILE.getPath(), input -> null, List.of()), 
                     INITIAL_TYPE);
         }
     }

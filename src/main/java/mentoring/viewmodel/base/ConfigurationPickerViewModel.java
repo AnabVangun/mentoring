@@ -24,7 +24,7 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
     protected final ObservableList<String> items;
     protected final Property<String> selectedItem;
     protected final Property<ConfigurationType> configurationType;
-    protected final FilePickerViewModel<T> filePicker;
+    protected final OpenChoiceFilePickerViewModel<T> filePicker;
     private T lastLoadedConfiguration = null;
     private ConfigurationType lastLoadedConfigurationType = null;
     private String lastLoadedConfigurationParameter = null;
@@ -92,7 +92,7 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
      * @param defaultSelection the default type of configuration picked by the picker
      */
     public ConfigurationPickerViewModel(T defaultSelectedInstance, List<T> knownInstances, 
-            FilePickerViewModel<T> filePicker,
+            OpenChoiceFilePickerViewModel<T> filePicker,
             ConfigurationType defaultSelection){
         this.filePicker = Objects.requireNonNull(filePicker);
         if(! knownInstances.contains(defaultSelectedInstance)){
@@ -113,7 +113,7 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
      * @param copy the ViewModel to copy
      */
     protected ConfigurationPickerViewModel(ConfigurationPickerViewModel<T> copy){
-        this.filePicker = new FilePickerViewModel<>(copy.filePicker);
+        this.filePicker = new OpenChoiceFilePickerViewModel<>(copy.filePicker);
         knownConfigurations = copy.knownConfigurations;
         items = copy.items;
         selectedItem = new SimpleStringProperty(copy.selectedItem.getValue());
@@ -172,10 +172,10 @@ public class ConfigurationPickerViewModel<T extends Configuration<T>> {
     }
     
     /**
-     * Get the FilePickerViewModel used to pick a configuration file by this ViewModel.
-     * @return the internal FilePickerViewModel
+     * Get the OpenChoiceFilePickerViewModel used to pick a configuration file by this ViewModel.
+     * @return the internal OpenChoiceFilePickerViewModel
      */
-    public FilePickerViewModel<T> getFilePicker() {
+    public OpenChoiceFilePickerViewModel<T> getFilePicker() {
         return this.filePicker;
     }
 }
