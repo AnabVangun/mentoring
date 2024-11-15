@@ -9,7 +9,7 @@ apply plugin: 'application'
 application {
     mainClass.set('mentoring.Main')
 }
-version '2.0.0-epsilon'
+version '2.0.0-zeta'
 repositories {
     mavenCentral()
 }
