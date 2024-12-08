@@ -29,20 +29,20 @@ class OpenChoiceFilePickerViewModelTest extends FilePickerViewModelTest<String,
     @Override
     protected void verifyDefaultBehavior(OpenChoiceFilePickerViewModelArgs args,
             DummyFilePickerViewModel viewModel){
-        Assertions.assertEquals(args.defaultFileData.defaultFile,
+        Assertions.assertEquals(args.defaultFileData.defaultFile(),
                 viewModel.getCurrentFile().getValue());
     }
     
     @Override
-    protected File getOtherFile(OpenChoiceFilePickerViewModelArgs args){
+    protected File getOtherSelectableFile(OpenChoiceFilePickerViewModelArgs args){
         return OTHER_FILE;
     }
     
     @Override
-    protected void assertVerifyOrCureFileOnValidInput(OpenChoiceFilePickerViewModelArgs args, 
+    protected void assertVerifyOrCureFileOnValidInput(File file, 
             DummyFilePickerViewModel viewModel){
         //No modification on valid file
-        Assertions.assertEquals(OTHER_FILE, viewModel.verifyOrCureFile(OTHER_FILE));
+        Assertions.assertEquals(file, viewModel.verifyOrCureFile(file));
     }
     
     @Override
@@ -66,7 +66,7 @@ class OpenChoiceFilePickerViewModelTest extends FilePickerViewModelTest<String,
             copyViewModel.setCurrentFile(OTHER_FILE);
             Assertions.assertAll("The base view model should not be modified by its copy",
                     () -> Mockito.verify(listener, Mockito.never()).invalidated(observable),
-                    () -> Assertions.assertEquals(args.defaultFileData.defaultFile, 
+                    () -> Assertions.assertEquals(args.defaultFileData.defaultFile(), 
                             observable.getValue()));
         });
     }
@@ -75,7 +75,7 @@ class OpenChoiceFilePickerViewModelTest extends FilePickerViewModelTest<String,
     Stream<DynamicNode> getCurrentFilePath_defaultValue(){
         return test("getCurrentFilePath() returns the default file path before any action", args -> {
             DummyFilePickerViewModel viewModel = args.convert();
-            Assertions.assertEquals(args.defaultFileData.defaultFilePath, 
+            Assertions.assertEquals(args.defaultFileData.defaultFilePath(), 
                     viewModel.getCurrentFilePath().getValue());
         });
     }
@@ -116,7 +116,7 @@ class OpenChoiceFilePickerViewModelTest extends FilePickerViewModelTest<String,
             copyViewModel.setCurrentFile(OTHER_FILE);
             Assertions.assertAll("The base view model should not be modified by its copy",
                     () -> Mockito.verify(listener, Mockito.never()).invalidated(observable),
-                    () -> Assertions.assertEquals(args.defaultFileData.defaultFilePath, 
+                    () -> Assertions.assertEquals(args.defaultFileData.defaultFilePath(), 
                             observable.getValue()));
         });
     }
@@ -125,7 +125,7 @@ class OpenChoiceFilePickerViewModelTest extends FilePickerViewModelTest<String,
     Stream<DynamicNode> getCurrentFileDirectory_defaultInstance(){
         return test("getCurrentFileDirectory() returns the default directory before any action", args -> {
             DummyFilePickerViewModel viewModel = args.convert();
-            Assertions.assertEquals(args.defaultFileData.defaultDirectory, 
+            Assertions.assertEquals(args.defaultFileData.defaultDirectory(), 
                     viewModel.getCurrentFileDirectory().getValue());
         });
     }
@@ -166,7 +166,7 @@ class OpenChoiceFilePickerViewModelTest extends FilePickerViewModelTest<String,
             copyViewModel.setCurrentFile(OTHER_FILE);
             Assertions.assertAll("The base view model should not be modified by its copy",
                     () -> Mockito.verify(listener, Mockito.never()).invalidated(observable),
-                    () -> Assertions.assertEquals(args.defaultFileData.defaultDirectory, 
+                    () -> Assertions.assertEquals(args.defaultFileData.defaultDirectory(), 
                             observable.getValue()));
         });
     }
@@ -212,7 +212,7 @@ class OpenChoiceFilePickerViewModelTest extends FilePickerViewModelTest<String,
         
         @Override
         protected DummyFilePickerViewModel convert(){
-            return new DummyFilePickerViewModel(defaultFileData.defaultFilePath, 
+            return new DummyFilePickerViewModel(defaultFileData.defaultFilePath(), 
                     input -> input.getName(), expectedExtensions);
         }
     }
@@ -228,19 +228,4 @@ class OpenChoiceFilePickerViewModelTest extends FilePickerViewModelTest<String,
             return new DummyFilePickerViewModel(super.convert());
         }
     }
-    
-    static record FileData(String defaultFilePath, File defaultFile, File defaultDirectory){}
-    static final String PREFIX = "resources_test_mentoring_viewmodel_base"
-            .replace('_', File.separatorChar);
-    static final File PREFIX_FILE = new File(PREFIX);
-    static final String FILE_NAME = "configurationPickerViewModelTestFile.txt";
-    static final String FILE_PATH = PREFIX + File.separator + FILE_NAME;
-    static final File FILE = new File(FILE_PATH);
-    static final String OTHER_PREFIX = "%s%sconfigurationPickerViewModelTestDirectory"
-            .formatted(PREFIX, File.separatorChar);
-    static final String OTHER_FILE_NAME = "configurationPickerViewModelTestOtherFile.txt";
-    static final String OTHER_FILE_PATH = OTHER_PREFIX + File.separator + OTHER_FILE_NAME;
-    static final File OTHER_FILE = new File(OTHER_FILE_PATH);
-    static final FileData DEFAULT_FILE_DATA = new FileData(FILE_PATH,
-        FILE, PREFIX_FILE);
 }

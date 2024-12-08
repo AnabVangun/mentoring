@@ -2,6 +2,7 @@ package mentoring.viewmodel.base;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import mentoring.viewmodel.base.function.FileParser;
@@ -18,7 +19,7 @@ public abstract class FilePickerViewModel<T> {
     protected final FileParser<T> fileParser;
 
     protected FilePickerViewModel(FileParser<T> fileParser) {
-        this.fileParser = fileParser;
+        this.fileParser = Objects.requireNonNull(fileParser);
     }
 
     /**
