@@ -14,7 +14,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
-import mentoring.viewmodel.base.OpenChoiceFilePickerViewModel;
+import mentoring.viewmodel.base.FilePickerViewModel;
 import mentoring.viewmodel.base.SimpleObservable;
 
 /**
@@ -40,7 +40,7 @@ public class FilePickerView extends SimpleObservable implements Initializable {
      * Set the ViewModel used by this view to manage the File selection.
      * @param viewModel underlying ViewModel behind the view
      */
-    public void setViewModel(OpenChoiceFilePickerViewModel<?> viewModel){
+    public void setViewModel(FilePickerViewModel<?> viewModel){
         Objects.requireNonNull(viewModel);
         List<FileChooser.ExtensionFilter> filters = viewModel.getStandardExtensions().stream()
                 .map(entry -> new FileChooser.ExtensionFilter(entry.getKey(), entry.getValue()))

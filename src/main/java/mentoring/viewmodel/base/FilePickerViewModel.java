@@ -2,24 +2,75 @@ package mentoring.viewmodel.base;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import mentoring.viewmodel.base.function.FileParser;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
- * ViewModel made to pick and parse files containing a Java object (that may be
- * a collection).
+ * ViewModel made to pick and parse files containing a Java object (that may be a collection).
  * @param<T> type of the Java object to get from the selected file
  */
-public abstract class FilePickerViewModel<T> {
-    
+public class FilePickerViewModel<T> {
+    private final ReadOnlyStringWrapper selectedFilePath = new ReadOnlyStringWrapper();
     private final ReadOnlyObjectWrapper<File> selectedFile = new ReadOnlyObjectWrapper<>();
-    //TODO investigate how to make fileParser private without breaking deep copy constructor
-    protected final FileParser<T> fileParser;
-
-    protected FilePickerViewModel(FileParser<T> fileParser) {
-        this.fileParser = Objects.requireNonNull(fileParser);
+    private final ReadOnlyObjectWrapper<File> selectedFileDirectory = new ReadOnlyObjectWrapper<>();
+    private final FileParser<T> fileParser;
+    private final List<Pair<String, List<String>>> fileExtensions;
+    
+    private FilePickerViewModel(File initialFile, FileParser<T> fileParser,
+            List<Pair<String, List<String>>> fileExtensions){
+        setCurrentFile(initialFile);
+        this.fileParser = fileParser;
+        this.fileExtensions = fileExtensions;
+    }
+    
+    /**
+     * Build a new ConfigurationPickerViewModel instance.
+     * @param defaultFilePath path to a file that can be parsed, MAY be a null or empty String
+     * @param fileParser to parse the file
+     * @param fileExtensions the standard file extensions for this picker as a pair with a 
+     *      description and the associated extensions, where each extension SHOULD be of the form 
+     *      {@code *.<extension>}
+     */
+    public FilePickerViewModel(String defaultFilePath, FileParser<T> fileParser,
+            List<Pair<String, List<String>>> fileExtensions){
+        this(getFileOrDefaultDirectory(defaultFilePath), 
+                Objects.requireNonNull(fileParser),
+                makeUnmodifiableCopy(fileExtensions));
+    }
+    
+    /**
+     * Deep-copy constructor: build a new independent instance with equal values.
+     * @param toCopy the other instance to copy
+     */
+    FilePickerViewModel(FilePickerViewModel<T> toCopy){
+        this(toCopy.getCurrentFile().get(), toCopy.fileParser, toCopy.fileExtensions);
+    }
+    
+    private static <K, V> List<Pair<K, List<V>>> makeUnmodifiableCopy(List<Pair<K, List<V>>> input){
+        List<Pair<K, List<V>>> modifiable = input.stream()
+                .map(pair -> Pair.of(pair.getLeft(), List.copyOf(pair.getRight())))
+                .collect(Collectors.toList());
+        return Collections.unmodifiableList(modifiable);
+    }
+    
+    private static File getFileOrDefaultDirectory(String filePath) {
+        return getFileOrDefaultDirectory((File) (filePath == null ? null : new File(filePath)));
+    }
+    
+    private static File getFileOrDefaultDirectory(File file) {
+        return isInvalidFile(file) ? Parameters.getDefaultDirectory() : file;
+    }
+    
+    private static boolean isInvalidFile(File file){
+        return file == null || !file.exists();
     }
 
     /**
@@ -37,33 +88,45 @@ public abstract class FilePickerViewModel<T> {
      * @param file the file to select
      */
     public final void setCurrentFile(File file) {
-        File safeFile = verifyOrCureFile(file);
+        File safeFile = getFileOrDefaultDirectory(file);
         selectedFile.set(safeFile);
-        setFileDependentAttributes();
+        selectedFilePath.set(safeFile.getPath());
+        selectedFileDirectory.set(safeFile.isFile() ? safeFile.getParentFile() : safeFile);
+    }
+
+    /**
+     * Get an absolute path to the currently selected file. This observable may be invalidated by
+     * calls to {@link #setCurrentFile(java.io.File)}.
+     * @return an observable describing an absolute path to the currently selected file
+     */
+    public final ReadOnlyStringProperty getCurrentFilePath() {
+        return selectedFilePath.getReadOnlyProperty();
+    }
+
+    /**
+     * Get the directory containing the currently selected file.
+     * This observable may be invalidated by calls to {@link #setCurrentFile(java.io.File)}.
+     * @return an observable describing the currently selected directory
+     */
+    public final ReadOnlyObjectProperty<File> getCurrentFileDirectory() {
+        return selectedFileDirectory.getReadOnlyProperty();
     }
     
-    /**
-     * Check that the file is acceptable. Implementing subclasses MAY either
-     * return a default or adapted file, or throw an exception on an invalid 
-     * input.
-     * @param file to check
-     * @return a cured file
-     */
-    protected abstract File verifyOrCureFile(File file);
-    
-    /**
-     * Method used in {@link #setCurrentFile(java.io.File)} to set subclass 
-     * specific attributes after setting the file.
-     */
-    protected void setFileDependentAttributes(){}
-
     /**
      * Parse the currently selected file.
      * @return the data contained in the file as a Java object
      * @throws IOException if anything goes wrong during the parsing
      */
-    public final T parseCurrentFile() throws IOException {
-        //TODO add tests
+    public final T parseCurrentFile() throws IOException{
         return fileParser.apply(getCurrentFile().get());
-    }   
+    }
+    
+    /**
+     * Return the standard file extensions for this picker as a pair with a description and the 
+     * associated extensions. Each extension SHOULD be of the form {@code *.<extension>}.
+     * @return a mapping between descriptions and a list of associated file extensions
+     */
+    public final List<Pair<String, List<String>>> getStandardExtensions(){
+        return this.fileExtensions;
+    }
 }

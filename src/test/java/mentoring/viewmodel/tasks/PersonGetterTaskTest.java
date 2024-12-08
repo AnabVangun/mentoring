@@ -8,7 +8,7 @@ import mentoring.configuration.PersonConfiguration;
 import mentoring.datastructure.Person;
 import mentoring.datastructure.PersonBuilder;
 import mentoring.viewmodel.base.ConfigurationPickerViewModel;
-import mentoring.viewmodel.base.OpenChoiceFilePickerViewModel;
+import mentoring.viewmodel.base.FilePickerViewModel;
 import mentoring.viewmodel.datastructure.PersonListViewModel;
 import mentoring.viewmodel.tasks.PersonGetterTaskTest.PersonGetterTaskArgs;
 import org.junit.jupiter.api.Assertions;
@@ -74,7 +74,7 @@ class PersonGetterTaskTest implements TestFramework<PersonGetterTaskArgs>{
     }
     
     static Executable assertConstructorThrowsNPE(PersonListViewModel vm, 
-            OpenChoiceFilePickerViewModel<List<Person>> personPicker, 
+            FilePickerViewModel<List<Person>> personPicker, 
             ConfigurationPickerViewModel<PersonConfiguration> configurationPicker,
             AbstractTask.TaskCompletionCallback<? super List<Person>> callback){
         return () -> Assertions.assertThrows(NullPointerException.class, 
@@ -84,7 +84,7 @@ class PersonGetterTaskTest implements TestFramework<PersonGetterTaskArgs>{
     static class PersonGetterTaskArgs extends TestArgs {
         final PersonListViewModel updatedVM = Mockito.mock(PersonListViewModel.class);
         final List<Person> expectedResults;
-        final OpenChoiceFilePickerViewModel<List<Person>> personPicker;
+        final FilePickerViewModel<List<Person>> personPicker;
         final ConfigurationPickerViewModel<PersonConfiguration> configurationPicker;
         final AbstractTask.TaskCompletionCallback<Object> callback = task -> {};
         
@@ -92,7 +92,7 @@ class PersonGetterTaskTest implements TestFramework<PersonGetterTaskArgs>{
         PersonGetterTaskArgs(String testCase, List<Person> expectedResults){
             super(testCase);
             this.expectedResults = expectedResults;
-            personPicker = new OpenChoiceFilePickerViewModel<>("foo", file -> expectedResults, List.of());
+            personPicker = new FilePickerViewModel<>("foo", file -> expectedResults, List.of());
             configurationPicker = Mockito.mock(ConfigurationPickerViewModel.class);
             try {
                 Mockito.when(configurationPicker.getConfiguration())

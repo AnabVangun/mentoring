@@ -33,7 +33,7 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
                         List.of(DummyConfiguration.first.toString(), 
                                 DummyConfiguration.second.toString()),
                         ConfigurationPickerViewModel.ConfigurationType.FILE,
-                        OpenChoiceFilePickerViewModelTest.DEFAULT_FILE_DATA.defaultFilePath()),
+                        FilePickerViewModelTest.DEFAULT_FILE_DATA.defaultFilePath()),
                 new CopyConfigurationPickerViewModelArgs("known copy configuration", 
                         DummyConfiguration.first, DummyConfiguration.first, 
                         List.of(DummyConfiguration.first), 
@@ -46,7 +46,7 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
                         List.of(DummyConfiguration.first.toString(), 
                                 DummyConfiguration.second.toString()),
                         ConfigurationPickerViewModel.ConfigurationType.FILE,
-                        OpenChoiceFilePickerViewModelTest.DEFAULT_FILE_DATA.defaultFilePath()));
+                        FilePickerViewModelTest.DEFAULT_FILE_DATA.defaultFilePath()));
     }
     
     @TestFactory
@@ -235,8 +235,8 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
             ConfigurationPickerViewModel.ConfigurationType type = 
                     ConfigurationPickerViewModel.ConfigurationType.FILE;
             @SuppressWarnings("unchecked")
-            OpenChoiceFilePickerViewModel<DummyConfiguration> filePicker = 
-                    Mockito.mock(OpenChoiceFilePickerViewModel.class);
+            FilePickerViewModel<DummyConfiguration> filePicker = 
+                    Mockito.mock(FilePickerViewModel.class);
             List<DummyConfiguration> values = List.of(configuration);
             Assertions.assertAll(
                     assertConstructorThrowsNPE(null, values, filePicker, type),
@@ -248,7 +248,7 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
     
     static Executable assertConstructorThrowsNPE(
             DummyConfiguration defaultSelectedInstance, List<DummyConfiguration> values,
-            OpenChoiceFilePickerViewModel<DummyConfiguration> filePicker,
+            FilePickerViewModel<DummyConfiguration> filePicker,
             ConfigurationPickerViewModel.ConfigurationType defaultSelection){
         return () -> Assertions.assertThrows(NullPointerException.class, 
                 () -> new ConfigurationPickerViewModel<>(defaultSelectedInstance, values,
@@ -278,7 +278,7 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
         
         public DummyConfigurationPickerViewModel(DummyConfiguration defaultSelectedInstance, 
                 List<DummyConfiguration> values,
-                OpenChoiceFilePickerViewModel<DummyConfiguration> filePicker, 
+                FilePickerViewModel<DummyConfiguration> filePicker, 
                 ConfigurationType defaultSelection) {
             super(defaultSelectedInstance, values, filePicker, defaultSelection);
         }
@@ -294,7 +294,7 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
         final DummyConfiguration selectedConfiguration;
         final List<DummyConfiguration> inputValues;
         final List<String> expectedValues;
-        final OpenChoiceFilePickerViewModel<DummyConfiguration> filePicker;
+        final FilePickerViewModel<DummyConfiguration> filePicker;
         
         @SuppressWarnings("unchecked")
         ConfigurationPickerViewModelArgs(String testCase, DummyConfiguration expectedConfiguration,
@@ -303,7 +303,7 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
                 String filePath){
             super(testCase);
             this.expectedConfiguration = expectedConfiguration;
-            filePicker = new OpenChoiceFilePickerViewModel<>(filePath, 
+            filePicker = new FilePickerViewModel<>(filePath, 
                     input -> new DummyConfiguration(input.getName()), List.of());
             this.selectedConfiguration = selectedConfiguration;
             this.inputValues = inputValues;
@@ -317,7 +317,7 @@ class ConfigurationPickerViewModelTest implements TestFramework<ConfigurationPic
         }
         
         final static DummyConfiguration FILE_CONFIGURATION = 
-                new DummyConfiguration(OpenChoiceFilePickerViewModelTest.DEFAULT_FILE_DATA.defaultFilePath());
+                new DummyConfiguration(FilePickerViewModelTest.DEFAULT_FILE_DATA.defaultFilePath());
     }
     
     static class CopyConfigurationPickerViewModelArgs extends ConfigurationPickerViewModelArgs {
